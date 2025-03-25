@@ -1,12 +1,9 @@
 import { RecaptchaVerifier } from 'firebase/auth'
 import { useEffect, useRef } from 'react'
 import auth from '../lib/firebaseConfig';
+import IRecaptchaComponentProps from '../types/IRecaptchaComponentProps';
 
-interface RecaptchaComponentProps {
-    onRecaptchaInit: (verifier: RecaptchaVerifier) => void;
-}
-
-const RecaptchaComponent = function ({ onRecaptchaInit }: RecaptchaComponentProps ) {
+const RecaptchaComponent = function ({ onRecaptchaInit }: IRecaptchaComponentProps ) {
     const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
 
     useEffect(() => {

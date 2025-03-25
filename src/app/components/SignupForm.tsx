@@ -12,12 +12,15 @@ import React, { useState } from 'react';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '../lib/firebaseConfig';
 import RecaptchaComponent from './RecaptchaComponent';
+import OtpVerificationModal from './OtpVerificationModal';
 
 const SignupForm = function () {
+  const [formData, setFormData] = useState<SignupFormValues | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null)
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -29,17 +32,20 @@ const SignupForm = function () {
 
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
     try {
+      setLoading(true);
+      setFormData(data);
       if (!recaptchaVerifier) {
         throw new Error(`reCAPTCHA  verifier not initialized`);
       }
       // Send OTP to the provided phone number 
       const result = await signInWithPhoneNumber(auth, `+91 ${data.phone_number}`, recaptchaVerifier);
-      setConfirmationResult(result); // Store the confirmationResult in state
+      setConfirmationResult(result);
       setPhoneNumber(data.phone_number);
       setIsModalOpen(true);
-      console.log('OTP Sent Successfully to', data.phone_number);
     } catch (error) {
       console.error(`Error sending OTP:`, (error as Error).message);
+    } finally {
+      setLoading(false);
     }
   }
   
@@ -73,8 +79,7 @@ const SignupForm = function () {
                   <Input
                     id="first_name"
                     placeholder="First Name"
-                    className={`h-[46px] border-gray-300 ${errors.first_name ? "border-red-500" : ""
-                      }`}
+                    className={`h-[46px] border-gray-300 ${errors.first_name ? "border-red-500" : ""}`}
                     {...register("first_name")}
                   />
                       
@@ -185,8 +190,9 @@ const SignupForm = function () {
                 <p className="text-red-500 text-xs">{errors.terms.message}</p>
               )}
 
-              <Button type='submit' className="w-full h-11 bg-[#004a7c] text-white">
-                Create Account
+            <Button type='submit' className="w-full h-11 bg-[#004a7c] text-white" disabled={loading}>
+              {
+                loading ? ( 'Sending OTP...') : ('Create Account')}
               </Button>
             </form>
 
@@ -207,79 +213,11 @@ const SignupForm = function () {
             phoneNumber={phoneNumber}
             onClose={() => setIsModalOpen(false)}
             confirmationResult={confirmationResult}
+            formData ={formData}
           />
         )}
     </>
   ) 
-};
-
-interface OtpVerificationModalProps {
-  phoneNumber: string;
-  onClose: () => void;
-  confirmationResult: ConfirmationResult | null
-}
-
-
-// OTP Verification Modal Component
-const OtpVerificationModal = ({
-  phoneNumber,
-  onClose,
-  confirmationResult,
-}: OtpVerificationModalProps) => {
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleVerifyOTP = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      if (!confirmationResult) {
-        throw new Error("No confirmationResult found. Please send OTP first.");
-      }
-
-      const userCredential = await confirmationResult.confirm(otp);
-      console.log("User signed in successfully:", userCredential.user);
-
-      alert("Account created successfully!");
-      onClose(); // Close the modal after successful verification
-    } catch (error) {
-      console.error("Error verifying OTP:", (error as Error).message);
-      setError("Invalid OTP. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg w-[400px]">
-        <h2 className="text-xl font-bold mb-4">Verify OTP</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Enter the OTP sent to +91{phoneNumber}.
-        </p>
-        <form onSubmit={handleVerifyOTP} className="space-y-4">
-          <input
-            type="text"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter OTP"
-            className="h-[46px] w-full border-gray-300 border p-2"
-          />
-          {error && <p className="text-red-500 text-xs">{error}</p>}
-          <button
-            type="submit"
-            className="w-full h-11 bg-[#004a7c] text-white"
-            disabled={loading}
-          >
-            {loading ? "Verifying..." : "Verify OTP"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
 };
 
 export default SignupForm;

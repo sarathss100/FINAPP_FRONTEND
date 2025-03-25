@@ -62,7 +62,7 @@ const Footer = function () {
                     ))}
                 </div>
 
-                <Separator className='bg-gray-800' />
+                <Separator className='bg-white' />
 
                 <div className="pt-8 text-center">
                     <p className="text-gray-400 text-base">

@@ -16,13 +16,12 @@ export async function middleware(request: NextRequest) {
     }
 
     // Public routes that don't require authentication 
-    const publicRoutes = ['/login', '/signup'];
+    const publicRoutes = ['/login', '/signup', '/home'];
 
     console.log(request.cookies.get('accessToken')?.value);
 
     // Get the user state from the Zustand store
     const { user, logout } = useUserStore.getState();
-    console.log(user);
     const isAuthenticated = user?.isLoggedIn;
     
     // Redirect authenticated users from public routes to the dashboad

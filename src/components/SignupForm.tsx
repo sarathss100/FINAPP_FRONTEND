@@ -198,7 +198,7 @@ const SignupForm = function () {
 
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-600">Already have an account?</p>
-              <a href="#" className="text-blue-600 text-base">
+              <a href="/login" className="text-blue-600 text-base">
                 Sign in
               </a>
             </div>

@@ -17,3 +17,12 @@ export const signupSchema = z.object({
 
 // Infer the type from the schema
 export type SignupFormValues = z.infer<typeof signupSchema>;
+
+
+export const signInSchema = z.object({
+    phone_number: z.string().regex(/^\d{10}$/, { message: 'Phone number must be exactly 10 digits' }),
+    password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
+});
+
+// Infer the type from the schema
+export type SignInFormValues = z.infer<typeof signInSchema>;

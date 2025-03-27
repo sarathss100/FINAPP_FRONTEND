@@ -1,7 +1,9 @@
 import Image from 'next/image';
 import Button from './button';
+import Link from 'next/link';
 
-const Header = function () {
+const Header = function ({ isSignupPage }: { isSignupPage: boolean }) {
+
     // Navigation links data
     const navLinks = [
         { name: "Features", href: '#' },
@@ -14,10 +16,15 @@ const Header = function () {
         <header className="w-full h-16 bg-white shadow-sm">
             <div className="container mx-auto h-full px-6">
                 <div className="flex items-center justify-between h-full">
-                    <div className="flex items-center justify-between h-full">
+                    <Link
+                        href={'/home'}
+                        passHref
+                    >
+                        <div className="flex items-center justify-between h-full">
                         <Image src="/logo.svg" alt="FinApp Logo" width={30} height={30} />
                         <span className="ml-2 font-normal text-[#004a7c] text-2xl">FinApp</span>
-                    </div>
+                        </div>
+                    </Link>
 
                     <div className="flex items-center space-x-8">
                         {navLinks.map((link) => (
@@ -31,10 +38,16 @@ const Header = function () {
                         ))}
                     </div>
 
-                    <Button className="bg-[#004a7c] text-white rounded-full px-6 flex items-center">
-                        <Image src='/user.svg' alt='Sign In Icon' width={14} height={16} className='mr-2' />
-                        Sign In
-                    </Button>
+                    {/* Dynamic Button */}
+                    <Link
+                        href={isSignupPage ? '/login' : '/signup'}
+                        passHref
+                    >
+                        <Button className="bg-[#004a7c] text-white rounded-full px-6 flex items-center">
+                            <Image src='/user.svg' alt='Sign In Icon' width={14} height={16} className='mr-2' />
+                            { isSignupPage ? `Sign In` : `Sign Up`}
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </header>

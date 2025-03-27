@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import IOtpVerificationModalProps from '../types/IOtpVerificationModalProps';
-import axios from 'axios';
 import Button from './button';
 import Input from './Input';
 import { Card, CardContent } from './Card';
 import Image from 'next/image';
-import { time } from 'console';
+import apiClient from '../lib/apiClient';
+import { useUserStore } from '@/stores/store';
+import IUser from '@/stores/interfaces/IUser';
+import ISignupResponse from '@/types/ISignupResponse';
 
 // OTP Verification Modal Component
 const OtpVerificationModal = ({
@@ -19,6 +21,7 @@ const OtpVerificationModal = ({
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(180);
   const [canResend, setCanResend] = useState(false);
+  const { login } = useUserStore();
 
   // Combine OTP values into a single string
   const getOtp = () => otpValues.join('');
@@ -78,9 +81,15 @@ const OtpVerificationModal = ({
       const confirmation = await confirmationResult.confirm(otp);
 
       if (confirmation) {
-        const response = await axios.post('http://localhost:5000/api/v1/auth/signup', formData);
-        console.log(response);
+        const response = await apiClient.post<ISignupResponse>(`api/v1/auth/signup`, formData);
+        const userData: IUser = {
+          userId: response.data.data.userId,
+          role: response.data.data.role,
+          isLoggedIn: true,
+        };
+        login(userData);
       }
+
       onClose();
     } catch (error) {
       console.error('Error verifying OTP:', (error as Error).message);
@@ -93,13 +102,11 @@ const OtpVerificationModal = ({
   const handleResendOTP = function () {
     setTimer(180);
     setCanResend(false);
-
     console.log('Resending OTP....');
   };
 
-
   return (
-    <div className="fixed inset-0 bg-opacity-100 shadow-[0px_10px_15px_#0000001a,0px_4px_6px_#0000001a] flex justify-center items-center">
+    <div className="fixed inset-0 backdrop-blur-sm shadow-[0px_10px_15px_#0000001a,0px_4px_6px_#0000001a] flex justify-center items-center">
       <Card className="w-[480px] bg-white rounded-2xl border-0 shadow-md">
         <CardContent className="p-8">
           <form onSubmit={handleVerifyOTP} className="space-y-6">

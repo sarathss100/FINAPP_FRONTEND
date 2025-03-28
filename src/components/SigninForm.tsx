@@ -9,6 +9,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
 import React, { useState } from 'react';
+import apiClient from '@/lib/apiClient';
 
 const SigninForm = function () {
   const [formData, setFormData] = useState<SignInFormValues | null>(null);
@@ -26,6 +27,9 @@ const SigninForm = function () {
     try {
       setLoading(true);
       setFormData(data);
+      await apiClient.post(`api/v1/auth/signup`, formData);
+      
+      // login(userData);
       console.log(formData);
     } catch (error) {
       console.error(`Somethin Went Wrong:`, (error as Error).message);
@@ -48,10 +52,10 @@ const SigninForm = function () {
                 />
               </div>
               <h2 className="text-2xl font-normal text-gray-900 mb-1">
-                Sign In to the Account
+                Welcome Back
               </h2>
               <p className="text-base font-normal text-gray-500">
-                Start managing your finances today
+                Sign in to manage your finances
               </p>
             </div>
 
@@ -94,15 +98,32 @@ const SigninForm = function () {
                   <p className="text-red-500 text-xs">{errors.password.message}</p>
                 )}
               </div>
-
+            
               <Button type='submit' className="w-full h-11 bg-[#004a7c] text-white" disabled={loading}>
                 {loading ? ( 'Signing In...') : ('Sign in')}
               </Button>
             </form>
+          
+            {/* Remember Me and Forgot Password */}
+            <div className="flex items-center justify-between mt-4">
+              <a
+                href="#"
+                className="text-sm text-blue-600 font-normal font-['Poppins',Helvetica]"
+              >
+                Forgot password?
+              </a>
+            
+              <a
+                href="#"
+                className="text-sm text-blue-600 font-normal font-['Poppins',Helvetica]"
+              >
+                I need more options
+              </a>
+            </div>
 
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600">Don`&apos`t have an account?</p>
-              <a href="/signup" className="text-blue-600 text-base">
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">Don&apos;t have an account?</p>
+              <a href="/signup" className="text-blue-600 text-md">
                 Sign Up
               </a>
             </div>

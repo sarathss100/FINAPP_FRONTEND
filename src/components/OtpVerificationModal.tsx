@@ -88,6 +88,8 @@ const OtpVerificationModal = ({
           isLoggedIn: true,
         };
         login(userData);
+
+        window.location.href = '/dashboard';
       }
 
       onClose();

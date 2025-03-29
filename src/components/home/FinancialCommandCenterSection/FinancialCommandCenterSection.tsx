@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from '@/components/Card';
 import Image from 'next/image';
 
-export const FinancialCommandCenterSection = (): JSX.Element => {
+export const FinancialCommandCenterSection = () => {
   // Feature data for mapping
   const features = [
     {

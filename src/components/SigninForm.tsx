@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
 import React, { useState } from 'react';
 import apiClient from '@/lib/apiClient';
+import { toast } from 'react-toastify';
 
 const SigninForm = function () {
   const [formData, setFormData] = useState<SignInFormValues | null>(null);
@@ -27,12 +28,18 @@ const SigninForm = function () {
     try {
       setLoading(true);
       setFormData(data);
-      await apiClient.post(`api/v1/auth/signup`, formData);
+      const response = await apiClient.post(`api/v1/auth/signin`, formData);
       
+      if (response.status === 200) {
+        window.location.href = '/dashboard';
+      } else {
+        toast.error(response.data.error || `An error occured during SignIn`);
+      }
       // login(userData);
-      console.log(formData);
-    } catch (error) {
-      console.error(`Somethin Went Wrong:`, (error as Error).message);
+    } catch (error: any) {
+      if (error.response.data.message) {
+        toast.error(error.response.data.message || `An error occured during SignIn`)
+      }
     } finally {
       setLoading(false);
     }

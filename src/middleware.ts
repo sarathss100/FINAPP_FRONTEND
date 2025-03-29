@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import apiClient from './lib/apiClient';
+import IVerifyTokenResponse from './types/IVerifyTokenResponse';
 
 export async function middleware(request: NextRequest) {
     // const { pathname } = request.nextUrl;
@@ -15,7 +16,10 @@ export async function middleware(request: NextRequest) {
     // }
 
     // // Public routes that don't require authentication 
-    // const publicRoutes = ['/login', '/signup', '/home', '/test', 'http://www.w3.org/', '/dashboard'];
+    // const publicRoutes = ['/signin', '/login', '/', '/test', 'http://www.w3.org/'];
+
+    // // Admin-only routes
+    // const adminRoutes = ['/admin/dashboard', '/admin/settings'];
 
     // const extractedUserData: string | undefined = request.cookies.get('userMetaData')?.value;
 
@@ -30,7 +34,7 @@ export async function middleware(request: NextRequest) {
     // // Redirect authenticated users from public routes to the dashboad
     // if (isAuthenticated && publicRoutes.includes(pathname)) {
     //     const role = user?.role || 'user';
-    //     const redirectPath = role === 'admin' ? '/admin/dashboard' : '/dashoard';
+    //     const redirectPath = role === 'admin' ? '/admin/dashboard' : '/dashboard';
     //     return NextResponse.redirect(new URL(redirectPath, request.url));
     // }
 
@@ -42,14 +46,33 @@ export async function middleware(request: NextRequest) {
     // try {
     //     // If the user is authenticated in the Zustand store, verify the token with the backend
     //     if (isAuthenticated) {
-    //         await apiClient.post('api/v1/auth/verify-token', null, {
+    //         const response = await apiClient.post('api/v1/auth/verify-token', null, {
     //             headers: {
     //                 Cookie: `{"accessToken":"${accessToken}"}`
     //             }
     //         });
 
+    //         const data = response.data as IVerifyTokenResponse;
+        
+    //         if (data.data.decodedData.newAccessToken) {
+    //             const nextResponse = NextResponse.next();
+    //             nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {
+    //                 httpOnly: true,
+    //                 secure: process.env.NODE_ENV === 'production' ? true : false,
+    //                 sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    //                 maxAge: 15 * 60 * 1000,
+    //             });
+    //         }
+
+    //         const role = user?.role || 'user';
+
+    //         if (adminRoutes.includes(pathname) && role !== 'admin') {
+    //             // Redirect non-admin users attempting to access admin routes
+    //             return NextResponse.redirect(new URL('/unauthorized', request.url));
+    //         }
+            
     //         // If the token is valid, allow access to the protected route
-    //         return NextResponse.next();
+    //         return NextResponse.next({ request: { headers: request.headers }});
     //     }
 
     //     // If the user is not authenticated, redirect to the login page

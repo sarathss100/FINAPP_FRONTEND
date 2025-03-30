@@ -18,7 +18,6 @@ import { useState } from "react";
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useUserStore } from '@/stores/store';
-import Cookies from 'js-cookie';
 import apiClient from '@/lib/apiClient';
 
 export const UserSideBar = () => {
@@ -34,10 +33,6 @@ export const UserSideBar = () => {
   const handleSignOut = async function () {
     // Send logout request to backend 
     await apiClient.post(`api/v1/auth/signout`);
-
-    // Clear client-side cookies
-    Cookies.remove('accessToken');
-    Cookies.remove('userMetaData');
 
     // Reset Zustand state
     logout();

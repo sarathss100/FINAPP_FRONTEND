@@ -3,42 +3,46 @@ import Button from '../button';
 import Input from '../Input';
 import { Card, CardContent } from '../Card';
 import Image from 'next/image';
-import IPhoneNumberVerificationModalProps from './inteface/IPhoneNumberVerificationModalProps';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PhoneNumberFormValues, PhoneNumberVerifySchema } from '@/lib/validationSchemas';
+import { ResetPasswordFormValues, resetPasswordSchema } from '@/lib/validationSchemas';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { PhoneIcon } from "lucide-react";
 import Label from '../Label';
 import apiClient from '@/lib/apiClient';
+import IResetPasswordModalProps from './inteface/IResetPasswordModalProps';
 
-// PhoneNumber Verification Modal Component
-const PhoneNumberVerificationModal = ({
+// Password Reset Modal Component
+const ResetPasswordModal = ({
   onClose,
   onSuccess,
   onFailure,
-  isLoading
-}: IPhoneNumberVerificationModalProps) => {
+  isLoading,
+  phoneNumber
+}: IResetPasswordModalProps) => {
 
   const {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<PhoneNumberFormValues>({
-    resolver: zodResolver(PhoneNumberVerifySchema)
+  } = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema)
   });
 
-  // Handle Phone Number Verification
-  const handlePhoneNumberVerification: SubmitHandler<PhoneNumberFormValues> = async (phone) => {
+  // Handle Password Reset
+  const handleFormSubmission: SubmitHandler<ResetPasswordFormValues> = async (data) => {
     try {
-      const phoneNumber = phone.phone_number;
-      const confirmation = await apiClient.post('api/v1/auth/verify-phonenumber', { phoneNumber });
+      const { password } = data;
+      if (!phoneNumber) {
+        throw new Error(`Phone is missing for form submission`);
+      }
+      const confirmation = await apiClient.post('api/v1/auth/change-password', { phone_number: phoneNumber, password });
       
       if (confirmation.status === 200) {
-        onSuccess(phone.phone_number); 
+        onSuccess('Password updated Successfully'); 
       }
 
     } catch (error: unknown) {
-      let errorMessage = `Failed to Verify the Phone Number, Please try again later`;
+      let errorMessage = `Failed to Reset the password, Please try again later`;
       if (error instanceof Error) {
         errorMessage = error?.response?.data?.message;
       }
@@ -50,7 +54,7 @@ const PhoneNumberVerificationModal = ({
     <div className="fixed inset-0 backdrop-blur-sm shadow-[0px_10px_15px_#0000001a,0px_4px_6px_#0000001a] flex justify-center items-center">
       <Card className="w-[480px] bg-white rounded-2xl border-0 shadow-md">
         <CardContent className="p-8">
-          <form onSubmit={handleSubmit(handlePhoneNumberVerification)} className="space-y-6">
+          <form onSubmit={handleSubmit(handleFormSubmission)} className="space-y-6">
             {/* Logo/Icon */}
             <div className="flex items-center justify-center w-12 h-12 mx-auto">
               <Image
@@ -63,32 +67,51 @@ const PhoneNumberVerificationModal = ({
 
             {/* Title */}
             <h2 className="font-normal text-2xl text-[#004a7c] text-center leading-6 font-['Poppins',Helvetica]">
-              Phone Number Verification
+              Reset Password
             </h2>
 
             {/* Description */}
             <div className="space-y-2 text-center">
               <p className="font-normal text-base text-gray-600 font-['Poppins',Helvetica]">
-                Please Enter a Valid Phone Number
+                Please Enter New Password
               </p>
             </div>
             
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-sm text-gray-700">
-                Phone Number
+              <Label htmlFor="newpassword" className="text-sm text-gray-700">
+                New Password
               </Label>
               <div className="relative">
                 <PhoneIcon className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
                 <Input
-                  id="phone_number"
-                  placeholder="Phone Number"
-                  className={`h-[46px] pl-10 border-gray-300 ${errors.phone_number ? "border-red-500" : ""
+                  id="password"
+                  placeholder="New Password"
+                  className={`h-[46px] pl-10 border-gray-300 ${errors.password ? "border-red-500" : ""
                     }`}
-                  {...register("phone_number")}
+                  {...register("password")}
                 />
               </div>
-              {errors.phone_number && (
-                <p className="text-red-500 text-xs">{errors.phone_number.message}</p>
+              {errors.password && (
+                <p className="text-red-500 text-xs">{errors.password.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm_password" className="text-sm text-gray-700">
+                Confirm Password
+              </Label>
+              <div className="relative">
+                <PhoneIcon className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                <Input
+                  id="confirm_password"
+                  placeholder="Confirm Password"
+                  className={`h-[46px] pl-10 border-gray-300 ${errors.confirm_password ? "border-red-500" : ""
+                    }`}
+                  {...register("confirm_password")}
+                />
+              </div>
+              {errors.confirm_password && (
+                <p className="text-red-500 text-xs">{errors.confirm_password.message}</p>
               )}
             </div>
           
@@ -98,7 +121,7 @@ const PhoneNumberVerificationModal = ({
               className="w-full h-11 bg-[#004a7c] text-white"
               disabled={isLoading}
             >
-              {isLoading ? 'Verifying...' : 'Submit'}
+              {isLoading ? 'Submitting...' : 'Submit'}
             </Button>
             <button
               onClick={onClose}
@@ -113,4 +136,4 @@ const PhoneNumberVerificationModal = ({
   );
 };
 
-export default PhoneNumberVerificationModal;
+export default ResetPasswordModal;

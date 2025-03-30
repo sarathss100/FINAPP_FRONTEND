@@ -34,3 +34,15 @@ export const PhoneNumberVerifySchema = z.object({
 
 // Infer the type from the schema
 export type PhoneNumberFormValues = z.infer<typeof PhoneNumberVerifySchema>;
+
+export const resetPasswordSchema = z.object({
+    password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
+    confirm_password: z.string().min(8, { message: 'Confirm Password is required' }),
+})
+    .refine((data) => data.password === data.confirm_password, {
+        message: 'Password do not match',
+        path: ['confirm_password']
+    });
+
+// Infer the type from the schema
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;

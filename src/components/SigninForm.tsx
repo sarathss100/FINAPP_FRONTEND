@@ -8,13 +8,14 @@ import { LockIcon, PhoneIcon } from "lucide-react";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
-import React, { use, useState } from 'react';
+import React, { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
 import ISigninResponse from '@/types/ISigninResponse';
 import { useRouter } from 'next/navigation';
 import PhoneNumberVerificationModal from './forgetpassword/PhoneNumberVerificationModal';
 import ResetPasswordOtpVerificationModal from './forgetpassword/ResetPasswordOtpVerificationModal';
+import ResetPasswordModal from './forgetpassword/ResetPasswordModal';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
 import RecaptchaComponent from './RecaptchaComponent';
@@ -29,6 +30,7 @@ const SigninForm = function () {
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
   const [isPhoneNumberLoading, setIsPhoneNumberLoading] = useState(false);
   const [isOTPLoading, setIsOTPLoading] = useState(false);
+  const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const router = useRouter();
 
   const {
@@ -81,11 +83,24 @@ const SigninForm = function () {
     try {
       setIsOtpModalOpen(false) // Close the OTP confirmation modal
       setIsResetPasswordModalOpen(true);
-      console.log(`Reset Password Modal is Openened`);
     } catch (error) {
-      
+      console.error("Fail to verify OTP:", error);
+      handleFailure((error as Error).message || "Failed to verify OTP");
     } finally {
       setIsOTPLoading(false);
+    }
+  }
+
+  const handleResetPasswordSuccess = (message: string) => {
+    setIsResetPasswordLoading(true);
+    try {
+      toast.success(message);
+      setIsResetPasswordModalOpen(false);
+    } catch (error) {
+      console.error("Fail to Reset the Password:", error);
+      handleFailure((error as Error).message || "Failed to Reset the Password");
+    } finally {
+      setIsResetPasswordLoading(false);
     }
   }
 
@@ -214,6 +229,17 @@ const SigninForm = function () {
             phoneNumber={phoneNumber}
             confirmationResult={confirmationResult}
             isLoading={isOTPLoading}
+          />
+        )}
+      
+        {/* Password Reset Modal */}
+        {isResetPasswordModalOpen && (
+          <ResetPasswordModal
+            onClose={() => setIsResetPasswordModalOpen(false)}
+            onSuccess={handleResetPasswordSuccess}
+            onFailure={handleFailure}
+            phoneNumber={phoneNumber}
+            isLoading={isResetPasswordLoading}
           />
         )}
     </>

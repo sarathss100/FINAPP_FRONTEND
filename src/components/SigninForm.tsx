@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { Card, CardContent } from './Card';
 import Image from 'next/image';
 import Button from './button';
@@ -8,17 +8,27 @@ import { LockIcon, PhoneIcon } from "lucide-react";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
-import React, { useState } from 'react';
+import React, { use, useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
-// import { useUserStore } from '@/stores/store';
-// import IUser from '@/stores/interfaces/IUser';
 import ISigninResponse from '@/types/ISigninResponse';
 import { useRouter } from 'next/navigation';
+import PhoneNumberVerificationModal from './forgetpassword/PhoneNumberVerificationModal';
+import ResetPasswordOtpVerificationModal from './forgetpassword/ResetPasswordOtpVerificationModal';
+import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import auth from '@/lib/firebaseConfig';
+import RecaptchaComponent from './RecaptchaComponent';
 
 const SigninForm = function () {
   const [loading, setLoading] = useState(false);
-  // const { login } = useUserStore();
+  const [isPhoneNumberVerificationModalOpen, setIsPhoneNumberVerificationModalOpen] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
+  const [isPhoneNumberLoading, setIsPhoneNumberLoading] = useState(false);
+  const [isOTPLoading, setIsOTPLoading] = useState(false);
   const router = useRouter();
 
   const {
@@ -35,12 +45,6 @@ const SigninForm = function () {
       const response = await apiClient.post<ISigninResponse>(`api/v1/auth/signin`, data);
 
       if (response.data.success) {
-        // const userData: IUser = {
-        //   userId: response.data.data.userId,
-        //   role: response.data.data.role,
-        //   isLoggedIn: true
-        // }
-        // login(userData);
         router.push('/dashboard');
       }
     } catch (error) {
@@ -49,6 +53,48 @@ const SigninForm = function () {
     } finally {
       setLoading(false);
     }
+  }
+
+  const handlePhoneVerificationSuccess = async (phone: string) => {
+    setIsPhoneNumberLoading(true);
+    try {
+      setPhoneNumber(phone); // Store the verified phone number
+      if (!recaptchaVerifier) {
+          throw new Error(`reCAPTCHA  verifier not initialized`);
+      }
+      // Send OTP to the provided phone number 
+      const result = await signInWithPhoneNumber(auth, `+91 ${phone}`, recaptchaVerifier);
+      setConfirmationResult(result);
+
+      setIsPhoneNumberVerificationModalOpen(false); // Close the phone verification modal
+      setIsOtpModalOpen(true); // Open the OTP confirmation modal
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      handleFailure((error as Error).message || "Failed to send OTP");
+    } finally {
+      setIsPhoneNumberLoading(false);
+    }
+  };
+
+  const handleOTPVerificationSuccess = () => {
+    setIsOTPLoading(true); 
+    try {
+      setIsOtpModalOpen(false) // Close the OTP confirmation modal
+      setIsResetPasswordModalOpen(true);
+      console.log(`Reset Password Modal is Openened`);
+    } catch (error) {
+      
+    } finally {
+      setIsOTPLoading(false);
+    }
+  }
+
+  const handleFailure = (message: string) => {
+    setIsPhoneNumberVerificationModalOpen(false);
+    setIsOtpModalOpen(false);
+    setIsResetPasswordModalOpen(false);
+    router.push('/login');
+    toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
   }
   
   return (
@@ -118,20 +164,23 @@ const SigninForm = function () {
             </form>
           
             {/* Remember Me and Forgot Password */}
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center justify-center mt-4">
               <a
-                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsPhoneNumberVerificationModalOpen(true);
+                }}
                 className="text-sm text-blue-600 font-normal font-['Poppins',Helvetica]"
               >
                 Forgot password?
               </a>
             
-              <a
+              {/* <a
                 href="#"
                 className="text-sm text-blue-600 font-normal font-['Poppins',Helvetica]"
               >
-                I need more options
-              </a>
+                Use Passkey
+              </a> */}
             </div>
 
             <div className="mt-4 text-center">
@@ -140,8 +189,33 @@ const SigninForm = function () {
                 Sign Up
               </a>
             </div>
+          
+            {/* Hidden reCAPTCHA Container */}
+            <RecaptchaComponent onRecaptchaInit={(verifier) => setRecaptchaVerifier(verifier)} />
           </CardContent>
         </Card>
+      
+        {/* Phone Number Verification Modal */}
+        {isPhoneNumberVerificationModalOpen && (
+          <PhoneNumberVerificationModal
+            onClose={() => setIsPhoneNumberVerificationModalOpen(false)}
+            onSuccess={handlePhoneVerificationSuccess}
+            onFailure={handleFailure}
+            isLoading={isPhoneNumberLoading}
+          />
+        )}
+      
+        {/* OTP Verification Modal */}
+        {isOtpModalOpen && (
+          <ResetPasswordOtpVerificationModal
+            onClose={() => setIsOtpModalOpen(false)}
+            onSuccess={handleOTPVerificationSuccess}
+            onFailure={handleFailure}
+            phoneNumber={phoneNumber}
+            confirmationResult={confirmationResult}
+            isLoading={isOTPLoading}
+          />
+        )}
     </>
   ) 
 };

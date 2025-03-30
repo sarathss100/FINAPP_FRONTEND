@@ -26,3 +26,11 @@ export const signInSchema = z.object({
 
 // Infer the type from the schema
 export type SignInFormValues = z.infer<typeof signInSchema>;
+
+
+export const PhoneNumberVerifySchema = z.object({
+    phone_number: z.string().regex(/^\d{10}$/, { message: 'Phone number must be exactly 10 digits' }),
+});
+
+// Infer the type from the schema
+export type PhoneNumberFormValues = z.infer<typeof PhoneNumberVerifySchema>;

@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Public routes that don't require authentication
-    const publicRoutes = ['/signin', '/login', '/signup'];
+    const publicRoutes = ['/signin', '/login', '/signup', '/'];
 
     // Admin-only routes
     const adminRoutes = ['/admin/dashboard', '/admin/settings'];

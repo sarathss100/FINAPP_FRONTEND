@@ -11,13 +11,13 @@ import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
 import React, { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
-import { useUserStore } from '@/stores/store';
-import IUser from '@/stores/interfaces/IUser';
+// import { useUserStore } from '@/stores/store';
+// import IUser from '@/stores/interfaces/IUser';
 import ISigninResponse from '@/types/ISigninResponse';
 
 const SigninForm = function () {
   const [loading, setLoading] = useState(false);
-  const { login } = useUserStore();
+  // const { login } = useUserStore();
 
   const {
     register,
@@ -33,12 +33,12 @@ const SigninForm = function () {
       const response = await apiClient.post<ISigninResponse>(`api/v1/auth/signin`, data);
 
       if (response.data.success) {
-        const userData: IUser = {
-          userId: response.data.data.userId,
-          role: response.data.data.role,
-          isLoggedIn: true
-        }
-        login(userData);
+        // const userData: IUser = {
+        //   userId: response.data.data.userId,
+        //   role: response.data.data.role,
+        //   isLoggedIn: true
+        // }
+        // login(userData);
         window.location.href = '/dashboard';
       }
     } catch (error) {

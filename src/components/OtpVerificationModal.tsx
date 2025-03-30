@@ -5,8 +5,8 @@ import Input from './Input';
 import { Card, CardContent } from './Card';
 import Image from 'next/image';
 import apiClient from '../lib/apiClient';
-import { useUserStore } from '@/stores/store';
-import IUser from '@/stores/interfaces/IUser';
+// import { useUserStore } from '@/stores/store';
+// import IUser from '@/stores/interfaces/IUser';
 import ISignupResponse from '@/types/ISignupResponse';
 
 // OTP Verification Modal Component
@@ -21,7 +21,7 @@ const OtpVerificationModal = ({
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(180);
   const [canResend, setCanResend] = useState(false);
-  const { login } = useUserStore();
+  // const { login } = useUserStore();
 
   // Combine OTP values into a single string
   const getOtp = () => otpValues.join('');
@@ -81,13 +81,13 @@ const OtpVerificationModal = ({
       const confirmation = await confirmationResult.confirm(otp);
 
       if (confirmation) {
-        const response = await apiClient.post<ISignupResponse>(`api/v1/auth/signup`, formData);
-        const userData: IUser = {
-          userId: response.data.data.userId,
-          role: response.data.data.role,
-          isLoggedIn: true,
-        };
-        login(userData);
+        await apiClient.post<ISignupResponse>(`api/v1/auth/signup`, formData);
+        // const userData: IUser = {
+        //   userId: response.data.data.userId,
+        //   role: response.data.data.role,
+        //   isLoggedIn: true,
+        // };
+        // login(userData);
 
         window.location.href = '/dashboard';
       }

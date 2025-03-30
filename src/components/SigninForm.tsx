@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { Card, CardContent } from './Card';
 import Image from 'next/image';
 import Button from './button';
@@ -14,10 +14,12 @@ import { toast } from 'react-toastify';
 // import { useUserStore } from '@/stores/store';
 // import IUser from '@/stores/interfaces/IUser';
 import ISigninResponse from '@/types/ISigninResponse';
+import { useRouter } from 'next/navigation';
 
 const SigninForm = function () {
   const [loading, setLoading] = useState(false);
   // const { login } = useUserStore();
+  const router = useRouter();
 
   const {
     register,
@@ -39,7 +41,7 @@ const SigninForm = function () {
         //   isLoggedIn: true
         // }
         // login(userData);
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }
     } catch (error) {
       console.log(`Error during sign-in:`, error);

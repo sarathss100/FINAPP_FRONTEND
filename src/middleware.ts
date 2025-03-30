@@ -29,14 +29,15 @@ export async function middleware(request: NextRequest) {
     }
 
     const isAuthenticated = user?.isLoggedIn;
+    if (!isAuthenticated) request.cookies.delete('accessToken');
     const accessToken = request.cookies.get('accessToken')?.value;
-    
+
     // Redirect authenticated users from public routes to the dashboad
     if (isAuthenticated && publicRoutes.includes(pathname)) {
         const role = user?.role || 'user';
         const redirectPath = role === 'admin' ? '/admin/dashboard' : '/dashboard';
         return NextResponse.redirect(new URL(redirectPath, request.url));
-    }
+    } 
 
     // Allow access to public routes for unauthenticated users
     if (publicRoutes.includes(pathname)) {
@@ -55,7 +56,6 @@ export async function middleware(request: NextRequest) {
             });
 
             const data = response.data as IVerifyTokenResponse;
-            console.log(data);
         
             // if (data.data.decodedData.newAccessToken) {
             //     const nextResponse = NextResponse.next();

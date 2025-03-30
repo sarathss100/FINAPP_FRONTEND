@@ -11,17 +11,40 @@ import {
   ReceiptIcon,
   BellIcon,
   FileTextIcon,
-  SettingsIcon
+  SettingsIcon,
+  LogOutIcon
 } from "lucide-react";
 import { useState } from "react";
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useUserStore } from '@/stores/store';
+import Cookies from 'js-cookie';
+import apiClient from '@/lib/apiClient';
 
 export const UserSideBar = () => {
   const router = useRouter();
   const pathName = usePathname();
   // State to toggle sidebar visibility
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Zustand store actions 
+  const { logout } = useUserStore();
+
+  // Function to handle sign out
+  const handleSignOut = async function () {
+    // Send logout request to backend 
+    await apiClient.post(`api/v1/auth/signout`);
+
+    // Clear client-side cookies
+    Cookies.remove('accessToken');
+    Cookies.remove('userMetaData');
+
+    // Reset Zustand state
+    logout();
+
+    // Redirect to login page
+    router.push('/login');
+  }
 
   // Navigation items data for easy mapping
   const navItems = [
@@ -120,7 +143,7 @@ export const UserSideBar = () => {
       </div>
 
       {/* Navigation Section */}
-      <nav className="mt-6 px-6 flex flex-col space-y-4 overflow-hidden">
+      <nav className="mt-3 px-6 flex flex-col space-y-4 overflow-hidden">
         {navItems.map((item, index) => {
           const isActive = pathName === item.route
           return (
@@ -145,6 +168,21 @@ export const UserSideBar = () => {
           )
         })}
       </nav>
+
+      {/* Sign Out Button */}
+      <button
+        onClick={handleSignOut}
+        className='mt-auto flex items-center rounded-lg h-12 pl-8 hover:bg-[#005d99] tansition-colors'
+      >
+        <span className='flex items-center justify-center text-white'>
+          <LogOutIcon/>
+        </span>
+        <span
+          className={`ml-2 font-['Poppins', Helvetica] font-normal text-base text-white ${!isSidebarOpen && 'hidden'}`}
+        >
+          Sign Out
+        </span>
+      </button>
 
       {/* Toggle Button */}
       <button

@@ -11,10 +11,13 @@ import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
 import React, { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
+import { useUserStore } from '@/stores/store';
+import IUser from '@/stores/interfaces/IUser';
+import ISigninResponse from '@/types/ISigninResponse';
 
 const SigninForm = function () {
-  const [formData, setFormData] = useState<SignInFormValues | null>(null);
   const [loading, setLoading] = useState(false);
+  const { login } = useUserStore();
 
   const {
     register,
@@ -27,19 +30,20 @@ const SigninForm = function () {
   const onSubmit: SubmitHandler<SignInFormValues> = async (data) => {
     try {
       setLoading(true);
-      setFormData(data);
-      const response = await apiClient.post(`api/v1/auth/signin`, formData);
-      
-      if (response.status === 200) {
+      const response = await apiClient.post<ISigninResponse>(`api/v1/auth/signin`, data);
+
+      if (response.data.success) {
+        const userData: IUser = {
+          userId: response.data.data.userId,
+          role: response.data.data.role,
+          isLoggedIn: true
+        }
+        login(userData);
         window.location.href = '/dashboard';
-      } else {
-        toast.error(response.data.error || `An error occured during SignIn`);
       }
-      // login(userData);
-    } catch (error: any) {
-      if (error.response.data.message) {
-        toast.error(error.response.data.message || `An error occured during SignIn`)
-      }
+    } catch (error) {
+      console.log(`Error during sign-in:`, error);
+      toast.error(error?.response?.data?.message || `An error occured during SignIn`)
     } finally {
       setLoading(false);
     }

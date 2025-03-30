@@ -1,3 +1,4 @@
+"use client";
 import { UserSideBar } from '@/components/usersidebar/UserSideBar';
 
 const Dashboard = function () {

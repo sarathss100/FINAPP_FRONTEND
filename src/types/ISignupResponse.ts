@@ -1,4 +1,3 @@
-
 interface ISignupResponse {
     data: {
         userId: string;

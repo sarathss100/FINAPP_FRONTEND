@@ -1,5 +1,5 @@
 "use client";
-import { BellIcon, LockIcon, ShieldIcon, SearchIcon } from "lucide-react";
+import { BellIcon, LockIcon, ShieldIcon, SearchIcon, ReceiptRussianRuble } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Avatar } from '../avatar';
 import Button from '../button';
@@ -7,26 +7,50 @@ import { Card, CardContent, CardHeader, CardTitle } from '../Card';
 import Input from '../Input';
 import { Switch } from '@radix-ui/react-switch';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
+import { useUserStore } from '@/stores/store';
+import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import auth from '@/lib/firebaseConfig';
+import RecaptchaComponent from '../RecaptchaComponent';
+import ResetPasswordModal from '../forgetpassword/ResetPasswordModal';
+import ResetPasswordOtpVerificationModal from '../forgetpassword/ResetPasswordOtpVerificationModal';
+import PhoneNumberVerificationModal from '../forgetpassword/PhoneNumberVerificationModal';
 
 export const ProfileBody = function () {
-  const [userData, setUserData] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-  });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPhoneNumberVerificationModalOpen, setIsPhoneNumberVerificationModalOpen] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
+  const [isPhoneNumberLoading, setIsPhoneNumberLoading] = useState(false);
+  const [isOTPLoading, setIsOTPLoading] = useState(false);
+  const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const router = useRouter();
+
+  // Access Zustand store's state and actions
+  const { user, login } = useUserStore();
 
   useEffect(() => {
     const fetchUserData = async () => {
+      // Check if user data already exists in Zustand
+      if (user) {
+        setLoading(false); // No need to fetch, data already exists
+        return;
+      }
+
       setLoading(true);
       try {
         const response = await apiClient.get('/api/v1/user/profile');
-
         if (response.data.success) {
-          setUserData(response.data.user);
+          const userData = response.data.data;
+
+          // Update Zustand store with user data
+          login(userData);
         } else {
           setErrorMap(response.data.message || `Failed to fetch user data`);
         }
@@ -39,49 +63,104 @@ export const ProfileBody = function () {
     fetchUserData();
   }, []);
 
+  const handlePhoneVerificationSuccess = async (phone: string) => {
+    setIsPhoneNumberLoading(true);
+    try {
+      setPhoneNumber(phone); // Store the verified phone number
+      if (!recaptchaVerifier) {
+          throw new Error(`reCAPTCHA  verifier not initialized`);
+      }
+      // Send OTP to the provided phone number 
+      const result = await signInWithPhoneNumber(auth, `+91 ${phone}`, recaptchaVerifier);
+      setConfirmationResult(result);
+
+      setIsPhoneNumberVerificationModalOpen(false); // Close the phone verification modal
+      setIsOtpModalOpen(true); // Open the OTP confirmation modal
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      handleFailure((error as Error).message || "Failed to send OTP");
+    } finally {
+      setIsPhoneNumberLoading(false);
+    }
+  };
+
+  const handleOTPVerificationSuccess = () => {
+    setIsOTPLoading(true); 
+    try {
+      setIsOtpModalOpen(false) // Close the OTP confirmation modal
+      setIsResetPasswordModalOpen(true);
+    } catch (error) {
+      console.error("Fail to verify OTP:", error);
+      handleFailure((error as Error).message || "Failed to verify OTP");
+    } finally {
+      setIsOTPLoading(false);
+    }
+  }
+
+  const handleResetPasswordSuccess = (message: string) => {
+    setIsResetPasswordLoading(true);
+    try {
+      toast.success(message);
+      setIsResetPasswordModalOpen(false);
+    } catch (error) {
+      console.error("Fail to Reset the Password:", error);
+      handleFailure((error as Error).message || "Failed to Reset the Password");
+    } finally {
+      setIsResetPasswordLoading(false);
+    }
+  }
+
+  const handleFailure = (message: string) => {
+    setIsPhoneNumberVerificationModalOpen(false);
+    setIsOtpModalOpen(false);
+    setIsResetPasswordModalOpen(false);
+    router.push('/login');
+    toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
+  }
+
   // Connected accounts data
-  const connectedAccounts = [
-    {
-      name: "Google",
-      status: "Not connected",
-      icon: "/frame-3.svg",
-      connected: true,
-    },
-    {
-      name: "Apple",
-      status: "Not connected",
-      icon: "/frame-2.svg",
-      connected: false,
-    },
-  ];
+  // const connectedAccounts = [
+  //   {
+  //     name: "Google",
+  //     status: "Not connected",
+  //     icon: "/frame-3.svg",
+  //     connected: true,
+  //   },
+  //   {
+  //     name: "Apple",
+  //     status: "Not connected",
+  //     icon: "/frame-2.svg",
+  //     connected: false,
+  //   },
+  // ];
 
   // Family members data
-  const familyMembers = [
-    {
-      title: "Show Accounts",
-      description: "Add on accounts",
-      action: "Show Related Acconts",
-    },
-    {
-      title: "Remove add on Account",
-      description: "Remoces Add On Accounts",
-      action: "Delete Account",
-    },
-  ];
+  // const familyMembers = [
+  //   {
+  //     title: "Show Accounts",
+  //     description: "Add on accounts",
+  //     action: "Show Related Acconts",
+  //   },
+  //   {
+  //     title: "Remove add on Account",
+  //     description: "Remoces Add On Accounts",
+  //     action: "Delete Account",
+  //   },
+  // ];
 
   // Account management data
-  const accountManagement = [
-    {
-      title: "Back up Data",
-      description: "Export Data",
-      action: "Export / Import",
-    },
-    {
-      title: "Delete Account",
-      description: "Destroy Data",
-      action: "Delete Account",
-    },
-  ];
+  // const accountManagement = [
+  //   {
+  //     title: "Back up Data",
+  //     description: "Export Data",
+  //     action: "Export / Import",
+  //   },
+  //   {
+  //     title: "Delete Account",
+  //     description: "Destroy Data",
+  //     action: "Delete Account",
+  //   },
+  // ];
 
   if (loading) {
     return (
@@ -117,8 +196,8 @@ export const ProfileBody = function () {
       </div>
     );
   }
-  
-  return (
+
+    return (
     <main className="max-w-[1184px] mx-auto p-8 font-sans">
       {/* Header with search and profile */}
       <header className="flex justify-between items-center mb-6">
@@ -164,8 +243,9 @@ export const ProfileBody = function () {
                 First Name
               </label>
               <Input
-                defaultValue={userData.firstName}
-                className="h-[42px] font-normal text-base"
+                defaultValue={user?.firstName}
+                  className="h-[42px] font-normal text-base"
+                  readOnly
               />
             </div>
             <div className="space-y-2">
@@ -173,8 +253,9 @@ export const ProfileBody = function () {
                 Last Name
               </label>
               <Input
-                defaultValue={userData.lastName}
+                defaultValue={user?.lastName}
                 className="h-[42px] font-normal text-base"
+                readOnly
               />
             </div>
           </div>
@@ -184,8 +265,9 @@ export const ProfileBody = function () {
               Phone Number
             </label>
             <Input
-              defaultValue={userData.phone}
+              defaultValue={user?.phoneNumber}
               className="h-[42px] font-normal text-base"
+              readOnly
             />
           </div>
         </CardContent>
@@ -205,12 +287,15 @@ export const ProfileBody = function () {
                 <LockIcon className="h-4 w-4 mt-1" />
                 <div>
                   <p className="font-medium text-base">Password</p>
-                  <p className="text-sm text-gray-500">
-                    Last changed 3 months ago
-                  </p>
                 </div>
               </div>
-              <Button className="text-blue bg-gray-100 hover:bg-gray-200 focus:outline-none">
+                <Button
+                  className="text-blue bg-gray-100 hover:bg-gray-200 focus:outline-none"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsPhoneNumberVerificationModalOpen(true);
+                  }}
+                >
                 Change Password
               </Button>
             </div>
@@ -229,7 +314,9 @@ export const ProfileBody = function () {
               </div>
               <Switch />
             </div> */}
-          </div>
+            </div>
+            {/* Hidden reCAPTCHA Container */}
+            <RecaptchaComponent onRecaptchaInit={(verifier) => setRecaptchaVerifier(verifier)} />
         </CardContent>
       </Card>
 
@@ -338,6 +425,39 @@ export const ProfileBody = function () {
           </div>
         </CardContent>
       </Card> */}
+        
+        {/* Phone Number Verification Modal */}
+        {isPhoneNumberVerificationModalOpen && (
+          <PhoneNumberVerificationModal
+            onClose={() => setIsPhoneNumberVerificationModalOpen(false)}
+            onSuccess={handlePhoneVerificationSuccess}
+            onFailure={handleFailure}
+            isLoading={isPhoneNumberLoading}
+          />
+        )}
+      
+        {/* OTP Verification Modal */}
+        {isOtpModalOpen && (
+          <ResetPasswordOtpVerificationModal
+            onClose={() => setIsOtpModalOpen(false)}
+            onSuccess={handleOTPVerificationSuccess}
+            onFailure={handleFailure}
+            phoneNumber={phoneNumber}
+            confirmationResult={confirmationResult}
+            isLoading={isOTPLoading}
+          />
+        )}
+      
+        {/* Password Reset Modal */}
+        {isResetPasswordModalOpen && (
+          <ResetPasswordModal
+            onClose={() => setIsResetPasswordModalOpen(false)}
+            onSuccess={handleResetPasswordSuccess}
+            onFailure={handleFailure}
+            phoneNumber={phoneNumber}
+            isLoading={isResetPasswordLoading}
+          />
+        )}
     </main>
   );
 };

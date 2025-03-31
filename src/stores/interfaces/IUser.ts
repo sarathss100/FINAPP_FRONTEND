@@ -1,8 +1,9 @@
 
 interface IUser {
     userId: string,
-    role: string,
-    isLoggedIn: boolean
+    firstName: string,
+    lastName: string;
+    phoneNumber: string;
 }
 
 export default IUser;

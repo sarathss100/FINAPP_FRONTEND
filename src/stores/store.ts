@@ -7,7 +7,7 @@ export const useUserStore = create<IUserState>()(
     persist(
         (set) => ({
             user: null,
-            login: (userData: IUser) => set(() => ({ user: { ...userData, isLoggedIn: true } })),
+            login: (userData: IUser) => set(() => ({ user: { ...userData } })),
             logout: () => set(() => ({ user: null }))
         }),
         {

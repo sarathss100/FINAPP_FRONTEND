@@ -1,17 +1,15 @@
 "use client";
 import {
   BanIcon,
-  BellIcon,
   ClockIcon,
   EditIcon,
-  EyeIcon,
   PlusIcon,
   SearchIcon,
   Trash2Icon,
   UserCheckIcon,
   UsersIcon,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge } from 'lucide-react';
 import Button from '@/components/button';
 import { Card, CardContent } from '@/components/Card';
@@ -25,56 +23,47 @@ import {
   TableHeader,
   TableRow,
 } from "./table";
+import apiClient from '@/lib/apiClient';
 
 export const UserManagementBody = () => {
-  // User data for the table
-  const allUsers = [
-    {
-      id: 1,
-      name: "John Doe",
-      group: "User",
-      phone: "1234567890",
-      status: true,
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      group: "User",
-      phone: "1234567890",
-      status: true,
-      },
-      {
-      id: 3,
-      name: "John Doe",
-      group: "User",
-      phone: "1234567890",
-      status: true,
-      },
-      {
-      id: 4,
-      name: "John Doe",
-      group: "User",
-      phone: "1234567890",
-      status: true,
-      },
-      {
-      id: 5,
-      name: "John Doe",
-      group: "User",
-      phone: "1234567890",
-      status: false,
-    },
-  ];
+  // State for users, loading, and error 
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
-  const totalPages = Math.ceil(allUsers.length / itemsPerPage);
 
-  // Get current users
+  // Fetch data from the backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await apiClient.get('/api/v1/admin/all-users');
+        console.log(response.data)
+        if (response.data.success) {
+          setUsers(Object.values(response.data.data));
+        } else {
+          setError(response.data.data.message || "Failed to fetch users.");
+        }
+      } catch (error) {
+        setError((err as Error).message || "An unexpected error occurred while fetching users.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUsers();
+  }, []);
+
+  console.log(users);
+
+  // Pagination state
+  const totalPages = Math.ceil(users.length / itemsPerPage);
   const indexOfLastUser = currentPage * itemsPerPage;
   const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
 
   // Stats data
   const stats = [
@@ -107,6 +96,43 @@ export const UserManagementBody = () => {
       icon: <BanIcon className="w-[22.5px] h-5" />,
     },
   ];
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <svg
+          className="animate-spin h-10 w-10 text-blue-500"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0012 20c4.411 0 8-3.589 8-8H4c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3z"
+          ></path>
+        </svg>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500 text-lg">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -175,23 +201,23 @@ export const UserManagementBody = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentUsers.map((user) => (
+            {currentUsers.map((user, index) => (
               <TableRow key={user.id} className="h-[72px]">
                 <TableCell className="py-4 text-center align-middle">
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="font-medium text-base">{user.id}</p>
+                      <p className="font-medium text-base">{1000 + index}</p>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="font-normal text-base">
-                  {user.name}
+                  {`${user.firstName} ${user.lastName}`}
                 </TableCell>
                 <TableCell className="font-normal text-base">
-                  {user.group}
+                  {user.status ? 'Active' : 'Blocked'}
                 </TableCell>
                 <TableCell className="font-normal text-base">
-                  {user.phone}
+                  {user.phoneNumber}
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -228,7 +254,7 @@ export const UserManagementBody = () => {
         <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-700">
-              Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, allUsers.length)} of {allUsers.length} entries
+              Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, users.length)} of {users.length} entries
             </span>
           </div>
           <div className="flex items-center gap-2">

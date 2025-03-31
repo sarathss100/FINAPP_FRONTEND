@@ -1,19 +1,43 @@
+"use client";
 import { BellIcon, LockIcon, ShieldIcon, SearchIcon } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar } from '../avatar';
 import Button from '../button';
 import { Card, CardContent, CardHeader, CardTitle } from '../Card';
 import Input from '../Input';
 import { Switch } from '@radix-ui/react-switch';
 import Image from 'next/image';
+import apiClient from '@/lib/apiClient';
 
 export const ProfileBody = function () {
-  // Dummy for form fields
-  const userInfo = {
-    firstName: "John",
-    lastName: "Doe",
-    phone: "+1 (555) 123-4567",
-  };
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+      try {
+        const response = await apiClient.get('/api/v1/user/profile');
+
+        if (response.data.success) {
+          setUserData(response.data.user);
+        } else {
+          setErrorMap(response.data.message || `Failed to fetch user data`);
+        }
+      } catch (error) {
+        setError((error as Error).message || `An occured while fetchnig user data`)
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   // Connected accounts data
   const connectedAccounts = [
@@ -59,6 +83,41 @@ export const ProfileBody = function () {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <svg
+          className="animate-spin h-10 w-10 text-blue-500"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0012 20c4.411 0 8-3.589 8-8H4c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3z"
+          ></path>
+        </svg>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500 text-lg">{error}</p>
+      </div>
+    );
+  }
+  
   return (
     <main className="max-w-[1184px] mx-auto p-8 font-sans">
       {/* Header with search and profile */}
@@ -75,12 +134,9 @@ export const ProfileBody = function () {
 
         <div className="flex items-center gap-4">
           <div className="relative">
-            <BellIcon className="h-4 w-3.5" />
+            <BellIcon className="h-6 w-6" />
             <span className="absolute w-2 h-2 top-0 right-0 bg-red-500 rounded-full" />
           </div>
-          <Avatar className="h-10 w-10">
-            <Image src="/img.png" alt="User profile" width={16} height={16} />
-          </Avatar>
         </div>
       </header>
 
@@ -108,7 +164,7 @@ export const ProfileBody = function () {
                 First Name
               </label>
               <Input
-                defaultValue={userInfo.firstName}
+                defaultValue={userData.firstName}
                 className="h-[42px] font-normal text-base"
               />
             </div>
@@ -117,7 +173,7 @@ export const ProfileBody = function () {
                 Last Name
               </label>
               <Input
-                defaultValue={userInfo.lastName}
+                defaultValue={userData.lastName}
                 className="h-[42px] font-normal text-base"
               />
             </div>
@@ -128,7 +184,7 @@ export const ProfileBody = function () {
               Phone Number
             </label>
             <Input
-              defaultValue={userInfo.phone}
+              defaultValue={userData.phone}
               className="h-[42px] font-normal text-base"
             />
           </div>

@@ -17,7 +17,7 @@ const Header = function ({ isSignupPage }: { isSignupPage: boolean }) {
             <div className="container mx-auto h-full px-6">
                 <div className="flex items-center justify-between h-full">
                     <Link
-                        href={'/home'}
+                        href={'/'}
                         passHref
                     >
                         <div className="flex items-center justify-between h-full">

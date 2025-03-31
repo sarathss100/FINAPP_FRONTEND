@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
     const publicRoutes = ['/signin', '/login', '/signup', '/'];
 
     // Admin-only routes
-    const adminRoutes = ['/admin/dashboard', '/admin/settings'];
+    const adminRoutes = ['/admin/dashboard', '/admin/user-management', '/admin/analytics-reports', '/admin/content-management', '/admin/system-overview', '/admin/system-settings'];
 
     const extractedUserData: string | undefined = request.cookies.get('userMetaData')?.value;
 
@@ -29,7 +29,6 @@ export async function middleware(request: NextRequest) {
     }
 
     const isAuthenticated = user?.isLoggedIn;
-    if (!isAuthenticated) request.cookies.delete('accessToken');
     const accessToken = request.cookies.get('accessToken')?.value;
 
     // Redirect authenticated users from public routes to the dashboad
@@ -72,6 +71,14 @@ export async function middleware(request: NextRequest) {
             if (adminRoutes.includes(pathname) && role !== 'admin') {
                 // Redirect non-admin users attempting to access admin routes
                 return NextResponse.redirect(new URL('/unauthorized', request.url));
+            } else if (role === 'admin') {
+                console.log(`Comes Here`);
+                if (adminRoutes.includes(pathname)) {
+                    // If the token is valid, allow access to the protected route
+                    return NextResponse.next({ request: { headers: request.headers }});
+                } else {
+                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+                }
             }
             
             // If the token is valid, allow access to the protected route

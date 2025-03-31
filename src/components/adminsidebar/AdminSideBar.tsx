@@ -6,46 +6,65 @@ import {
   MonitorIcon,
   SettingsIcon,
   UsersIcon,
+  LogOutIcon
 } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from 'next/router';
+import { usePathname, useRouter } from 'next/navigation';
+import { useUserStore } from '@/stores/store';
+import apiClient from '@/lib/apiClient';
 
 export const AdminSideBar = () => {
   const router = useRouter();
+  const pathName = usePathname();
   // State to toggle sidebar visibility
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Zustand store actions 
+  const { logout } = useUserStore();
+
+  // Function to handle sign out
+  const handleSignOut = async function () {
+    // Send logout request to backend 
+    await apiClient.post(`api/v1/auth/signout`);
+
+    // Reset Zustand state
+    logout();
+
+    // Redirect to login page
+    router.push('/login');
+  }
 
   // Navigation items data for easy mapping
   const navItems = [
     {
       icon: <LayoutDashboardIcon className="h-4 w-4" />,
       label: "Dashboard",
-      route: "/dashboard"
+      route: "/admin/dashboard"
     },
     {
       icon: <UsersIcon className="h-4 w-4" />,
       label: "User Management",
-      route: "/user-management"
+      route: "/admin/user-management"
     },
     {
       icon: <BarChartIcon className="h-4 w-4" />,
       label: "Analytics & Reports",
-      route: "/analytics-reports"
+      route: "/admin/analytics-reports"
     },
     {
       icon: <FileTextIcon className="h-4 w-4" />,
       label: "Content Management",
-      route: "/content-management"
+      route: "/admin/content-management"
     },
     {
       icon: <MonitorIcon className="h-4 w-4" />,
       label: "System Overview",
-      route: "/system-overview"
+      route: "/admin/system-overview"
     },
     {
       icon: <SettingsIcon className="h-4 w-4" />,
       label: "System Settings",
-      route: "/system-settings"
+      route: "/admin/system-settings"
     },
   ];
 
@@ -63,14 +82,14 @@ export const AdminSideBar = () => {
             !isSidebarOpen && "hidden"
           }`}
         >
-          Admin Dashboard
+          Admin Dashboard 
         </h1>
       </div>
 
       {/* Navigation Section */}
-      <nav className="mt-6 px-6 flex flex-col space-y-4 overflow-hidden">
+      <nav className="mt-3 px-6 flex flex-col space-y-4 overflow-hidden">
         {navItems.map((item, index) => {
-          const isActive = router.pathname === item.route
+          const isActive = pathName === item.route
           return (
             <button
               key={index}
@@ -94,10 +113,25 @@ export const AdminSideBar = () => {
         })}
       </nav>
 
+      {/* Sign Out Button */}
+      <button
+        onClick={handleSignOut}
+        className='mt-auto flex items-center rounded-lg h-12 pl-8 hover:bg-[#005d99] tansition-colors'
+      >
+        <span className='flex items-center justify-center text-white'>
+          <LogOutIcon/>
+        </span>
+        <span
+          className={`ml-2 font-['Poppins', Helvetica] font-normal text-base text-white ${!isSidebarOpen && 'hidden'}`}
+        >
+          Sign Out
+        </span>
+      </button>
+
       {/* Toggle Button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="absolute bottom-4 left-4 p-2 bg-[#00a9e0] rounded-full hover:bg-[#008dc4] transition-colors"
+        className="absolute bottom-2 left-1 bg-[#00a9e0] rounded-full hover:bg-[#008dc4] transition-colors"
       >
         {isSidebarOpen ? (
           <svg

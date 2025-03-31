@@ -1,4 +1,5 @@
 
+import { UserManagementBody } from '@/components/admin/user-management/UserManagement';
 import { AdminSideBar } from '@/components/adminsidebar/AdminSideBar';
 
 const UserManagement = function () {
@@ -7,8 +8,7 @@ const UserManagement = function () {
             <AdminSideBar />
             <main className={`flex-1 bg-gray-100 transition-all duration-300`}>
                 <div className='p-6'>
-                  <h1 className='text-2xl font-bold'>User Management</h1>
-                  <p>For Test Purpose</p>
+                  <UserManagementBody />
                 </div>
             </main>
         </div>

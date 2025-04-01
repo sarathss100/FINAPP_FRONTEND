@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
             });
 
             const data = response.data as IVerifyTokenResponse;
-        
+            
             // if (data.data.decodedData.newAccessToken) {
             //     const nextResponse = NextResponse.next();
             //     nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {

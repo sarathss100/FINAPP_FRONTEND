@@ -24,6 +24,15 @@ import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
 import IAdminUserDetails from '@/types/IAdminUserDetails';
 
+// Material-UI imports
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button as MUIButton
+} from "@mui/material";
+
 export const UserManagementBody = () => {
   // State for users, loading, and error 
   const [users, setUsers] = useState<IAdminUserDetails[]>([]);
@@ -33,6 +42,10 @@ export const UserManagementBody = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
+
+  // State for confirmation modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userToToggle, setUserToToggle] = useState<{ userId: string, currentStatus: boolean } | null>(null);
 
   // Fetch data from the backend
   useEffect(() => {
@@ -55,31 +68,49 @@ export const UserManagementBody = () => {
     fetchUsers();
   }, []);
 
+  // Pagination state
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const indexOfLastUser = currentPage * itemsPerPage;
+  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+
+  // Handle block/unblock confirmation modal
+  const openConfirmationModal = (userId: string, currentStatus: boolean) => {
+    setUserToToggle({ userId, currentStatus });
+    setIsModalOpen(true);
+  };
+
+  const closeConfirmationModal = () => {
+    setUserToToggle(null);
+    setIsModalOpen(false);
+  };
+
   // Function to block/unblock a user
-  const handleBlockUnblock = async (userId: string, currentStatus: boolean) => {
+  const handleBlockUnblock = async () => {
+    if (!userToToggle) return; 
+    
     try {
-      // Send API request to toggle user status
+      const { userId, currentStatus } = userToToggle;
       const newStatus = !currentStatus; // Toggle status
+
+      // Send API request to toggle user status
       await apiClient.post(`/api/v1/admin/toggle-user-status`, { userId, status: newStatus });
 
       // Update the users state locally
       setUsers((prevUsers) => 
         prevUsers.map((user) => 
-          user._id === userId ? { ...user, status: newStatus }: user
+          user.userId=== userId ? { ...user, status: newStatus }: user
         )
       );
+
+      // Close the modal and show success toast;
+      closeConfirmationModal();
       toast.success(`User ${newStatus ? "unblocked" : "blocked"} successfully.`);
     } catch (error) {
       console.error(`Error toggling user status:`, (error as Error).message);
       toast.error(`Failed to toggle user status. Please try again`);
     }
   }
-
-  // Pagination state
-  const totalPages = Math.ceil(users.length / itemsPerPage);
-  const indexOfLastUser = currentPage * itemsPerPage;
-  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
 
   // Handle loading state
   if (loading) {
@@ -120,6 +151,24 @@ export const UserManagementBody = () => {
 
   return (
     <>
+      {/* Confirmation Modal using Material-UI */}
+      <Dialog open={isModalOpen} onClose={closeConfirmationModal}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <p>
+            Are you sure you want to{" "}
+            {userToToggle?.currentStatus ? "block" : "unblock"} this user?
+          </p>
+        </DialogContent>
+        <DialogActions>
+          <MUIButton onClick={closeConfirmationModal} color="secondary">
+            Cancel
+          </MUIButton>
+          <MUIButton onClick={handleBlockUnblock} variant="contained" color="primary">
+            Confirm
+          </MUIButton>
+        </DialogActions>
+      </Dialog>
 
       {/* User search and filters */}
       <Card className="mb-6 shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]">
@@ -185,7 +234,7 @@ export const UserManagementBody = () => {
           </TableHeader>
           <TableBody>
             {currentUsers.map((user, index) => (
-              <TableRow key={user._id} className="h-[72px]">
+              <TableRow key={user.userId} className="h-[72px]">
                 <TableCell className="py-4 text-center align-middle">
                   <div className="flex items-center gap-3">
                     <div>
@@ -228,7 +277,7 @@ export const UserManagementBody = () => {
                     </Button> */}
                     <Button
                       className={`h-8 w-24 rounded-lg ${user.status ? "bg-red-500 text-white" : "bg-green-500 text-white"}`}
-                      onClick = {() => handleBlockUnblock(user._id, user.status)}
+                      onClick = {() => openConfirmationModal(user.userId, user.status)}
                     >
                       { user.status ? "Block" : "Unblock" }
                     </Button>

@@ -33,11 +33,18 @@ const SignupForm = function () {
   });
 
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
+
     try {
       setLoading(true);
       setFormData(data);
-      const response = await apiClient.post(`api/v1/auth/verify-phonenumber`, { phoneNumber: data.phone_number });
-      if (response.status === 200) throw new Error(`An account with this Phone Number already exists. Please log in or use a different Phone Number.`);
+      try {
+        const response = await apiClient.post(`api/v1/auth/verify-phonenumber`, { phoneNumber: data.phone_number });
+        if (response.status === 200) toast.error(`An account with this Phone Number already exists. Please log in or use a different Phone Number.`);
+        return 
+      } catch (error) {
+        if (error) { };
+      }
+      
       if (!recaptchaVerifier) {
         throw new Error(`reCAPTCHA  verifier not initialized`);
       }

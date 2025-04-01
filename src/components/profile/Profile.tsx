@@ -8,7 +8,6 @@ import Input from '../Input';
 import { Switch } from '@radix-ui/react-switch';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
@@ -30,7 +29,6 @@ export const ProfileBody = function () {
   const [isOTPLoading, setIsOTPLoading] = useState(false);
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const router = useRouter();
 
   // Access Zustand store's state and actions
   const { user, login } = useUserStore();
@@ -114,7 +112,6 @@ export const ProfileBody = function () {
     setIsPhoneNumberVerificationModalOpen(false);
     setIsOtpModalOpen(false);
     setIsResetPasswordModalOpen(false);
-    router.push('/login');
     toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
   }
 

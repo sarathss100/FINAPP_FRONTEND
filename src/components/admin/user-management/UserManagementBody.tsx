@@ -2,10 +2,7 @@
 import {
   BanIcon,
   ClockIcon,
-  EditIcon,
-  PlusIcon,
   SearchIcon,
-  Trash2Icon,
   UserCheckIcon,
   UsersIcon,
 } from "lucide-react";
@@ -24,10 +21,12 @@ import {
   TableRow,
 } from "./table";
 import apiClient from '@/lib/apiClient';
+import { toast } from 'react-toastify';
+import IAdminUserDetails from '@/types/IAdminUserDetails';
 
 export const UserManagementBody = () => {
   // State for users, loading, and error 
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<IAdminUserDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,14 +40,13 @@ export const UserManagementBody = () => {
       setLoading(true);
       try {
         const response = await apiClient.get('/api/v1/admin/all-users');
-        console.log(response.data)
-        if (response.data.success) {
-          setUsers(Object.values(response.data.data));
+        if (response?.data?.success) {
+          setUsers(Object.values(response?.data?.data));
         } else {
-          setError(response.data.data.message || "Failed to fetch users.");
+          setError(response?.data?.data?.message || "Failed to fetch users.");
         }
       } catch (error) {
-        setError((err as Error).message || "An unexpected error occurred while fetching users.");
+        setError((error as Error).message || "An unexpected error occurred while fetching users.");
       } finally {
         setLoading(false);
       }
@@ -57,45 +55,31 @@ export const UserManagementBody = () => {
     fetchUsers();
   }, []);
 
-  console.log(users);
+  // Function to block/unblock a user
+  const handleBlockUnblock = async (userId: string, currentStatus: boolean) => {
+    try {
+      // Send API request to toggle user status
+      const newStatus = !currentStatus; // Toggle status
+      await apiClient.post(`/api/v1/admin/toggle-user-status`, { userId, status: newStatus });
+
+      // Update the users state locally
+      setUsers((prevUsers) => 
+        prevUsers.map((user) => 
+          user._id === userId ? { ...user, status: newStatus }: user
+        )
+      );
+      toast.success(`User ${newStatus ? "unblocked" : "blocked"} successfully.`);
+    } catch (error) {
+      console.error(`Error toggling user status:`, (error as Error).message);
+      toast.error(`Failed to toggle user status. Please try again`);
+    }
+  }
 
   // Pagination state
   const totalPages = Math.ceil(users.length / itemsPerPage);
   const indexOfLastUser = currentPage * itemsPerPage;
   const indexOfFirstUser = indexOfLastUser - itemsPerPage;
   const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
-
-  // Stats data
-  const stats = [
-    {
-      title: "Total Users",
-      value: "1,234",
-      color: "text-[#004a7c]",
-      bgColor: "bg-blue-100",
-      icon: <UsersIcon className="w-[25px] h-5" />,
-    },
-    {
-      title: "Active Users",
-      value: "892",
-      color: "text-[#00a9e0]",
-      bgColor: "bg-emerald-100",
-      icon: <UserCheckIcon className="w-[25px] h-5" />,
-    },
-    {
-      title: "Pending Verification",
-      value: "45",
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
-      icon: <ClockIcon className="w-[25px] h-5" />,
-    },
-    {
-      title: "Blocked Users",
-      value: "12",
-      color: "text-red-600",
-      bgColor: "bg-red-100",
-      icon: <BanIcon className="w-[22.5px] h-5" />,
-    },
-  ];
 
   // Handle loading state
   if (loading) {
@@ -136,7 +120,6 @@ export const UserManagementBody = () => {
 
   return (
     <>
-      {/* Top navigation */}
 
       {/* User search and filters */}
       <Card className="mb-6 shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]">
@@ -163,10 +146,10 @@ export const UserManagementBody = () => {
                 </SelectTrigger>
               </Select>
 
-              <Button className="h-[42px] bg-[#004a7c] text-white">
+              {/* <Button className="h-[42px] bg-[#004a7c] text-white">
                 <PlusIcon className="mr-2 h-4 w-3.5" />
                 Add User
-              </Button>
+              </Button> */}
             </div>
           </div>
         </CardContent>
@@ -202,7 +185,7 @@ export const UserManagementBody = () => {
           </TableHeader>
           <TableBody>
             {currentUsers.map((user, index) => (
-              <TableRow key={user.id} className="h-[72px]">
+              <TableRow key={user._id} className="h-[72px]">
                 <TableCell className="py-4 text-center align-middle">
                   <div className="flex items-center gap-3">
                     <div>
@@ -214,15 +197,7 @@ export const UserManagementBody = () => {
                   {`${user.firstName} ${user.lastName}`}
                 </TableCell>
                 <TableCell className="font-normal text-base">
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-                  {user.group}
-=======
                   {user.role}
->>>>>>> Stashed changes
-=======
-                  {user.status ? 'Active' : 'Blocked'}
->>>>>>> 0fd848f687a8d4b149ffe43fdf9eb02a4b3ce39b
                 </TableCell>
                 <TableCell className="font-normal text-base">
                   {user.phoneNumber}
@@ -245,11 +220,17 @@ export const UserManagementBody = () => {
                 </TableCell> */}
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button className="h-8 w-8 rounded-lg">
+                    {/* <Button className="h-8 w-8 rounded-lg">
                       <EditIcon className="h-4 w-4 text-black" />
                     </Button>
                     <Button className="h-8 w-8 rounded-lg">
                       <Trash2Icon className="h-4 w-3.5 bg-black" />
+                    </Button> */}
+                    <Button
+                      className={`h-8 w-24 rounded-lg ${user.status ? "bg-red-500 text-white" : "bg-green-500 text-white"}`}
+                      onClick = {() => handleBlockUnblock(user._id, user.status)}
+                    >
+                      { user.status ? "Block" : "Unblock" }
                     </Button>
                   </div>
                 </TableCell>
@@ -297,32 +278,93 @@ export const UserManagementBody = () => {
 
       {/* Statistics cards */}
       <div className="grid grid-cols-4 gap-6 mb-10">
-        {stats.map((stat, index) => (
-          <Card
-            key={index}
-            className="shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]"
-          >
+          <Card className="shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]">
             <CardContent className="p-6">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-500 leading-[14px]">
-                    {stat.title}
+                    Total Users
                   </p>
                   <p
-                    className={`text-2xl font-bold leading-6 mt-2 ${stat.color}`}
+                    className={`text-2xl font-bold leading-6 mt-2 text-[#004a7c]`}
                   >
                     {users.length}
                   </p>
                 </div>
                 <div
-                  className={`w-12 h-12 ${stat.bgColor} rounded-full flex items-center justify-center`}
+                  className={`w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center`}
                 >
-                  {stat.icon}
+                  <UsersIcon className="w-[25px] h-5" />
                 </div>
               </div>
             </CardContent>
           </Card>
-        ))}
+        
+          <Card className="shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-500 leading-[14px]">
+                    Active Users
+                  </p>
+                  <p
+                    className={`text-2xl font-bold leading-6 mt-2 text-[#00a9e0]`}
+                  >
+                    {users.length}
+                  </p>
+                </div>
+                <div
+                  className={`w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center`}
+                >
+                  <UserCheckIcon className="w-[25px] h-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        
+          <Card className="shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-500 leading-[14px]">
+                    Pending Verification
+                  </p>
+                  <p
+                    className={`text-2xl font-bold leading-6 mt-2 text-amber-600`}
+                  >
+                    0
+                  </p>
+                </div>
+                <div
+                  className={`w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center`}
+                >
+                  <ClockIcon className="w-[25px] h-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        
+          <Card className="shadow-[0px_1px_3px_#0000001a,0px_1px_2px_#0000001a]">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-500 leading-[14px]">
+                    Blocked Users
+                  </p>
+                  <p
+                    className={`text-2xl font-bold leading-6 mt-2 text-red-600`}
+                  >
+                    0
+                  </p>
+                </div>
+                <div
+                  className={`w-12 h-12 bg-red-100 rounded-full flex items-center justify-center`}
+                >
+                  <BanIcon className="w-[22.5px] h-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
       </div>
     </>
   );

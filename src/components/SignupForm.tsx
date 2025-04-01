@@ -13,6 +13,8 @@ import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'fi
 import auth from '../lib/firebaseConfig';
 import RecaptchaComponent from './RecaptchaComponent';
 import OtpVerificationModal from './OtpVerificationModal';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'react-toastify';
 
 const SignupForm = function () {
   const [formData, setFormData] = useState<SignupFormValues | null>(null);
@@ -34,6 +36,8 @@ const SignupForm = function () {
     try {
       setLoading(true);
       setFormData(data);
+      const response = await apiClient.post(`api/v1/auth/verify-phonenumber`, { phoneNumber: data.phone_number });
+      if (response.status === 200) throw new Error(`An account with this Phone Number already exists. Please log in or use a different Phone Number.`);
       if (!recaptchaVerifier) {
         throw new Error(`reCAPTCHA  verifier not initialized`);
       }
@@ -44,6 +48,7 @@ const SignupForm = function () {
       setIsModalOpen(true);
     } catch (error) {
       console.error(`Error sending OTP:`, (error as Error).message);
+      toast.error((error as Error).message);
     } finally {
       setLoading(false);
     }

@@ -72,7 +72,6 @@ export async function middleware(request: NextRequest) {
                 // Redirect non-admin users attempting to access admin routes
                 return NextResponse.redirect(new URL('/unauthorized', request.url));
             } else if (role === 'admin') {
-                console.log(`Comes Here`);
                 if (adminRoutes.includes(pathname)) {
                     // If the token is valid, allow access to the protected route
                     return NextResponse.next({ request: { headers: request.headers }});

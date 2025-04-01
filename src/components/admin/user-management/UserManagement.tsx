@@ -188,7 +188,11 @@ export const UserManagementBody = () => {
                   {user.name}
                 </TableCell>
                 <TableCell className="font-normal text-base">
+<<<<<<< Updated upstream
                   {user.group}
+=======
+                  {user.role}
+>>>>>>> Stashed changes
                 </TableCell>
                 <TableCell className="font-normal text-base">
                   {user.phone}
@@ -203,7 +207,7 @@ export const UserManagementBody = () => {
                       }
                     `}
                   >
-                    {user.status}
+                    {user.status ? 'Acitve': 'Blocked'}
                   </Badge>
                 </TableCell>
                 {/* <TableCell className="text-sm text-gray-500">
@@ -277,7 +281,7 @@ export const UserManagementBody = () => {
                   <p
                     className={`text-2xl font-bold leading-6 mt-2 ${stat.color}`}
                   >
-                    {stat.value}
+                    {users.length}
                   </p>
                 </div>
                 <div

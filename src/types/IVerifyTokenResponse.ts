@@ -1,13 +1,11 @@
 // Define the expected response structure
 interface IVerifyTokenResponse {
     data: {
-        decodedData: {
-            userId?: string,
-            phoneNumber?: string,
-            status?: string,
-            role?: string,
-            newAccessToken?: string;
-        };
+        userId?: string,
+        phoneNumber?: string,
+        status?: boolean,
+        role?: string,
+        newAccessToken?: string;
     };
 }
 

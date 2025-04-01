@@ -55,6 +55,9 @@ export async function middleware(request: NextRequest) {
             });
 
             const data = response.data as IVerifyTokenResponse;
+            console.log("Front End Middile Ware1", data);
+            console.log("Front End Middile Ware2", data.data.status);
+            
             
             // if (data.data.decodedData.newAccessToken) {
             //     const nextResponse = NextResponse.next();

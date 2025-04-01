@@ -55,36 +55,40 @@ export async function middleware(request: NextRequest) {
             });
 
             const data = response.data as IVerifyTokenResponse;
-            console.log("Front End Middile Ware1", data);
-            console.log("Front End Middile Ware2", data.data.status);
-            
-            
-            // if (data.data.decodedData.newAccessToken) {
-            //     const nextResponse = NextResponse.next();
-            //     nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {
-            //         httpOnly: true,
-            //         secure: process.env.NODE_ENV === 'production' ? true : false,
-            //         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-            //         maxAge: 15 * 60 * 1000,
-            //     });
-            // }
+            console.log("Front End Middile Ware", data.data.status);
 
-            const role = user?.role || 'user';
-
-            if (adminRoutes.includes(pathname) && role !== 'admin') {
-                // Redirect non-admin users attempting to access admin routes
-                return NextResponse.redirect(new URL('/unauthorized', request.url));
-            } else if (role === 'admin') {
-                if (adminRoutes.includes(pathname)) {
-                    // If the token is valid, allow access to the protected route
-                    return NextResponse.next({ request: { headers: request.headers }});
-                } else {
-                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-                }
+            if (!data.data.status) {
+                // Send logout request to backend 
+                await apiClient.post(`api/v1/auth/signout`);
             }
             
-            // If the token is valid, allow access to the protected route
-            return NextResponse.next({ request: { headers: request.headers }});
+                // if (data.data.decodedData.newAccessToken) {
+                //     const nextResponse = NextResponse.next();
+                //     nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {
+                //         httpOnly: true,
+                //         secure: process.env.NODE_ENV === 'production' ? true : false,
+                //         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+                //         maxAge: 15 * 60 * 1000,
+                //     });
+                // }
+
+                const role = user?.role || 'user';
+
+                if (adminRoutes.includes(pathname) && role !== 'admin') {
+                    // Redirect non-admin users attempting to access admin routes
+                    return NextResponse.redirect(new URL('/unauthorized', request.url));
+                } else if (role === 'admin') {
+                    if (adminRoutes.includes(pathname)) {
+                        // If the token is valid, allow access to the protected route
+                        return NextResponse.next({ request: { headers: request.headers }});
+                    } else {
+                        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+                    }
+                }
+            
+                // If the token is valid, allow access to the protected route
+                return NextResponse.next({ request: { headers: request.headers }});
+
         }
 
         // If the user is not authenticated, redirect to the login page

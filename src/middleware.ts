@@ -57,37 +57,46 @@ export async function middleware(request: NextRequest) {
             const data = response.data as IVerifyTokenResponse;
             console.log("Front End Middile Ware", data.data.status);
 
+            // Handle blocked user
             if (!data.data.status) {
-                // Send logout request to backend 
-                await apiClient.post(`api/v1/auth/signout`);
+                const blockedResponse = NextResponse.redirect(new URL('/blocked', request.url));
+
+                // Clear cookies
+                blockedResponse.cookies.delete(`accessToken`);
+                blockedResponse.cookies.delete(`userMetaData`);
+
+                // Header signal clearing localStorage/sessionStorage
+                blockedResponse.headers.set('Clear-Storage', 'true');
+
+                return blockedResponse;
             }
             
-                // if (data.data.decodedData.newAccessToken) {
-                //     const nextResponse = NextResponse.next();
-                //     nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {
-                //         httpOnly: true,
-                //         secure: process.env.NODE_ENV === 'production' ? true : false,
-                //         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-                //         maxAge: 15 * 60 * 1000,
-                //     });
-                // }
+            // if (data.data.decodedData.newAccessToken) {
+            //     const nextResponse = NextResponse.next();
+            //     nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {
+            //         httpOnly: true,
+            //         secure: process.env.NODE_ENV === 'production' ? true : false,
+            //         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+            //         maxAge: 15 * 60 * 1000,
+            //     });
+            // }
 
-                const role = user?.role || 'user';
+            const role = user?.role || 'user';
 
-                if (adminRoutes.includes(pathname) && role !== 'admin') {
-                    // Redirect non-admin users attempting to access admin routes
-                    return NextResponse.redirect(new URL('/unauthorized', request.url));
-                } else if (role === 'admin') {
-                    if (adminRoutes.includes(pathname)) {
-                        // If the token is valid, allow access to the protected route
-                        return NextResponse.next({ request: { headers: request.headers }});
-                    } else {
-                        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-                    }
+            if (adminRoutes.includes(pathname) && role !== 'admin') {
+                // Redirect non-admin users attempting to access admin routes
+                return NextResponse.redirect(new URL('/unauthorized', request.url));
+            } else if (role === 'admin') {
+                if (adminRoutes.includes(pathname)) {
+                    // If the token is valid, allow access to the protected route
+                    return NextResponse.next({ request: { headers: request.headers }});
+                } else {
+                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
                 }
+            }
             
-                // If the token is valid, allow access to the protected route
-                return NextResponse.next({ request: { headers: request.headers }});
+            // If the token is valid, allow access to the protected route
+            return NextResponse.next({ request: { headers: request.headers }});
 
         }
 

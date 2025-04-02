@@ -1,11 +1,10 @@
 interface ISigninResponse {
-  success: boolean;
-  message: string;
+  success: string,
+  message: string,
   data: {
-    userId: string;
-    role: string;
-    accessToken: string;
-  };
+    userId: string,
+    role: string,
+  }
 }
 
 export default ISigninResponse;

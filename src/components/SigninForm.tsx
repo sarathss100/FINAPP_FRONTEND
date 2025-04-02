@@ -9,9 +9,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
 import React, { useState } from 'react';
-import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
-import ISigninResponse from '@/types/ISigninResponse';
 import { useRouter } from 'next/navigation';
 import PhoneNumberVerificationModal from './forgetpassword/PhoneNumberVerificationModal';
 import ResetPasswordOtpVerificationModal from './forgetpassword/ResetPasswordOtpVerificationModal';
@@ -19,6 +17,7 @@ import ResetPasswordModal from './forgetpassword/ResetPasswordModal';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
 import RecaptchaComponent from './RecaptchaComponent';
+import { signIn } from '@/service/authenticationService';
 
 const SigninForm = function () {
   const [loading, setLoading] = useState(false);
@@ -41,17 +40,16 @@ const SigninForm = function () {
     resolver: zodResolver(signInSchema)
   });
 
-  const onSubmit: SubmitHandler<SignInFormValues> = async (data) => {
+  const handleSignInSubmit: SubmitHandler<SignInFormValues> = async (formData) => {
     try {
       setLoading(true);
-      const response = await apiClient.post<ISigninResponse>(`api/v1/auth/signin`, data);
+      const data = await signIn(formData);
 
-      if (response.data.success) {
+      if (data.success) {
         router.replace('/dashboard');
       }
     } catch (error) {
-      console.log(`Error during sign-in:`, error);
-      toast.error(error?.response?.data?.message || `An error occured during SignIn`)
+      toast.error((error as Error).message || `An error occured during SignIn`)
     } finally {
       setLoading(false);
     }
@@ -133,7 +131,7 @@ const SigninForm = function () {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(handleSignInSubmit)} className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="phone" className="text-sm text-gray-700">
                   Phone Number

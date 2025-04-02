@@ -47,7 +47,7 @@ const SigninForm = function () {
       const response = await apiClient.post<ISigninResponse>(`api/v1/auth/signin`, data);
 
       if (response.data.success) {
-        router.push('/dashboard');
+        router.replace('/dashboard');
       }
     } catch (error) {
       console.log(`Error during sign-in:`, error);

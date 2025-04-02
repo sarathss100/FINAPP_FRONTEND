@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import IOtpVerificationModalProps from '../types/IOtpVerificationModalProps';
 import Button from './button';
@@ -6,8 +7,8 @@ import { Card, CardContent } from './Card';
 import Image from 'next/image';
 import apiClient from '../lib/apiClient';
 import ISignupResponse from '@/types/ISignupResponse';
+import { useRouter } from 'next/navigation';
 
-// OTP Verification Modal Component
 const OtpVerificationModal = ({
   phoneNumber,
   onClose,
@@ -17,20 +18,32 @@ const OtpVerificationModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
-  const [timer, setTimer] = useState(180);
+  const [timer, setTimer] = useState(typeof window !== 'undefined' ? 180 : null);
   const [canResend, setCanResend] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
 
-  // Combine OTP values into a single string
+  useEffect(() => {
+    setIsMounted(true);
+    if (timer !== null && !canResend) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer! - 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    } else if (timer === 0) {
+      setCanResend(true);
+    }
+  }, [timer, canResend]);
+
   const getOtp = () => otpValues.join('');
 
-  // Handle input changes for OTP fields
   const handleInputChange = (index: number, value: string) => {
     if (value.length <= 1) {
       const newOtpValues = [...otpValues];
       newOtpValues[index] = value;
       setOtpValues(newOtpValues);
 
-      // Auto-focus next input if value is entered
       if (value && index < 5) {
         const nextInput = document.getElementById(`otp-input-${index + 1}`);
         nextInput?.focus();
@@ -38,28 +51,12 @@ const OtpVerificationModal = ({
     }
   };
 
-  // Start the timer when the modal open 
-  useEffect(() => {
-    if (timer > 0 && !canResend) {
-      const interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-
-      return () => clearInterval(interval);
-    } else if (timer === 0) {
-      setCanResend(true);
-    }
-
-  }, [timer, canResend]);
-
-  // Format the timer as MM:SS
   const formatTime = (timeInSeconds: number): string => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = timeInSeconds % 60;
-    return `${minutes}:${seconds < 10 ? '0': ''}${seconds}`;
-  }
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
 
-  // Handle OTP verification
   const handleVerifyOTP = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -70,7 +67,7 @@ const OtpVerificationModal = ({
         throw new Error('No confirmationResult found. Please send OTP first.');
       }
 
-      const otp = getOtp(); // Get the combined OTP value
+      const otp = getOtp();
       if (!otp || otp.length !== 6) {
         throw new Error('Please enter a valid 6-digit OTP.');
       }
@@ -79,8 +76,7 @@ const OtpVerificationModal = ({
 
       if (confirmation) {
         await apiClient.post<ISignupResponse>(`api/v1/auth/signup`, formData);
-        
-        window.location.href = '/dashboard';
+        router.replace('/dashboard');
       }
 
       onClose();
@@ -92,18 +88,21 @@ const OtpVerificationModal = ({
     }
   };
 
-  const handleResendOTP = function () {
+  const handleResendOTP = () => {
     setTimer(180);
     setCanResend(false);
     console.log('Resending OTP....');
   };
+
+  if (!isMounted) {
+    return null; // Don't render anything on the server
+  }
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm shadow-[0px_10px_15px_#0000001a,0px_4px_6px_#0000001a] flex justify-center items-center">
       <Card className="w-[480px] bg-white rounded-2xl border-0 shadow-md">
         <CardContent className="p-8">
           <form onSubmit={handleVerifyOTP} className="space-y-6">
-            {/* Logo/Icon */}
             <div className="flex items-center justify-center w-12 h-12 mx-auto">
               <Image
                 alt="OTP Verification Icon"
@@ -113,12 +112,10 @@ const OtpVerificationModal = ({
               />
             </div>
 
-            {/* Title */}
             <h2 className="font-normal text-2xl text-[#004a7c] text-center leading-6 font-['Poppins',Helvetica]">
               OTP Verification
             </h2>
 
-            {/* Description */}
             <div className="space-y-2 text-center">
               <p className="font-normal text-base text-gray-600 font-['Poppins',Helvetica]">
                 We have sent a verification code to
@@ -128,7 +125,6 @@ const OtpVerificationModal = ({
               </p>
             </div>
 
-            {/* OTP Input Fields */}
             <div className="flex justify-center gap-4 w-full">
               {otpValues.map((value, index) => (
                 <Input
@@ -143,18 +139,15 @@ const OtpVerificationModal = ({
               ))}
             </div>
 
-            {/* Error Message */}
             {error && (
               <p className="text-red-500 text-xs leading-[1.5] text-center">{error}</p>
             )}
 
-            {/* Timer */}
             <p className="text-sm text-center">
               <span className="text-gray-600">Code expires in</span>
-              <span className="text-[#004a7c]"> {formatTime(timer)}</span>
+              <span className="text-[#004a7c]"> {formatTime(timer || 180)}</span>
             </p>
 
-            {/* Verify Button */}
             <Button
               type="submit"
               className="w-full h-11 bg-[#004a7c] text-white"
@@ -163,7 +156,6 @@ const OtpVerificationModal = ({
               {loading ? 'Verifying...' : 'Verify OTP'}
             </Button>
 
-            {/* Resend Option */}
             <p className="text-sm text-center">
               <span className="text-gray-600">Didn’t receive code?</span>
               <span className="text-[#00a9e0] cursor-pointer hover:underline">
@@ -171,8 +163,8 @@ const OtpVerificationModal = ({
                   <span className='text-[#00a9e0] cursor-pointer hover:underline ml-1' onClick={handleResendOTP}>
                     Resend OTP 
                   </span>
-                ): (
-                    <span className='text-gray-400 ml-1'>Resend OTP</span>
+                ) : (
+                  <span className='text-gray-400 ml-1'>Resend OTP</span>
                 )}
               </span>
             </p>

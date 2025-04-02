@@ -38,7 +38,7 @@ export const UserSideBar = () => {
     logout();
 
     // Redirect to login page
-    router.push('/login');
+    window.location.replace('/login');
   }
 
   // Navigation items data for easy mapping

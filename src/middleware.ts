@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import apiClient from './lib/apiClient';
 import IVerifyTokenResponse from './types/IVerifyTokenResponse';
 
@@ -57,19 +57,19 @@ export async function middleware(request: NextRequest) {
             const data = response.data as IVerifyTokenResponse;
             console.log("Front End Middile Ware", data.data.status);
 
-            // Handle blocked user
-            if (!data.data.status) {
-                const blockedResponse = NextResponse.redirect(new URL('/blocked', request.url));
+            // // Handle blocked user
+            // if (!data.data.status) {
+            //     const blockedResponse = NextResponse.redirect(new URL('/blocked', request.url));
 
-                // Clear cookies
-                blockedResponse.cookies.delete(`accessToken`);
-                blockedResponse.cookies.delete(`userMetaData`);
+            //     // Clear cookies
+            //     blockedResponse.cookies.delete(`accessToken`);
+            //     blockedResponse.cookies.delete(`userMetaData`);
 
-                // Header signal clearing localStorage/sessionStorage
-                blockedResponse.headers.set('Clear-Storage', 'true');
+            //     // Header signal clearing localStorage/sessionStorage
+            //     blockedResponse.headers.set('Clear-Storage', 'true');
 
-                return blockedResponse;
-            }
+            //     return blockedResponse;
+            // }
             
             // if (data.data.decodedData.newAccessToken) {
             //     const nextResponse = NextResponse.next();

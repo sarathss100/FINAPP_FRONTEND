@@ -5,9 +5,7 @@ import Button from './button';
 import Input from './Input';
 import { Card, CardContent } from './Card';
 import Image from 'next/image';
-import apiClient from '../lib/apiClient';
-import ISignupResponse from '@/types/ISignupResponse';
-import { useRouter } from 'next/navigation';
+import { signUp } from '@/service/authenticationService';
 
 const OtpVerificationModal = ({
   phoneNumber,
@@ -21,7 +19,6 @@ const OtpVerificationModal = ({
   const [timer, setTimer] = useState(typeof window !== 'undefined' ? 180 : null);
   const [canResend, setCanResend] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
@@ -75,8 +72,8 @@ const OtpVerificationModal = ({
       const confirmation = await confirmationResult.confirm(otp);
 
       if (confirmation) {
-        await apiClient.post<ISignupResponse>(`api/v1/auth/signup`, formData);
-        router.replace('/dashboard');
+        await signUp(formData);
+        window.location.replace('/dashboard');
       }
 
       onClose();

@@ -8,7 +8,7 @@ import { LockIcon, PhoneIcon } from "lucide-react";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignupFormValues, signupSchema } from '../lib/validationSchemas';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '../lib/firebaseConfig';
 import RecaptchaComponent from './RecaptchaComponent';
@@ -31,6 +31,11 @@ const SignupForm = function () {
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema)
   });
+
+  // Wrap onRecaptchaInit in useCallback
+  const handleRecaptchaInit = useCallback((verifier: RecaptchaVerifier) => {
+    setRecaptchaVerifier(verifier);
+  }, []);
 
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
     try {
@@ -215,7 +220,7 @@ const SignupForm = function () {
             </div>
         
             {/* Hidden reCAPTCHA Container */}
-            <RecaptchaComponent onRecaptchaInit={(verifier) => setRecaptchaVerifier(verifier)} />
+            <RecaptchaComponent onRecaptchaInit={handleRecaptchaInit} />
           </CardContent>
         </Card>
         {/* OTP Verification Modal */}

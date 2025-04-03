@@ -47,7 +47,16 @@ export const signout = async function (): Promise<number> {
     try {
         const response = await axiosInstance.post(`api/v1/auth/signout`);
         return response.status;
-        
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Reset the Password
+export const resetPassword = async function (phone_number: string, password: string): Promise<boolean> {
+    try {
+        const response = await axiosInstance.post('api/v1/auth/change-password', { phone_number, password });
+        return response.status === 200  ? true : false;
     } catch (error) {
         throw error;
     }

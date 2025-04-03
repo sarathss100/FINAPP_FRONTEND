@@ -80,10 +80,7 @@ const ResetPasswordOtpVerificationModal = ({
       }
 
     } catch (error) {
-      let errorMessage = `OTP Verification Failed`;
-      if (error?.response?.data?.message) {
-        errorMessage = error?.response?.data?.message
-      }
+      const errorMessage = (error as Error).message || `OTP Verification Failed`;
       onFailure(errorMessage);
     } 
   };

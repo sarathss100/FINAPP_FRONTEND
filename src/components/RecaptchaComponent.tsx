@@ -27,7 +27,7 @@ const RecaptchaComponent = function ({ onRecaptchaInit }: IRecaptchaComponentPro
                 recaptchaVerifierRef.current.clear();
             }
         }
-    }, []);
+    }, [onRecaptchaInit]);
 
     return (
         <div>

@@ -9,7 +9,7 @@ import { PhoneNumberFormValues, PhoneNumberVerifySchema } from '@/lib/validation
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { PhoneIcon } from "lucide-react";
 import Label from '../Label';
-import apiClient from '@/lib/apiClient';
+import { verifyPhoneNumber } from '@/service/authenticationService';
 
 // PhoneNumber Verification Modal Component
 const PhoneNumberVerificationModal = ({
@@ -31,18 +31,15 @@ const PhoneNumberVerificationModal = ({
   const handlePhoneNumberVerification: SubmitHandler<PhoneNumberFormValues> = async (phone) => {
     try {
       const phoneNumber = phone.phone_number;
-      const confirmation = await apiClient.post('api/v1/auth/verify-phonenumber', { phoneNumber });
+      const confirmation = await verifyPhoneNumber(phoneNumber);
       
-      if (confirmation.status === 200) {
+      if (confirmation) {
         onSuccess(phone.phone_number); 
       }
 
-    } catch (error: unknown) {
-      let errorMessage = `Failed to Verify the Phone Number, Please try again later`;
-      if (error instanceof Error) {
-        errorMessage = error?.response?.data?.message;
-      }
-      onFailure(errorMessage);
+    } catch (error) {
+        const errorMessage = (error as Error).message || `Failed to Verify the Phone Number, Please try again later`;
+        onFailure(errorMessage);
     } 
   };
 

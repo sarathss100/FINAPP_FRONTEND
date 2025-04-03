@@ -3,17 +3,17 @@ interface IUser {
     firstName: string;
     lastName: string;
     phoneNumber: string;
-    role: string;
-    status: boolean;
+    role?: string;
+    status?: boolean;
     email?: string;
     lastPasswordChange?: Date;
     twoFactorEnabled?: boolean;
     connectedAccounts?: string[];
 }
-interface IAdminUserDetails {
+interface IUserProfileDetails {
     success: boolean,
     message: string,
-    data: IUser[];
+    data: IUser;
 }
 
-export default IAdminUserDetails;
+export default IUserProfileDetails;

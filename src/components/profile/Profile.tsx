@@ -1,14 +1,13 @@
 "use client";
-import { BellIcon, LockIcon, ShieldIcon, SearchIcon, ReceiptRussianRuble } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { Avatar } from '../avatar';
+import { BellIcon, LockIcon, SearchIcon } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+// import { Avatar } from '../avatar';
 import Button from '../button';
 import { Card, CardContent, CardHeader, CardTitle } from '../Card';
 import Input from '../Input';
-import { Switch } from '@radix-ui/react-switch';
-import Image from 'next/image';
+// import { Switch } from '@radix-ui/react-switch';
+// import Image from 'next/image';
 import { toast } from 'react-toastify';
-import apiClient from '@/lib/apiClient';
 import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
@@ -16,6 +15,7 @@ import RecaptchaComponent from '../RecaptchaComponent';
 import ResetPasswordModal from '../forgetpassword/ResetPasswordModal';
 import ResetPasswordOtpVerificationModal from '../forgetpassword/ResetPasswordOtpVerificationModal';
 import PhoneNumberVerificationModal from '../forgetpassword/PhoneNumberVerificationModal';
+import { getUserProfileDetails } from '@/service/userService';
 
 export const ProfileBody = function () {
   const [loading, setLoading] = useState(true);
@@ -43,14 +43,14 @@ export const ProfileBody = function () {
 
       setLoading(true);
       try {
-        const response = await apiClient.get('/api/v1/user/profile');
-        if (response.data.success) {
-          const userData = response.data.data;
+        const response = await getUserProfileDetails();
+        if (response.success) {
+          const userData = response.data;
 
           // Update Zustand store with user data
           login(userData);
         } else {
-          setErrorMap(response.data.message || `Failed to fetch user data`);
+          setError(response.message || `Failed to fetch user data`);
         }
       } catch (error) {
         setError((error as Error).message || `An occured while fetchnig user data`)
@@ -59,6 +59,11 @@ export const ProfileBody = function () {
       }
     };
     fetchUserData();
+  }, [user, login]);
+
+  // Wrap onRecaptchaInit in useCallback
+  const handleRecaptchaInit = useCallback((verifier: RecaptchaVerifier) => {
+    setRecaptchaVerifier(verifier);
   }, []);
 
   const handlePhoneVerificationSuccess = async (phone: string) => {
@@ -313,7 +318,7 @@ export const ProfileBody = function () {
             </div> */}
             </div>
             {/* Hidden reCAPTCHA Container */}
-            <RecaptchaComponent onRecaptchaInit={(verifier) => setRecaptchaVerifier(verifier)} />
+            <RecaptchaComponent onRecaptchaInit={handleRecaptchaInit} />
         </CardContent>
       </Card>
 

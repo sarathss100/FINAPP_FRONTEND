@@ -20,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "./table";
-import apiClient from '@/lib/apiClient';
 import { toast } from 'react-toastify';
 import IAdminUserDetails from '@/types/IAdminUserDetails';
 
@@ -32,10 +31,11 @@ import {
   DialogActions,
   Button as MUIButton
 } from "@mui/material";
+import { getAllUsers, toggleUserStats } from '@/service/adminService';
 
 export const UserManagementBody = () => {
   // State for users, loading, and error 
-  const [users, setUsers] = useState<IAdminUserDetails[]>([]);
+  const [users, setUsers] = useState<IAdminUserDetails['data']>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,11 +52,11 @@ export const UserManagementBody = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get('/api/v1/admin/all-users');
-        if (response?.data?.success) {
-          setUsers(Object.values(response?.data?.data));
+        const response = await getAllUsers();
+        if (response.success) {
+          setUsers(Object.values(response.data));
         } else {
-          setError(response?.data?.data?.message || "Failed to fetch users.");
+          setError(response.message || `Failed to fetch users.`);
         }
       } catch (error) {
         setError((error as Error).message || "An unexpected error occurred while fetching users.");
@@ -94,7 +94,7 @@ export const UserManagementBody = () => {
       const newStatus = !currentStatus; // Toggle status
 
       // Send API request to toggle user status
-      await apiClient.post(`/api/v1/admin/toggle-user-status`, { userId, status: newStatus });
+      await toggleUserStats(userId, newStatus);
 
       // Update the users state locally
       setUsers((prevUsers) => 

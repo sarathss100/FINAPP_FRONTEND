@@ -8,7 +8,7 @@ import { LockIcon, PhoneIcon } from "lucide-react";
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInFormValues, signInSchema } from '../lib/validationSchemas';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import PhoneNumberVerificationModal from './forgetpassword/PhoneNumberVerificationModal';
@@ -39,6 +39,11 @@ const SigninForm = function () {
   } = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema)
   });
+
+  // Wrap onRecaptchaInit in useCallback
+  const handleRecaptchaInit = useCallback((verifier: RecaptchaVerifier) => {
+    setRecaptchaVerifier(verifier);
+  }, []);
 
   const handleSignInSubmit: SubmitHandler<SignInFormValues> = async (formData) => {
     try {
@@ -204,7 +209,7 @@ const SigninForm = function () {
             </div>
           
             {/* Hidden reCAPTCHA Container */}
-            <RecaptchaComponent onRecaptchaInit={(verifier) => setRecaptchaVerifier(verifier)} />
+            <RecaptchaComponent onRecaptchaInit={handleRecaptchaInit} />
           </CardContent>
         </Card>
       

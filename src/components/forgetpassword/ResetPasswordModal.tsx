@@ -8,8 +8,8 @@ import { ResetPasswordFormValues, resetPasswordSchema } from '@/lib/validationSc
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { PhoneIcon } from "lucide-react";
 import Label from '../Label';
-import apiClient from '@/lib/apiClient';
 import IResetPasswordModalProps from './inteface/IResetPasswordModalProps';
+import { resetPassword } from '@/service/authenticationService';
 
 // Password Reset Modal Component
 const ResetPasswordModal = ({
@@ -35,17 +35,13 @@ const ResetPasswordModal = ({
       if (!phoneNumber) {
         throw new Error(`Phone is missing for form submission`);
       }
-      const confirmation = await apiClient.post('api/v1/auth/change-password', { phone_number: phoneNumber, password });
+      const confirmation = await resetPassword(phoneNumber, password);
       
-      if (confirmation.status === 200) {
+      if (confirmation) {
         onSuccess('Password updated Successfully'); 
       }
-
-    } catch (error: unknown) {
-      let errorMessage = `Failed to Reset the password, Please try again later`;
-      if (error instanceof Error) {
-        errorMessage = error?.response?.data?.message;
-      }
+    } catch (error) {
+      const errorMessage = (error as Error).message || `Failed to Reset the password, Please try again later`;
       onFailure(errorMessage);
     } 
   };

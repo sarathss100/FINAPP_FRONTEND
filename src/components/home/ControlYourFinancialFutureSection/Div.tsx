@@ -1,17 +1,13 @@
 import { BellIcon, LockIcon, SearchIcon, ShieldIcon } from "lucide-react";
 import React from "react";
-import { Avatar } from "../../components/ui/avatar";
-import { Button } from "../../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Switch } from "../../components/ui/switch";
+import { Avatar } from '@radix-ui/react-avatar';
+import Button from '@/components/button';
+import { Card, CardContent, CardHeader, CardTitle  } from '@/components/Card';
+import Input from '@/components/Input';
+import { Switch } from '@/components/switch';
+import Image from 'next/image';
 
-export const Div = (): JSX.Element => {
+export const Div = () => {
   // Data for form fields
   const userInfo = {
     firstName: "John",
@@ -84,7 +80,7 @@ export const Div = (): JSX.Element => {
             <span className="absolute w-2 h-2 top-0 right-0 bg-red-500 rounded-full" />
           </div>
           <Avatar className="h-10 w-10">
-            <img src="..//img.png" alt="User profile" />
+            <Image src="..//img.png" alt="User profile" />
           </Avatar>
         </div>
       </header>
@@ -169,7 +165,7 @@ export const Div = (): JSX.Element => {
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" className="text-[#00a9e0]">
+              <Button className="text-[#00a9e0]">
                 Change Password
               </Button>
             </div>
@@ -207,10 +203,12 @@ export const Div = (): JSX.Element => {
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-start gap-3">
-                  <img
+                  <Image
                     src={account.icon}
                     alt={account.name}
-                    className="h-5 w-5 mt-1"
+                    className="mt-1"
+                    width={16}
+                    height={16}
                   />
                   <div>
                     <p className="font-medium text-base">{account.name}</p>
@@ -218,7 +216,6 @@ export const Div = (): JSX.Element => {
                   </div>
                 </div>
                 <Button
-                  variant="ghost"
                   className={
                     account.connected ? "text-red-500" : "text-[#004a7c]"
                   }
@@ -253,7 +250,6 @@ export const Div = (): JSX.Element => {
                   </div>
                 </div>
                 <Button
-                  variant="ghost"
                   className={
                     item.action.includes("Delete")
                       ? "text-red-500"
@@ -289,7 +285,7 @@ export const Div = (): JSX.Element => {
                     <p className="text-sm text-gray-500">{item.description}</p>
                   </div>
                 </div>
-                <Button variant="ghost" className="text-red-500">
+                <Button className="text-red-500">
                   {item.action}
                 </Button>
               </div>

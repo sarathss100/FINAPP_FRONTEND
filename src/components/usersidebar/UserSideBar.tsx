@@ -18,7 +18,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useUserStore } from '@/stores/store';
-import apiClient from '@/lib/apiClient';
+import { signout } from '@/service/authenticationService';
 
 export const UserSideBar = () => {
   const router = useRouter();
@@ -32,7 +32,7 @@ export const UserSideBar = () => {
   // Function to handle sign out
   const handleSignOut = async function () {
     // Send logout request to backend 
-    await apiClient.post(`api/v1/auth/signout`);
+    await signout();
 
     // Reset Zustand state
     logout();

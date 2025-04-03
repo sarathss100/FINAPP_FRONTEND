@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/store';
-import apiClient from '@/lib/apiClient';
+import { signout } from '@/service/authenticationService';
 
 export const AdminSideBar = () => {
   const router = useRouter();
@@ -25,7 +25,7 @@ export const AdminSideBar = () => {
   // Function to handle sign out
   const handleSignOut = async function () {
     // Send logout request to backend 
-    await apiClient.post(`api/v1/auth/signout`);
+    await signout();
 
     // Reset Zustand state
     logout();

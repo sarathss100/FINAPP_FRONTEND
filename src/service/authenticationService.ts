@@ -2,10 +2,10 @@ import ISigninResponse from '@/types/ISigninResponse';
 import axiosInstance from './axiosInstance';
 import ISignupRequest from '@/types/ISignupRequest';
 
-// Sign in User
-export const signIn = async function (data: { phone_number: string, password: string }): Promise<ISigninResponse> {
+// Create an Account
+export const signUp = async function (formData: ISignupRequest | null): Promise<ISigninResponse> {
     try {
-        const response = await axiosInstance.post<ISigninResponse>(`api/v1/auth/signin`, data);
+        const response = await axiosInstance.post<ISigninResponse>(`api/v1/auth/signup`, formData);
         
         // Validate response data
         if (!response.data || !response.data.success) {
@@ -17,10 +17,10 @@ export const signIn = async function (data: { phone_number: string, password: st
     }
 };
 
-// Create an Account
-export const signUp = async function (formData: ISignupRequest | null): Promise<ISigninResponse> {
+// Sign in User
+export const signIn = async function (data: { phone_number: string, password: string }): Promise<ISigninResponse> {
     try {
-        const response = await axiosInstance.post<ISigninResponse>(`api/v1/auth/signup`, formData);
+        const response = await axiosInstance.post<ISigninResponse>(`api/v1/auth/signin`, data);
         
         // Validate response data
         if (!response.data || !response.data.success) {
@@ -41,3 +41,14 @@ export const verifyPhoneNumber = async function (phoneNumber: string): Promise<b
         throw error;
     }
 }
+
+// Signout User
+export const signout = async function (): Promise<number> {
+    try {
+        const response = await axiosInstance.post(`api/v1/auth/signout`);
+        return response.status;
+        
+    } catch (error) {
+        throw error;
+    }
+};

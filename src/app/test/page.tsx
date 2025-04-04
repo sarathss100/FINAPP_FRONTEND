@@ -1,5 +1,5 @@
 "use client";
-import { AdminSideBar } from '@/components/adminsidebar/AdminSideBar';
+import { AdminSideBar } from '@/components/admin/base/AdminSideBar';
 
 const Test = function () {
   return (

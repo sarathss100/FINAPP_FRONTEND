@@ -1,4 +1,4 @@
-import { UserSideBar } from '@/components/usersidebar/UserSideBar';
+import { UserSideBar } from '@/components/user/base/UserSideBar';
 
 const Accounts = function () {
     return (

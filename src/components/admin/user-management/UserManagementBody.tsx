@@ -8,10 +8,10 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Badge } from 'lucide-react';
-import Button from '@/components/button';
-import { Card, CardContent } from '@/components/Card';
-import Input from '@/components/Input';
-import { Select, SelectTrigger, SelectValue } from './select';
+import Button from '@/components/base/Button';
+import { Card, CardContent } from '@/components/base/Card';
+import Input from '@/components/base/Input';
+import { Select, SelectTrigger, SelectValue } from '@/components/base/select';
 import {
   Table,
   TableBody,
@@ -19,7 +19,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./table";
+} from "@/components/base/Table";
 import { toast } from 'react-toastify';
 import IAdminUserDetails from '@/types/IAdminUserDetails';
 

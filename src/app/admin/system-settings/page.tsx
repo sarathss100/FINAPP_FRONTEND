@@ -1,5 +1,4 @@
-
-import { AdminSideBar } from '@/components/adminsidebar/AdminSideBar';
+import { AdminSideBar } from '@/components/admin/base/AdminSideBar';
 
 const SystemSettings = function () {
     return (

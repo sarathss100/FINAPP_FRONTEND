@@ -1,6 +1,5 @@
-
 import { UserManagementBody } from '@/components/admin/user-management/UserManagementBody';
-import { AdminSideBar } from '@/components/adminsidebar/AdminSideBar';
+import { AdminSideBar } from '@/components/admin/base/AdminSideBar';
 
 const UserManagement = function () {
     return (

@@ -1,6 +1,6 @@
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
-import LandingPage from '@/components/home/LandingPageBody';
+import Footer from '@/components/guest/base/Footer';
+import Header from '@/components/guest/base/Header';
+import LandingPageBody from '@/components/guest/home/LandingPageBody';
 
 const Home = function () {
     return (
@@ -8,7 +8,7 @@ const Home = function () {
             {/* Header Section */}
             <Header isSignupPage={false} />
             <main className='flex-1'>
-                <LandingPage />
+                <LandingPageBody />
             </main>
             {/* Foorter Section */}
             <Footer />

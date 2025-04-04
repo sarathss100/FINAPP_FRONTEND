@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from '@/components/Card';
 
-export const FeaturesSection = (): JSX.Element => {
+export const FeaturesSection = () => {
   return (
     <section className="w-full bg-[#004a7c] py-16">
       <div className="container mx-auto px-4">

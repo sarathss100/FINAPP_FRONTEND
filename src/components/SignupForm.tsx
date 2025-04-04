@@ -37,17 +37,24 @@ const SignupForm = function () {
     setRecaptchaVerifier(verifier);
   }, []);
 
+  const isUserExist = async function (phoneNumber: string) {
+    try {
+      const isUserExist = await verifyPhoneNumber(phoneNumber);
+      if (isUserExist) {
+        throw new Error('A user with this phone number already exists. Please use a different phone number.');
+      } 
+    } catch (error) {
+      if (!((error as Error).message === 'The user does not exist. Please check the provided phone number or sign up.')) {
+        throw error;
+      }
+    }
+  } 
+
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
     try {
       setLoading(true);
       setFormData(data);
-      try {
-        const isUserExist: boolean = await verifyPhoneNumber(data.phone_number);
-        if (isUserExist) toast.error(`An account with this Phone Number already exists. Please log in or use a different Phone Number.`);
-        return 
-      } catch (error) {
-        if (error) {};
-      }
+      await isUserExist(data.phone_number);
       
       if (!recaptchaVerifier) {
         throw new Error(`reCAPTCHA  verifier not initialized`);

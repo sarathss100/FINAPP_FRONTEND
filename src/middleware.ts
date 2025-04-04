@@ -3,51 +3,83 @@ import { NextRequest } from 'next/server';
 import apiClient from './lib/apiClient';
 import IVerifyTokenResponse from './types/IVerifyTokenResponse';
 
+// Constants
+const PUBLIC_ROUTES = ['/signin', '/login', '/signup', '/'];
+const ADMIN_ROUTES = [
+    '/admin/dashboard',
+    '/admin/user-management',
+    '/admin/analytics-reports',
+    '/admin/content-management',
+    '/admin/system-overview',
+    '/admin/system-settings'
+];
+
+// Helper Functions
+const isPublicRoute = (pathname: string) => PUBLIC_ROUTES.includes(pathname);
+const isAdminRoute = (pathname: string) => ADMIN_ROUTES.includes(pathname);
+
+const redirectToDashboard = (userRole: string, requestUrl: string) => {
+    const redirectPath = userRole === 'admin' ? '/admin/dashboard' : '/dashboard';
+    return NextResponse.redirect(new URL(redirectPath, requestUrl));
+};
+
+const handleBlockedUser = (requestUrl: string) => {
+    const blockedResponse = NextResponse.redirect(new URL('/blocked', requestUrl));
+    blockedResponse.cookies.delete('accessToken');
+    blockedResponse.cookies.delete('userMetaData');
+    blockedResponse.headers.set('Clear-Storage', 'true');
+    return blockedResponse;
+};
+
+const clearAuthenticationState = (requestUrl: string) => {
+    const errorResponse = NextResponse.redirect(new URL('/login', requestUrl));
+    errorResponse.cookies.delete('accessToken');
+    errorResponse.cookies.delete('userMetaData');
+    errorResponse.headers.set('Clear-Storage', 'true');
+    return errorResponse;
+};
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Skip middleware for static assets and public routes
+    // Skip middleware for static assets and API routes
     if (
         pathname.startsWith('/_next') ||
         pathname.includes('.') ||
-        pathname.startsWith('./api')
+        pathname.startsWith('/api')
     ) {
         return NextResponse.next();
     }
 
-    // Public routes that don't require authentication
-    const publicRoutes = ['/signin', '/login', '/signup', '/'];
+    // Extract user data and access token
+    const extractedUserData = request.cookies.get('userMetaData')?.value;
+    const accessToken = request.cookies.get('accessToken')?.value;
 
-    // Admin-only routes
-    const adminRoutes = ['/admin/dashboard', '/admin/user-management', '/admin/analytics-reports', '/admin/content-management', '/admin/system-overview', '/admin/system-settings'];
-
-    const extractedUserData: string | undefined = request.cookies.get('userMetaData')?.value;
-
-    let user = {userId: '', role: '', isLoggedIn: false };
-    if (extractedUserData) {
-        user = JSON.parse(extractedUserData!);
+    let user = { userId: '', role: '', isLoggedIn: false };
+    try {
+        if (extractedUserData) {
+            user = JSON.parse(extractedUserData);
+        }
+    } catch (error) {
+        console.error('[Middleware] Failed to parse user metadata:', error);
+        return clearAuthenticationState(request.url);
     }
 
     const isAuthenticated = user?.isLoggedIn;
-    const accessToken = request.cookies.get('accessToken')?.value;
 
-    // Redirect authenticated users from public routes to the dashboad
-    if (isAuthenticated && publicRoutes.includes(pathname)) {
-        const role = user?.role || 'user';
-        const redirectPath = role === 'admin' ? '/admin/dashboard' : '/dashboard';
-        return NextResponse.redirect(new URL(redirectPath, request.url));
-    } 
+    // Redirect authenticated users from public routes
+    if (isAuthenticated && isPublicRoute(pathname)) {
+        return redirectToDashboard(user.role || 'user', request.url);
+    }
 
     // Allow access to public routes for unauthenticated users
-    if (publicRoutes.includes(pathname)) {
+    if (isPublicRoute(pathname)) {
         return NextResponse.next();
     }
 
     try {
-        
-        // If the user is authenticated in the Zustand store, verify the token with the backend
-        if (isAuthenticated) {
-            
+        // Verify token with the backend
+        if (isAuthenticated && accessToken) {
             const response = await apiClient.post('api/v1/auth/verify-token', { accessToken }, {
                 headers: {
                     Cookie: `{"accessToken":"${accessToken}"}`
@@ -55,57 +87,25 @@ export async function middleware(request: NextRequest) {
             });
 
             const data = response.data as IVerifyTokenResponse;
-            console.log("Front End Middile Ware", data.data.status);
 
-            // // Handle blocked user
-            // if (!data.data.status) {
-            //     const blockedResponse = NextResponse.redirect(new URL('/blocked', request.url));
-
-            //     // Clear cookies
-            //     blockedResponse.cookies.delete(`accessToken`);
-            //     blockedResponse.cookies.delete(`userMetaData`);
-
-            //     // Header signal clearing localStorage/sessionStorage
-            //     blockedResponse.headers.set('Clear-Storage', 'true');
-
-            //     return blockedResponse;
-            // }
-            
-            // if (data.data.decodedData.newAccessToken) {
-            //     const nextResponse = NextResponse.next();
-            //     nextResponse.cookies.set('accessToken', data.data.decodedData.newAccessToken, {
-            //         httpOnly: true,
-            //         secure: process.env.NODE_ENV === 'production' ? true : false,
-            //         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-            //         maxAge: 15 * 60 * 1000,
-            //     });
-            // }
-
-            const role = user?.role || 'user';
-
-            if (adminRoutes.includes(pathname) && role !== 'admin') {
-                // Redirect non-admin users attempting to access admin routes
-                return NextResponse.redirect(new URL('/unauthorized', request.url));
-            } else if (role === 'admin') {
-                if (adminRoutes.includes(pathname)) {
-                    // If the token is valid, allow access to the protected route
-                    return NextResponse.next({ request: { headers: request.headers }});
-                } else {
-                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-                }
+            // Handle blocked user
+            if (!data.data.status) {
+                return handleBlockedUser(request.url);
             }
-            
-            // If the token is valid, allow access to the protected route
-            return NextResponse.next({ request: { headers: request.headers }});
 
+            // Check role-based access
+            if (isAdminRoute(pathname) && user.role !== 'admin') {
+                return NextResponse.redirect(new URL('/unauthorized', request.url));
+            }
+
+            // Allow access to protected routes
+            return NextResponse.next();
         }
 
-        // If the user is not authenticated, redirect to the login page
-        return NextResponse.redirect(new URL('/login', request.url));
+        // Redirect unauthenticated users to login
+        return clearAuthenticationState(request.url);
     } catch (error: unknown) {
-        console.error(error instanceof Error ? error.message : `Soemthing went wrong`);
-
-        // If the token is invalid or expired, redirect to the login page
-        return NextResponse.redirect(new URL('/signup', request.url));
+        console.error('[Middleware] Error:', error instanceof Error ? error.message : 'Something went wrong');
+        return clearAuthenticationState(request.url);
     }
 }

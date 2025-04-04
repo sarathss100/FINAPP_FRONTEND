@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from '@/components/Card';
 import Image from 'next/image';
 
-export const MainContentSection = (): JSX.Element => {
+export const MainContentSection = () => {
   // Data for investment categories
   const investmentCategories = [
     {

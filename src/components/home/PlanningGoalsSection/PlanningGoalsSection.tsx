@@ -2,7 +2,7 @@ import { CheckCircleIcon } from "lucide-react";
 import React from "react";
 import { Card } from '@/components/Card';
 
-export const PlanningGoalsSection = (): JSX.Element => {
+export const PlanningGoalsSection = () => {
   // Data for feature items
   const features = [
     {

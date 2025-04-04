@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import CategoryCard from '@/types/ICategoryCard';
 import Image from 'next/image';
 
-export const InvestmentCategoriesSection = (): JSX.Element => {
+export const InvestmentCategoriesSection = () => {
   // Data for the investment category cards
   const categoryCards: CategoryCard[] = [
     {

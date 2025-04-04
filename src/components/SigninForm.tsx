@@ -40,6 +40,23 @@ const SigninForm = function () {
     resolver: zodResolver(signInSchema)
   });
 
+  // useEffect(() => {
+  //       const handleRouteChange = () => {
+  //           // Check for the Clear-Storage header in the response
+  //           const clearStorageHeader = document.querySelector('meta[name="Clear-Storage"]');
+  //           if (clearStorageHeader) {
+  //               // Clear localStorage and sessionStorage
+  //               localStorage.clear();
+  //               sessionStorage.clear();
+  //           }
+  //       };
+
+  //       router.events.on('routeChangeComplete', handleRouteChange);
+  //       return () => {
+  //           router.events.off('routeChangeComplete', handleRouteChange);
+  //       };
+  //   }, [router]);
+
   // Wrap onRecaptchaInit in useCallback
   const handleRecaptchaInit = useCallback((verifier: RecaptchaVerifier) => {
     setRecaptchaVerifier(verifier);

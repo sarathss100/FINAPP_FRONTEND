@@ -96,7 +96,14 @@ export async function middleware(request: NextRequest) {
             // Check role-based access
             if (isAdminRoute(pathname) && user.role !== 'admin') {
                 return NextResponse.redirect(new URL('/unauthorized', request.url));
-            }
+            } else if (user.role === 'admin') {
+                if (isAdminRoute(pathname)) {
+                    // If the token is valid, allow access to the protected route
+                    return NextResponse.next({ request: { headers: request.headers }});
+                } else {
+                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+                }
+            } 
 
             // Allow access to protected routes
             return NextResponse.next();

@@ -3,6 +3,7 @@ interface IUser {
     firstName: string;
     lastName: string;
     phoneNumber: string;
+    profilePictureUrl: string;
     role?: string;
     status?: boolean;
     email?: string;

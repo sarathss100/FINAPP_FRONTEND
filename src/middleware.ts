@@ -4,7 +4,14 @@ import apiClient from './lib/apiClient';
 import IVerifyTokenResponse from './types/IVerifyTokenResponse';
 
 // Constants
-const PUBLIC_ROUTES = ['/signin', '/login', '/signup', '/'];
+const PUBLIC_ROUTES = [
+    '/signin',
+    '/login',
+    '/signup',
+    '/',
+    '/contact',
+    '/charts'
+];
 const ADMIN_ROUTES = [
     '/admin/dashboard',
     '/admin/user-management',

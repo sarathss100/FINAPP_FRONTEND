@@ -54,7 +54,7 @@ const ContactPageBody = function () {
   // Function to copy text to clipboard
   const copyToClipboard = function (text: string) {
     navigator.clipboard.writeText(text).then(() => {
-      toast.success(`Copied: ${text}`);
+      toast.success(`Successfully Copied: ${text}`);
     });
   };
 

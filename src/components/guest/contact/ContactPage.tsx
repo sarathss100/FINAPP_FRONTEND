@@ -1,10 +1,13 @@
 "use client";
 import { MailIcon, PhoneIcon } from "lucide-react";
-import React from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/base/Card';
 import { toast } from 'react-toastify';
+import { getFAQs } from '@/service/publicService';
+import { IFaq, IFaqs } from '@/types/IFaq';
 
 const ContactPageBody = function () {
+  const [faqItems, setFaqItems] = useState<IFaq[]>([]);
   // Contact information data
   const contactMethods = [
     {
@@ -32,24 +35,13 @@ const ContactPageBody = function () {
     // },
   ];
 
-  // FAQ data
-  const faqItems = [
-    {
-      question: "What are your support hours?",
-      answer:
-        "Our support team is available Monday through Friday, 9AM - 6PM Eastern Time.",
-    },
-    {
-      question: "How quickly do you respond?",
-      answer:
-        "We typically respond to all inquiries within 24 hours during business days.",
-    },
-    {
-      question: "Do you offer emergency support?",
-      answer:
-        "For urgent matters, premium customers have access to 24/7 emergency support.",
-    },
-  ];
+  useEffect(() => {
+    const fetchDetails = async function () {
+      const data: IFaqs = await getFAQs();
+      setFaqItems(data.data.faqDetails);
+    }
+    fetchDetails();
+  }, []);
 
   // Function to copy text to clipboard
   const copyToClipboard = function (text: string) {
@@ -135,8 +127,6 @@ const ContactPageBody = function () {
             </CardContent>
           </Card>
         </div>
-      
-    
   );
 };
 

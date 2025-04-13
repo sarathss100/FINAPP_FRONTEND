@@ -1,4 +1,5 @@
 import { UserSideBar } from '@/components/user/base/UserSideBar';
+import { GoalManagementBody } from '@/components/user/goal-management/GoalManagementBody';
 
 const GoalManagement = function () {
     return (
@@ -6,8 +7,7 @@ const GoalManagement = function () {
             <UserSideBar />
             <main className={`flex-1 bg-gray-100 transition-all duration-300`}>
                 <div className='p-6'>
-                  <h1 className='text-2xl font-bold'>Goal Management</h1>
-                  <p>For Test Purpose</p>
+                  <GoalManagementBody />
                 </div>
             </main>
         </div>

@@ -1,10 +1,9 @@
 "use client";
-import { LockIcon } from "lucide-react";
+import { LockIcon, ShieldIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '../../base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../base/Card';
-// import { Switch } from '@radix-ui/react-switch';
-// import Image from 'next/image';
+import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
@@ -17,6 +16,7 @@ import RecaptchaComponent from '@/components/base/auth/RecaptchaComponent';
 import PhoneNumberVerificationModal from '@/components/base/auth/forgetpassword/PhoneNumberVerificationModal';
 import ResetPasswordOtpVerificationModal from '@/components/base/auth/forgetpassword/ResetPasswordOtpVerificationModal';
 import ResetPasswordModal from '@/components/base/auth/forgetpassword/ResetPasswordModal';
+import { Switch } from '@/components/base/switch';
 
 export const ProfileBody = function () {
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,7 @@ export const ProfileBody = function () {
   const [isOTPLoading, setIsOTPLoading] = useState(false);
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
   // Access Zustand store's state and actions
   const { user, login } = useUserStore();
@@ -122,48 +123,48 @@ export const ProfileBody = function () {
   }
 
   // Connected accounts data
-  // const connectedAccounts = [
-  //   {
-  //     name: "Google",
-  //     status: "Not connected",
-  //     icon: "/frame-3.svg",
-  //     connected: true,
-  //   },
-  //   {
-  //     name: "Apple",
-  //     status: "Not connected",
-  //     icon: "/frame-2.svg",
-  //     connected: false,
-  //   },
-  // ];
+  const connectedAccounts = [
+    {
+      name: "Google",
+      status: "Not connected",
+      icon: "/frame-3.svg",
+      connected: true,
+    },
+    {
+      name: "Apple",
+      status: "Not connected",
+      icon: "/frame-2.svg",
+      connected: false,
+    },
+  ];
 
   // Family members data
-  // const familyMembers = [
-  //   {
-  //     title: "Show Accounts",
-  //     description: "Add on accounts",
-  //     action: "Show Related Acconts",
-  //   },
-  //   {
-  //     title: "Remove add on Account",
-  //     description: "Remoces Add On Accounts",
-  //     action: "Delete Account",
-  //   },
-  // ];
+  const familyMembers = [
+    {
+      title: "Show Accounts",
+      description: "Add on accounts",
+      action: "Show Related Acconts",
+    },
+    {
+      title: "Remove add on Account",
+      description: "Remoces Add On Accounts",
+      action: "Delete Account",
+    },
+  ];
 
   // Account management data
-  // const accountManagement = [
-  //   {
-  //     title: "Back up Data",
-  //     description: "Export Data",
-  //     action: "Export / Import",
-  //   },
-  //   {
-  //     title: "Delete Account",
-  //     description: "Destroy Data",
-  //     action: "Delete Account",
-  //   },
-  // ];
+  const accountManagement = [
+    {
+      title: "Back up Data",
+      description: "Export Data",
+      action: "Export / Import",
+    },
+    {
+      title: "Delete Account",
+      description: "Destroy Data",
+      action: "Delete Account",
+    },
+  ];
 
   if (loading) {
     return (
@@ -269,17 +270,17 @@ export const ProfileBody = function () {
                 </div>
               </div>
                 <Button
-                  className="text-blue bg-gray-100 hover:bg-gray-200 focus:outline-none"
+                  className="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsPhoneNumberVerificationModalOpen(true);
                   }}
                 >
-                Change Password
-              </Button>
+                  Change Password
+                </Button>
             </div>
 
-            {/* <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex items-start gap-3">
                 <ShieldIcon className="h-4 w-4 mt-1" />
                 <div>
@@ -291,16 +292,19 @@ export const ProfileBody = function () {
                   </p>
                 </div>
               </div>
-              <Switch />
-            </div> */}
+              <Switch
+                  checked={isTwoFactorEnabled}
+                  onCheckedChange={(checked) => setIsTwoFactorEnabled(!!checked)}
+              />
             </div>
-            {/* Hidden reCAPTCHA Container */}
-            <RecaptchaComponent onRecaptchaInit={handleRecaptchaInit} />
+          </div>
+          {/* Hidden reCAPTCHA Container */}
+          <RecaptchaComponent onRecaptchaInit={handleRecaptchaInit} />
         </CardContent>
       </Card>
 
       {/* Connected Accounts Card */}
-      {/* <Card className="mb-6 shadow-sm">
+      <Card className="mb-6 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-semibold text-[#004a7c]">
             Connected Accounts
@@ -328,8 +332,8 @@ export const ProfileBody = function () {
                 </div>
                 <Button
                   className={
-                    account.connected ? "text-red-500" : "text-[#004a7c]"
-                  }
+                    account.connected ? "text-red-500" : "bg-blue-600"
+                  } 
                 >
                   {account.connected ? "Disconnect" : "Connect"}
                 </Button>
@@ -337,10 +341,10 @@ export const ProfileBody = function () {
             ))}
           </div>
         </CardContent>
-      </Card> */}
+      </Card> 
 
       {/* Family Members Card */}
-      {/* <Card className="mb-6 shadow-sm">
+      <Card className="mb-6 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-semibold text-[#004a7c]">
             Family memebers
@@ -373,10 +377,10 @@ export const ProfileBody = function () {
             ))}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
       {/* Account Management Card */}
-      {/* <Card className="shadow-sm">
+      <Card className="shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-semibold text-[#004a7c]">
             Account Management
@@ -403,7 +407,7 @@ export const ProfileBody = function () {
             ))}
           </div>
         </CardContent>
-      </Card> */}
+      </Card> 
         
         {/* Phone Number Verification Modal */}
         {isPhoneNumberVerificationModalOpen && (

@@ -14,10 +14,11 @@ import { useRouter } from 'next/navigation';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
 import RecaptchaComponent from '../../base/auth/RecaptchaComponent';
-import { signIn } from '@/service/authenticationService';
+import { signIn, signout } from '@/service/authenticationService';
 import PhoneNumberVerificationModal from '@/components/base/auth/forgetpassword/PhoneNumberVerificationModal';
 import ResetPasswordOtpVerificationModal from '@/components/base/auth/forgetpassword/ResetPasswordOtpVerificationModal';
 import ResetPasswordModal from '@/components/base/auth/forgetpassword/ResetPasswordModal';
+import { useUserStore } from '@/stores/store';
 
 const SigninFormbody = function () {
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,7 @@ const SigninFormbody = function () {
   const [isPhoneNumberLoading, setIsPhoneNumberLoading] = useState(false);
   const [isOTPLoading, setIsOTPLoading] = useState(false);
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
+  const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false);
   const router = useRouter();
 
   const {
@@ -49,8 +51,11 @@ const SigninFormbody = function () {
     try {
       setLoading(true);
       const data = await signIn(formData);
+      console.log(`User Signup response`, data.data.is2FA);
 
-      if (data.success) {
+      if (data.success && data.data.is2FA) {
+        handlePhoneVerificationSuccess(formData.phone_number);
+      } else {
         router.replace('/dashboard');
       }
     } catch (error) {
@@ -85,7 +90,12 @@ const SigninFormbody = function () {
     setIsOTPLoading(true); 
     try {
       setIsOtpModalOpen(false) // Close the OTP confirmation modal
-      setIsResetPasswordModalOpen(true);
+      if (isPasswordResetFlow) {
+        setIsResetPasswordModalOpen(true);
+      } else {
+        // For 2FA, proceed to dashboard or next step
+        router.replace('/dashboard');
+      }
     } catch (error) {
       console.error("Fail to verify OTP:", error);
       handleFailure((error as Error).message || "Failed to verify OTP");
@@ -108,11 +118,27 @@ const SigninFormbody = function () {
   }
 
   const handleFailure = (message: string) => {
+    setIsPasswordResetFlow(false);
     setIsPhoneNumberVerificationModalOpen(false);
     setIsOtpModalOpen(false);
     setIsResetPasswordModalOpen(false);
-    router.push('/login');
+    handleSignOut();
     toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
+  }
+
+  // Zustand store actions 
+  const { logout } = useUserStore();
+
+  // Function to handle sign out
+  const handleSignOut = async function () {
+    // Send logout request to backend 
+    await signout();
+
+    // Reset Zustand state
+    logout();
+
+    // Redirect to login page
+    window.location.replace('/login');
   }
   
   return (
@@ -185,7 +211,8 @@ const SigninFormbody = function () {
             <div className="flex items-center justify-center mt-4">
               <a
                 onClick={(e) => {
-                  e.preventDefault();
+                e.preventDefault();
+                setIsPasswordResetFlow(true);
                   setIsPhoneNumberVerificationModalOpen(true);
                 }}
                 className="text-sm text-blue-600 font-normal font-['Poppins',Helvetica]"

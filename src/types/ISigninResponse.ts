@@ -4,6 +4,8 @@ interface ISigninResponse {
   data: {
     userId: string,
     role: string,
+    is2FA?: boolean,
+    phoneNumber?: string,
   }
 }
 

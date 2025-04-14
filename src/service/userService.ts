@@ -1,6 +1,7 @@
 import IUserProfileDetails from '@/types/IUserProfileDetails';
 import axiosInstance from './axiosInstance';
 import IUserProfilePictureUrl from '@/types/IUserProfilePictureUrl';
+import IToggle2FA from '@/types/IToggle2FA';
 
 // Fetches detailed profile information for a user from the backend API
 export const getUserProfileDetails = async function (): Promise<IUserProfileDetails> {
@@ -49,13 +50,31 @@ export const getUserProfilePictureUrl = async function (): Promise<IUserProfileP
     try {
         // Send a POST request to user profile picture url
         const response = await axiosInstance.get<IUserProfilePictureUrl>('/api/v1/user/profile/profile-picture');
-        console.log(`Fetched Data in Service:`, response.data);
         // Validate the response 
         if (response.data && response.data.success) {
             return response.data; // Return the user profile picture url if successfull.
         } else {
             // Throw an error if the response indicates failure
             throw new Error(response.data?.message || `Failed to fetch user profile picture url.`);
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling
+        throw error;
+    }
+};
+
+// Toggles the Two-Factor Authentication (2FA) status for a user via the backend API
+export const toggleUserTwoFactorAuthentication = async function (): Promise<IToggle2FA> {
+    try {
+        // Send a POST request to toggle the 2FA status
+        const response = await axiosInstance.post<IToggle2FA>(`/api/v1/user/profile/toggle-2FA`);
+
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return the response data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || `Failed to toggle 2FA.`);
         }
     } catch (error) {
         // Re-throw the error for upstream handling

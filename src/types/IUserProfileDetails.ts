@@ -4,6 +4,7 @@ interface IUser {
     lastName: string;
     phoneNumber: string;
     profilePictureUrl: string;
+    is2FA: boolean;
     role?: string;
     status?: boolean;
     email?: string;

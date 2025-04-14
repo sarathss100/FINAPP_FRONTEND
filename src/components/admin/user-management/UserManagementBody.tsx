@@ -22,8 +22,6 @@ import {
 } from "@/components/base/Table";
 import { toast } from 'react-toastify';
 import IAdminUserDetails from '@/types/IAdminUserDetails';
-
-// Material-UI imports
 import {
   Dialog,
   DialogTitle,

@@ -3,12 +3,12 @@ import { LockIcon, ShieldIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '../../base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../base/Card';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
-import { getUserProfileDetails } from '@/service/userService';
+import { getUserProfileDetails, toggleUserTwoFactorAuthentication } from '@/service/userService';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 import Input from '@/components/base/Input';
@@ -48,6 +48,9 @@ export const ProfileBody = function () {
         const response = await getUserProfileDetails();
         if (response.success) {
           const userData = response.data;
+
+          // Update the 2FA state
+          setIsTwoFactorEnabled(userData.is2FA);
 
           // Update Zustand store with user data
           login(userData);
@@ -122,35 +125,39 @@ export const ProfileBody = function () {
     toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
   }
 
+  const handleToggle2FA = async function () {
+    try {
+      const data = await toggleUserTwoFactorAuthentication();
+      setIsTwoFactorEnabled(data.data.isToggled);
+      toast.success(data.message);
+    } catch (error) {
+      toast.error((error as Error).message || `Failed to toggle 2FA`);
+    }
+  }
+
   // Connected accounts data
-  const connectedAccounts = [
-    {
-      name: "Google",
-      status: "Not connected",
-      icon: "/frame-3.svg",
-      connected: true,
-    },
-    {
-      name: "Apple",
-      status: "Not connected",
-      icon: "/frame-2.svg",
-      connected: false,
-    },
-  ];
+  // const connectedAccounts = [
+  //   {
+  //     name: "Google",
+  //     status: "Not connected",
+  //     icon: "/frame-3.svg",
+  //     connected: false,
+  //   },
+  // ];
 
   // Family members data
-  const familyMembers = [
-    {
-      title: "Show Accounts",
-      description: "Add on accounts",
-      action: "Show Related Acconts",
-    },
-    {
-      title: "Remove add on Account",
-      description: "Remoces Add On Accounts",
-      action: "Delete Account",
-    },
-  ];
+  // const familyMembers = [
+  //   {
+  //     title: "Show Accounts",
+  //     description: "Add on accounts",
+  //     action: "Show Related Acconts",
+  //   },
+  //   {
+  //     title: "Remove add on Account",
+  //     description: "Remoces Add On Accounts",
+  //     action: "Delete Account",
+  //   },
+  // ];
 
   // Account management data
   const accountManagement = [
@@ -294,7 +301,7 @@ export const ProfileBody = function () {
               </div>
               <Switch
                   checked={isTwoFactorEnabled}
-                  onCheckedChange={(checked) => setIsTwoFactorEnabled(!!checked)}
+                  onCheckedChange={() => handleToggle2FA()}
               />
             </div>
           </div>
@@ -304,7 +311,7 @@ export const ProfileBody = function () {
       </Card>
 
       {/* Connected Accounts Card */}
-      <Card className="mb-6 shadow-sm">
+      {/* <Card className="mb-6 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-semibold text-[#004a7c]">
             Connected Accounts
@@ -341,10 +348,10 @@ export const ProfileBody = function () {
             ))}
           </div>
         </CardContent>
-      </Card> 
+      </Card>  */}
 
       {/* Family Members Card */}
-      <Card className="mb-6 shadow-sm">
+      {/* <Card className="mb-6 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-semibold text-[#004a7c]">
             Family memebers
@@ -377,7 +384,7 @@ export const ProfileBody = function () {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Account Management Card */}
       <Card className="shadow-sm">
@@ -400,7 +407,7 @@ export const ProfileBody = function () {
                     <p className="text-sm text-gray-500">{item.description}</p>
                   </div>
                 </div>
-                <Button className="text-red-500">
+                <Button className="text-white">
                   {item.action}
                 </Button>
               </div>

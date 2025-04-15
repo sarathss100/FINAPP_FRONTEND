@@ -2,6 +2,7 @@ import IUserProfileDetails from '@/types/IUserProfileDetails';
 import axiosInstance from './axiosInstance';
 import IUserProfilePictureUrl from '@/types/IUserProfilePictureUrl';
 import IToggle2FA from '@/types/IToggle2FA';
+import IDeleteAccount from '@/types/IDeleteAccount';
 
 // Fetches detailed profile information for a user from the backend API
 export const getUserProfileDetails = async function (): Promise<IUserProfileDetails> {
@@ -78,6 +79,27 @@ export const toggleUserTwoFactorAuthentication = async function (): Promise<ITog
         }
     } catch (error) {
         // Re-throw the error for upstream handling
+        throw error;
+    }
+};
+
+
+// Toggles the Two-Factor Authentication (2FA) status for a user via the backend API
+export const deleteAccount = async function (): Promise<IDeleteAccount> {
+    try {
+        // The endpoint `/api/v1/user/profile/delete` is responsible for handling account deletion
+        const response = await axiosInstance.delete<IDeleteAccount>(`/api/v1/user/profile/delete`);
+
+        // Check if the response contains data and if the `success` flag is set to true
+        if (response.data && response.data.success) {
+            // This typically includes confirmation or additional details about the deletion process
+            return response.data;
+        } else {
+            // Use the `message` field from the response if available, or provide a default error message
+            throw new Error(response.data?.message || `Failed to delete Account.`);
+        }
+    } catch (error) {
+        // Re-throw the error to allow upstream error handling (e.g., in the UI layer)
         throw error;
     }
 };

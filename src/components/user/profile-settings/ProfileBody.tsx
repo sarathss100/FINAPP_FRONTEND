@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
-import { getUserProfileDetails, toggleUserTwoFactorAuthentication } from '@/service/userService';
+import { deleteAccount, getUserProfileDetails, toggleUserTwoFactorAuthentication } from '@/service/userService';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 import Input from '@/components/base/Input';
@@ -17,6 +17,7 @@ import PhoneNumberVerificationModal from '@/components/base/auth/forgetpassword/
 import ResetPasswordOtpVerificationModal from '@/components/base/auth/forgetpassword/ResetPasswordOtpVerificationModal';
 import ResetPasswordModal from '@/components/base/auth/forgetpassword/ResetPasswordModal';
 import { Switch } from '@/components/base/switch';
+import { signout } from '@/service/authenticationService';
 
 export const ProfileBody = function () {
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export const ProfileBody = function () {
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
   // Access Zustand store's state and actions
-  const { user, login } = useUserStore();
+  const { user, login, logout } = useUserStore();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -135,6 +136,28 @@ export const ProfileBody = function () {
     }
   }
 
+  // Function to handle sign out
+  const handleSignOut = async function () {
+    // Send logout request to backend 
+    await signout();
+
+    // Reset Zustand state
+    logout();
+
+    // Redirect to login page
+    window.location.replace('/login');
+  }
+
+  const handleAccountDeletion = async function () {
+    try {
+      const data = await deleteAccount();
+      if (data.data.isDeleted) {
+        await handleSignOut();
+      }
+    } catch (error) {
+      toast.error((error as Error).message || `Failed to Deleted Account`);
+    }
+  }
   // Connected accounts data
   // const connectedAccounts = [
   //   {
@@ -158,20 +181,6 @@ export const ProfileBody = function () {
   //     action: "Delete Account",
   //   },
   // ];
-
-  // Account management data
-  const accountManagement = [
-    {
-      title: "Back up Data",
-      description: "Export Data",
-      action: "Export / Import",
-    },
-    {
-      title: "Delete Account",
-      description: "Destroy Data",
-      action: "Delete Account",
-    },
-  ];
 
   if (loading) {
     return (
@@ -394,25 +403,35 @@ export const ProfileBody = function () {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {accountManagement.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-start gap-3">
                   <div className="h-5 w-5 mt-1"></div>
                   <div>
-                    <p className="font-medium text-base">{item.title}</p>
-                    <p className="text-sm text-gray-500">{item.description}</p>
+                    <p className="font-medium text-base">Back up Data</p>
+                    <p className="text-sm text-gray-500">Export Data</p>
                   </div>
                 </div>
-                <Button className="text-white">
-                  {item.action}
+                <Button className="text-white bg-red-600 hover:bg-red-700">Import/Export</Button>
+              </div>
+            </div>
+            <div className="space-y-4 mt-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 mt-1"></div>
+                  <div>
+                    <p className="font-medium text-base">Delete Account</p>
+                    <p className="text-sm text-gray-500">Destroy Data</p>
+                  </div>
+                </div>
+                <Button
+                  className="text-white bg-red-600 hover:bg-red-700"
+                  onClick={handleAccountDeletion}
+                >
+                  Delete Account
                 </Button>
               </div>
-            ))}
-          </div>
+            </div>
         </CardContent>
       </Card> 
         

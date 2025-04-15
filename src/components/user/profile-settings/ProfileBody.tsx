@@ -18,6 +18,7 @@ import ResetPasswordOtpVerificationModal from '@/components/base/auth/forgetpass
 import ResetPasswordModal from '@/components/base/auth/forgetpassword/ResetPasswordModal';
 import { Switch } from '@/components/base/switch';
 import { signout } from '@/service/authenticationService';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
 export const ProfileBody = function () {
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,7 @@ export const ProfileBody = function () {
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
 
   // Access Zustand store's state and actions
   const { user, login, logout } = useUserStore();
@@ -64,8 +66,10 @@ export const ProfileBody = function () {
         setLoading(false);
       }
     };
-    fetchUserData();
-  }, [user, login]);
+   fetchUserData();
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Wrap onRecaptchaInit in useCallback
   const handleRecaptchaInit = useCallback((verifier: RecaptchaVerifier) => {
@@ -158,6 +162,18 @@ export const ProfileBody = function () {
       toast.error((error as Error).message || `Failed to Deleted Account`);
     }
   }
+
+  // Open the confirmation modal
+  const openDeleteConfirmation = function () {
+    setIsDeleteConfirmationOpen(true);
+  };
+
+  // Close the confirmation modal
+  const closeDeleteConfirmation = function () {
+    setIsDeleteConfirmationOpen(false);
+  };
+
+
   // Connected accounts data
   // const connectedAccounts = [
   //   {
@@ -426,7 +442,7 @@ export const ProfileBody = function () {
                 </div>
                 <Button
                   className="text-white bg-red-600 hover:bg-red-700"
-                  onClick={handleAccountDeletion}
+                  onClick={openDeleteConfirmation}
                 >
                   Delete Account
                 </Button>
@@ -467,6 +483,38 @@ export const ProfileBody = function () {
             isLoading={isResetPasswordLoading}
           />
         )}
+
+        {/* Confirmation Modal */}
+      <Dialog
+        open={isDeleteConfirmationOpen}
+        onClose={closeDeleteConfirmation}
+        aria-labelledby="delete-account-confirmation-title"
+        aria-describedby="delete-account-confirmation-description"
+      >
+        <DialogTitle id="delete-account-confirmation-title">
+          Confirm Account Deletion
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-account-confirmation-description">
+              Are you sure you want to delete your account?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteConfirmation} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleAccountDeletion(); // Call the deletion function
+              closeDeleteConfirmation(); // Close the modal
+            }}
+            className='bg-red-600 hover:bg-red-700'
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </main>
   );
 };

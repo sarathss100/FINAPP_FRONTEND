@@ -33,6 +33,8 @@ const SigninFormbody = function () {
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false);
   const router = useRouter();
+  // Zustand store actions 
+  const { logout } = useUserStore();
 
   const {
     register,
@@ -51,7 +53,6 @@ const SigninFormbody = function () {
     try {
       setLoading(true);
       const data = await signIn(formData);
-      console.log(`User Signup response`, data.data.is2FA);
 
       if (data.success && data.data.is2FA) {
         handlePhoneVerificationSuccess(formData.phone_number);
@@ -75,7 +76,6 @@ const SigninFormbody = function () {
       // Send OTP to the provided phone number 
       const result = await signInWithPhoneNumber(auth, `+91 ${phone}`, recaptchaVerifier);
       setConfirmationResult(result);
-
       setIsPhoneNumberVerificationModalOpen(false); // Close the phone verification modal
       setIsOtpModalOpen(true); // Open the OTP confirmation modal
     } catch (error) {
@@ -117,18 +117,6 @@ const SigninFormbody = function () {
     }
   }
 
-  const handleFailure = (message: string) => {
-    setIsPasswordResetFlow(false);
-    setIsPhoneNumberVerificationModalOpen(false);
-    setIsOtpModalOpen(false);
-    setIsResetPasswordModalOpen(false);
-    handleSignOut();
-    toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
-  }
-
-  // Zustand store actions 
-  const { logout } = useUserStore();
-
   // Function to handle sign out
   const handleSignOut = async function () {
     // Send logout request to backend 
@@ -140,7 +128,16 @@ const SigninFormbody = function () {
     // Redirect to login page
     window.location.replace('/login');
   }
-  
+
+  const handleFailure = (message: string) => {
+    handleSignOut();
+    setIsPasswordResetFlow(false);
+    setIsPhoneNumberVerificationModalOpen(false);
+    setIsOtpModalOpen(false);
+    setIsResetPasswordModalOpen(false);
+    toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
+  }
+
   return (
     <>
       <Card className="w-[448px] shadow-[0px_10px_15px_#0000001a,0px_4px_6px_#0000001a] rounded-2xl">
@@ -253,7 +250,10 @@ const SigninFormbody = function () {
         {/* OTP Verification Modal */}
         {isOtpModalOpen && (
           <ResetPasswordOtpVerificationModal
-            onClose={() => setIsOtpModalOpen(false)}
+          onClose={() => { 
+              setIsOtpModalOpen(false); 
+              handleSignOut(); // Signout the user 
+            }}
             onSuccess={handleOTPVerificationSuccess}
             onFailure={handleFailure}
             phoneNumber={phoneNumber}

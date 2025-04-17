@@ -1,13 +1,16 @@
 import { UserSideBar } from '@/components/user/base/UserSideBar';
+import CustomReportsBody from '@/components/user/custom-reports/CustomReportsBody';
 
 const CustomReports = function () {
     return (
         <div className='flex h-screen'>
             <UserSideBar />
-            <main className={`flex-1 bg-gray-100 transition-all duration-300`}>
+            <main
+                className={`flex-1 bg-gray-100 transition-all duration-300 overflow-y-auto`}
+                style={{ maxHeight: "100vh" }}
+            >
                 <div className='p-6'>
-                  <h1 className='text-2xl font-bold'>CustomReports</h1>
-                  <p>For Test Purpose</p>
+                  <CustomReportsBody />
                 </div>
             </main>
         </div>

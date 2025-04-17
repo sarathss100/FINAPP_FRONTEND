@@ -33,9 +33,9 @@ export const MainContentSection = ()=> {
           Goal List
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-6 pt-4 pb-6">
+      <CardContent className="pt-4 pb-6">
         <Table>
-          <TableHeader className="bg-gray-50">
+          <TableHeader>
             <TableRow>
               <TableHead className="font-medium text-xs tracking-[0.60px] text-gray-500 font-['Roboto',Helvetica]">
                 Goal

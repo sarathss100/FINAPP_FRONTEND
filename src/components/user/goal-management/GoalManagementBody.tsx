@@ -6,7 +6,7 @@ import PageTitle from '../base/PageTitle';
 
 export const GoalManagementBody = ()=> {
   return (
-    <div className="max-w-[1184px] mx-auto p-8 font-sans">
+    <div className="max-w-[1184px] mx-auto font-sans">
       {/* Header with search and profile */}
       <UserHeader />
 

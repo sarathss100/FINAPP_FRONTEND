@@ -12,13 +12,13 @@ export const GoalManagementSection = () => {
       title: "Total Goal Amount",
       value: "$45,280",
       trend: { text: "2.4% from last month", isPositive: false },
-      icon: "/frame-9.svg",
+      icon: "/hike_icon.svg",
     },
     {
       title: "Monthly Total Payment",
       value: "$1,200",
       trend: { text: "$200 more than minimum", isPositive: true },
-      icon: "/frame-9.svg",
+      icon: "/hike_icon.svg",
     },
     {
       title: "Left to fill",
@@ -126,18 +126,8 @@ export const GoalManagementSection = () => {
   ];
 
   return (
-    <section className="w-full py-8 px-4">
+    <section className="w-full">
       <div className="w-full max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#004a7c] leading-6 mb-2 font-['Roboto',Helvetica]">
-            Goal Management
-          </h1>
-          <p className="text-base text-gray-500 leading-4 font-['Roboto',Helvetica]">
-            Manage Your Goals Efficiently
-          </p>
-        </div>
-
         {/* Action Buttons */}
         <div className="flex justify-end mb-8">
           <Button className="bg-[#00a9e0] text-white hover:bg-[#0090c0] mr-4">
@@ -148,7 +138,7 @@ export const GoalManagementSection = () => {
             <Image
               className="mr-2"
               alt="Import/Export"
-              src="/frame-3.svg"
+              src="/export_import_icon.svg"
               height={16}
               width={16}
             />
@@ -239,7 +229,7 @@ export const GoalManagementSection = () => {
                 <div className="bg-neutral-100 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium text-base">{term.goal.name}</h3>
-                    <Image alt="Options" src="/frame-1.svg" width={4} height={16} />
+                    <Image alt="Options" src="/options_icon.svg" width={4} height={16} />
                   </div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-gray-500">
@@ -257,7 +247,7 @@ export const GoalManagementSection = () => {
                     <Image
                       className="mr-2"
                       alt="Clock"
-                      src="/frame-5.svg"
+                      src="/expiery_icon.svg"
                       width={14}
                       height={14}
                     />

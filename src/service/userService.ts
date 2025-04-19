@@ -88,7 +88,7 @@ export const toggleUserTwoFactorAuthentication = async function (): Promise<ITog
 export const deleteAccount = async function (): Promise<IDeleteAccount> {
     try {
         // The endpoint `/api/v1/user/profile/delete` is responsible for handling account deletion
-        const response = await axiosInstance.delete<IDeleteAccount>(`/api/v1/user/profile/delete`);
+        const response = await axiosInstance.delete<IDeleteAccount>(`/api/v1/user/profile`);
 
         // Check if the response contains data and if the `success` flag is set to true
         if (response.data && response.data.success) {

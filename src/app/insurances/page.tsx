@@ -1,13 +1,16 @@
 import { UserSideBar } from '@/components/user/base/UserSideBar';
+import InsuranceManagementBody from '@/components/user/insurances/InsurancesManagementBody';
 
 const Insurances = function () {
     return (
         <div className='flex h-screen'>
             <UserSideBar />
-            <main className={`flex-1 bg-gray-100 transition-all duration-300`}>
+            <main
+                className={`flex-1 bg-gray-100 transition-all duration-300 overflow-y-auto`}
+                style={{ maxHeight: "100vh" }}
+            >
                 <div className='p-6'>
-                  <h1 className='text-2xl font-bold'>Insurances</h1>
-                  <p>For Test Purpose</p>
+                  <InsuranceManagementBody />
                 </div>
             </main>
         </div>

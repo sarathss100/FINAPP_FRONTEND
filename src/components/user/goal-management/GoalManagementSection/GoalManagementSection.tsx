@@ -1,11 +1,16 @@
+"use client";
 import { PlusIcon } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import { Progress } from '@/components/base/progress';
 import Image from 'next/image';
+import GoalInputModal from '../GoalInputModal';
+import { GoalFormValues } from '@/lib/validationSchemas';
 
-export const GoalManagementSection = () => {
+export const GoalManagementSection = function () {
+  const [isGoalInputModalOpen, setIsGoalInputModalOpen] = useState(false);
+
   // Summary cards data
   const summaryCards = [
     {
@@ -125,12 +130,19 @@ export const GoalManagementSection = () => {
     },
   ];
 
+  const handleGoalInput = function () {
+    setIsGoalInputModalOpen(true);
+  }
+
   return (
     <section className="w-full">
       <div className="w-full max-w-7xl mx-auto">
         {/* Action Buttons */}
         <div className="flex justify-end mb-8">
-          <Button className="bg-[#00a9e0] text-white hover:bg-[#0090c0] mr-4">
+          <Button
+            className="bg-[#00a9e0] text-white hover:bg-[#0090c0] mr-4"
+            onClick={handleGoalInput}
+          >
             <PlusIcon className="w-3.5 h-4 mr-2" />
             Add Goal
           </Button>
@@ -365,6 +377,13 @@ export const GoalManagementSection = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Phone Number Verification Modal */}
+        {isGoalInputModalOpen && (
+          <GoalInputModal
+            onClose={() => setIsGoalInputModalOpen(false)}
+          />
+        )}
       </div>
     </section>
   );

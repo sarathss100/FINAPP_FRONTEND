@@ -38,6 +38,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
     };
   }, [wrapperRef]);
 
+  useEffect(() => {
+    setDate(selected || new Date());
+  }, [selected]);
+
   // Navigate to previous month
   const prevMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
@@ -133,7 +137,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           readOnly
           value={selected ? format(selected, "MMMM d, yyyy") : ""}
           placeholder={placeholder}
-          className="w-full h-12 rounded-lg border-2 border-[#00a9e0] focus:border-[#004a7c] focus:ring-0 px-4 pr-10 cursor-pointer"
+          // className="w-full h-12 rounded-lg border-2 border-[#00a9e0] focus:border-[#004a7c] focus:ring-0 px-4 pr-10 cursor-pointer"
         />
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
           <svg

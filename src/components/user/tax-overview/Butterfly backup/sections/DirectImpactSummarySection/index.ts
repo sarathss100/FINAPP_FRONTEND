@@ -1,1 +1,0 @@
-export { DirectImpactSummarySection } from "./DirectImpactSummarySection";

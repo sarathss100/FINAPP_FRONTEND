@@ -1,10 +1,11 @@
+"use client";
 import React from "react";
 import { GoalManagementSection } from './GoalManagementSection/GoalManagementSection';
 import { MainContentSection } from './MainContentSection/MainContentSection';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 
-export const GoalManagementBody = ()=> {
+export const GoalManagementBody = () => {
   return (
     <div className="max-w-[1184px] mx-auto font-sans">
       {/* Header with search and profile */}

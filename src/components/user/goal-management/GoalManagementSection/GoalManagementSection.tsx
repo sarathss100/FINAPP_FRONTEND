@@ -1,41 +1,32 @@
 "use client";
 import { PlusIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import { Progress } from '@/components/base/progress';
 import Image from 'next/image';
 import GoalInputModal from '../GoalInputModal';
-import { GoalFormValues } from '@/lib/validationSchemas';
+import { useGoalStore } from '@/stores/store';
 
 export const GoalManagementSection = function () {
   const [isGoalInputModalOpen, setIsGoalInputModalOpen] = useState(false);
+  const totalActiveGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
+  const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
+  const fetchGoals = useGoalStore(state => state.fetchGoals);
 
-  // Summary cards data
-  const summaryCards = [
-    {
-      title: "Total Goal Amount",
-      value: "$45,280",
-      trend: { text: "2.4% from last month", isPositive: false },
-      icon: "/hike_icon.svg",
-    },
-    {
-      title: "Monthly Total Payment",
-      value: "$1,200",
-      trend: { text: "$200 more than minimum", isPositive: true },
-      icon: "/hike_icon.svg",
-    },
-    {
-      title: "Left to fill",
-      value: "$42,080",
-      progress: 7, // Approximately 7% filled based on the values
-    },
-    {
-      title: "Time to Left to Achieve by this speed",
-      value: "3.2 years",
-      subtitle: "At current payment rate",
-    },
-  ];
+  useEffect(() => {
+    fetchTotalActiveGoalAmount(); 
+  }, [fetchTotalActiveGoalAmount]);
+
+  const handleGoalCreated = useCallback(() => {
+    fetchGoals(); // Fetch the updated goals after a new goal is created
+    fetchTotalActiveGoalAmount(); // Fetch the updated total active goal amount
+
+  }, [fetchGoals, fetchTotalActiveGoalAmount]);
+
+  const handleGoalInput = function () {
+    setIsGoalInputModalOpen(true);
+  };
 
   // SMART goals data
   const smartGoals = [
@@ -130,10 +121,6 @@ export const GoalManagementSection = function () {
     },
   ];
 
-  const handleGoalInput = function () {
-    setIsGoalInputModalOpen(true);
-  }
-
   return (
     <section className="w-full">
       <div className="w-full max-w-7xl mx-auto">
@@ -146,7 +133,7 @@ export const GoalManagementSection = function () {
             <PlusIcon className="w-3.5 h-4 mr-2" />
             Add Goal
           </Button>
-          <Button variant="outline" className="border-[#004a7c] text-[#004a7c]">
+          {/* <Button variant="outline" className="border-[#004a7c] text-[#004a7c]">
             <Image
               className="mr-2"
               alt="Import/Export"
@@ -155,50 +142,38 @@ export const GoalManagementSection = function () {
               width={16}
             />
             Import/Export
-          </Button>
+          </Button> */}
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {summaryCards.map((card, index) => (
-            <Card key={index} className="shadow-sm">
-              <CardContent className="p-6">
-                <p className="text-sm text-gray-600 mb-4">{card.title}</p>
-                <h2 className="text-3xl font-bold text-[#004a7c] mb-4">
-                  {card.value}
-                </h2>
-                {card.trend && (
-                  <div className="flex items-center">
-                    <Image
-                      className="mr-2"
-                      alt="Trend"
-                      src={card.icon}
-                      width={10}
-                      height={14}
-                    />
-                    <span
-                      className={
-                        card.trend.isPositive
-                          ? "text-sm text-emerald-500"
-                          : "text-sm text-red-500"
-                      }
-                    >
-                      {card.trend.text}
-                    </span>
-                  </div>
-                )}
-                {card.progress !== undefined && (
-                  <Progress
-                    value={card.progress}
-                    className="h-2.5 mt-4 bg-gray-200"
-                  />
-                )}
-                {card.subtitle && (
-                  <p className="text-sm text-gray-500 mt-4">{card.subtitle}</p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          <Card className="shadow-sm">
+            <CardContent className="p-6">
+              <p className="text-sm text-gray-600 mb-4">Total Goal Amount</p>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">₹ {totalActiveGoalAmount}</h2>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardContent className="p-6">
+              <p className="text-sm text-gray-600 mb-4">Monthly Payment Required</p>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">₹ {(totalActiveGoalAmount / 12).toFixed(0)}</h2>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardContent className="p-6">
+              <p className="text-sm text-gray-600 mb-4">Current Payment Rate</p>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">₹ {(totalActiveGoalAmount / 12).toFixed(0)}</h2>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardContent className="p-6">
+              <p className="text-sm text-gray-600 mb-4">Time Left to Achieve the Goal</p>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">3 Year 2 Month</h2>
+            </CardContent>
+          </Card>
         </div>
 
         {/* SMART Goal Progress */}
@@ -382,6 +357,7 @@ export const GoalManagementSection = function () {
         {isGoalInputModalOpen && (
           <GoalInputModal
             onClose={() => setIsGoalInputModalOpen(false)}
+            onGoalCreated={handleGoalCreated}
           />
         )}
       </div>

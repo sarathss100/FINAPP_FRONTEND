@@ -1,1 +1,0 @@
-export { InvestmentPotentialSection } from "./InvestmentPotentialSection";

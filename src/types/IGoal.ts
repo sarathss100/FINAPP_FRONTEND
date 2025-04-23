@@ -25,3 +25,9 @@ export interface IGoalDetails {
     message: string,
     data: IGoal;
 }
+
+export interface ITotalActiveGoalAmount {
+    success: boolean,
+    message: string,
+    data: { totalActiveGoalAmount: number };
+}

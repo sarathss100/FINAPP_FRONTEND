@@ -15,10 +15,10 @@ import { toast } from 'react-toastify';
 
 interface IGoalModalProps {
   onClose: () => void;
-  onSave: (goalData: GoalFormValues) => void;
+  onGoalCreated?: () => void;
 }
 
-const GoalModal = function ({ onClose, onSave, initialData }: IGoalModalProps & { initialData?: Partial<GoalFormValues>}) {
+const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalProps & { initialData?: Partial<GoalFormValues>}) {
   const {
     register,
     handleSubmit,
@@ -49,6 +49,7 @@ const GoalModal = function ({ onClose, onSave, initialData }: IGoalModalProps & 
   const handleClose = function () {
     localStorage.removeItem('goalFormData');
     onClose();
+    if (onGoalCreated) onGoalCreated();
   };
 
   // Reset the form with updated data when 'initialData' changes
@@ -86,8 +87,11 @@ const GoalModal = function ({ onClose, onSave, initialData }: IGoalModalProps & 
   const onSubmit: SubmitHandler<GoalFormValues> = async (data) => {
     try {
       const response = await createGoal(data);
-      handleClose();
-      toast.success(response.message || `Successfully Created Goal`);
+      if (response.success) {
+        if (onGoalCreated) onGoalCreated();
+        handleClose();
+        toast.success(response.message || `Successfully Created Goal`);
+      }
     } catch (error) {
       console.error("Error saving goal:", error);
       toast.error((error as Error).message || `Faile to create a goal`);

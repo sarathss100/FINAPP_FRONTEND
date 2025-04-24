@@ -48,7 +48,7 @@ export const useGoalStore = create<GoalState>()(
                     const response = await getUserGoals();
                     const data = await response.data;
                     set({ goals: Array.isArray(data) ? data : [data] });
-1                } catch (error) {
+                } catch (error) {
                     console.error(`Failed to fetch goals:`, error);
                 }
             },

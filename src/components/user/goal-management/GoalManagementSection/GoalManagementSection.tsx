@@ -11,18 +11,21 @@ import { useGoalStore } from '@/stores/store';
 export const GoalManagementSection = function () {
   const [isGoalInputModalOpen, setIsGoalInputModalOpen] = useState(false);
   const totalActiveGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
+  const longestTimePeriod = useGoalStore((state) => state.longestTimePeriod);
+  const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const fetchGoals = useGoalStore(state => state.fetchGoals);
 
   useEffect(() => {
-    fetchTotalActiveGoalAmount(); 
-  }, [fetchTotalActiveGoalAmount]);
+    fetchTotalActiveGoalAmount();
+    fetchLongestTimePeriod();
+  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod]);
 
   const handleGoalCreated = useCallback(() => {
     fetchGoals(); // Fetch the updated goals after a new goal is created
     fetchTotalActiveGoalAmount(); // Fetch the updated total active goal amount
-
-  }, [fetchGoals, fetchTotalActiveGoalAmount]);
+    fetchLongestTimePeriod();
+  }, [fetchGoals, fetchTotalActiveGoalAmount, fetchLongestTimePeriod]);
 
   const handleGoalInput = function () {
     setIsGoalInputModalOpen(true);
@@ -170,8 +173,8 @@ export const GoalManagementSection = function () {
 
           <Card className="shadow-sm">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Time Left to Achieve the Goal</p>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">3 Year 2 Month</h2>
+              <p className="text-sm text-gray-600 mb-4">Remaining Time for Longest Goal</p>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">{longestTimePeriod ? longestTimePeriod : `0 Y, 0 M, 0 D`}</h2>
             </CardContent>
           </Card>
         </div>

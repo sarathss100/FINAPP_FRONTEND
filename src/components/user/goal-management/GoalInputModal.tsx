@@ -86,7 +86,7 @@ const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalP
 
   const onSubmit: SubmitHandler<GoalFormValues> = async (data) => {
     try {
-      const response = await createGoal(data);
+      const response = await createGoal({ ...data });
       if (response.success) {
         if (onGoalCreated) onGoalCreated();
         handleClose();
@@ -98,7 +98,7 @@ const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalP
     }
   };
 
-  const FormField = ({ label, children, error }) => (
+  const FormField: React.FC<{ label: string; children: React.ReactNode; error?: { message?: string } }> = ({ label, children, error }) => (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {label}

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import IUserState from './interfaces/IUserState';
 import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
-import { getTotalActiveGoalAmount, getUserGoals } from '@/service/goalService';
+import { findLongestTimePeriod, getTotalActiveGoalAmount, getUserGoals } from '@/service/goalService';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -30,10 +30,12 @@ interface Goal {
 interface GoalState {
     goals: Goal[]; // Array of goals 
     totalActiveGoalAmount: number; // Total active goal amount
+    longestTimePeriod: string; // Longest Time Period acheving the goal
     fetchGoals: () => Promise<void>; // Function to fetch goals 
     addGoal: (newGoal: Goal) => void; // Function to add a new goal
     deleteGoal: (goalId: string) => void; // Function to delete a goal by ID    
     fetchTotalActiveGoalAmount: () => Promise<void>; // Function to fetch total active goal amount
+    fetchLongestTimePeriod: () => Promise<void>; // Function to fetch longest time period
 }
 
 export const useGoalStore = create<GoalState>()(
@@ -41,6 +43,7 @@ export const useGoalStore = create<GoalState>()(
         (set) => ({
             goals: [], // Initial state: empty array of goals
             totalActiveGoalAmount: 0,
+            longestTimePeriod: '',
 
             // Function to fetch initial goals
             fetchGoals: async () => {
@@ -75,6 +78,17 @@ export const useGoalStore = create<GoalState>()(
                     set({ totalActiveGoalAmount: data.totalActiveGoalAmount });
                 } catch (error) {
                     console.error(`Failed to fetch goals:`, error);
+                }
+            },
+
+            // Function to fetch and store longest goal target date
+            fetchLongestTimePeriod: async () => {
+                try {
+                    const response = await findLongestTimePeriod();
+                    const data = await response.data;
+                    set({ longestTimePeriod: data.longestTimePeriod});
+                } catch (error) {
+                    console.error(`Failed to fetch the longest time period`, error);
                 }
             }
         }),

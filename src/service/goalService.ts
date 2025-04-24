@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IGoal, IGoalDetails, ITotalActiveGoalAmount } from '@/types/IGoal';
+import { IGoal, IGoalDetails, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
 
 // Sends a request to create a new goal for a user via the backend API
 export const createGoal = async function (formData: IGoal): Promise<IGoalDetails> {
@@ -54,6 +54,22 @@ export const getTotalActiveGoalAmount = async function (): Promise<ITotalActiveG
         }
     } catch (error) {
         // Re-throw the error for upstream handling
+        throw error;
+    }
+};
+
+// Sends a request to retrieve the longest target time period for incomplete goals associated with the user via the backend API.
+export const findLongestTimePeriod = async function (): Promise<ILongestTimePeriod> {
+    try {
+        // Fetch the longest target time period for incomplete goals via the backend API.
+        const response = await axiosInstance.get<ILongestTimePeriod>('/api/v1/goal/longest-time-period');
+
+        // Validate the response and return the data if successful, otherwise throw an error.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to retrieve the longest time period details.');
+    } catch (error) {
+        // Log and re-throw any errors for upstream handling.
+        console.error('Error while fetching the longest time period:', error);
         throw error;
     }
 };

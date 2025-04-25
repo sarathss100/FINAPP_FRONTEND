@@ -1,10 +1,12 @@
 import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
 import { IGoal, IGoalDetails, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
+import ICategoryByGoals from '@/types/ICategoryByGoals';
 
 // Sends a request to create a new goal for a user via the backend API
 export const createGoal = async function (formData: IGoal): Promise<IGoalDetails> {
     try {
+        formData = {...formData, current_amount: (formData.target_amount - formData.initial_investment)}
         // Send a POST request to create a new goal
         const response = await axiosInstance.post<IGoalDetails>('/api/v1/goal/create', formData);
 
@@ -75,10 +77,27 @@ export const findLongestTimePeriod = async function (): Promise<ILongestTimePeri
     }
 };
 
+// Sends a request to analyze goals associated with the user via the backend API.
 export const analyzeGoal = async function (): Promise<ISmartAnalysisResult> {
     try {
         // Analyze the goal Data via the backend API 
         const response = await axiosInstance.get<ISmartAnalysisResult>(`/api/v1/goal/analyze`);
+
+        // Validate the response and return the data if successful, otherwise throw an error.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to retrieve the longest time period details.');
+    } catch (error) {
+        // Log and re-throw any errors for upstrema handling 
+        console.error(`Error while analyzing the goal Data`, error);
+        throw error;
+    }
+}
+
+// Sends a request to analyze goals associated with the user via the backend API.
+export const goalsByCategory = async function (): Promise<ICategoryByGoals> {
+    try {
+        // Analyze the goal Data via the backend API 
+        const response = await axiosInstance.get<ICategoryByGoals>(`/api/v1/goal/by-category`);
 
         // Validate the response and return the data if successful, otherwise throw an error.
         if (response.data && response.data.success) return response.data;

@@ -6,6 +6,7 @@ export interface IGoal {
     goal_category: string;
     target_amount: number;
     initial_investment: number;
+    current_amount: number;
     currency: string;
     target_date: Date;
     contribution_frequency: string;

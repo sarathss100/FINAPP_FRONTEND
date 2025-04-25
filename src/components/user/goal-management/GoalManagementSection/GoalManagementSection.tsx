@@ -1,10 +1,9 @@
 "use client";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, MoreVertical, TrendingUp, Clock, Wallet, Calendar } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import { Progress } from '@/components/base/progress';
-import Image from 'next/image';
 import GoalInputModal from '../GoalInputModal';
 import { useGoalStore } from '@/stores/store';
 
@@ -13,178 +12,136 @@ export const GoalManagementSection = function () {
   const totalActiveGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
   const longestTimePeriod = useGoalStore((state) => state.longestTimePeriod);
   const smartAnalysis = useGoalStore((state) => state.smartAnalysis);
+  const goalsByCategory = useGoalStore((state) => state.categoryByGoals);
   const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const fetchGoals = useGoalStore(state => state.fetchGoals);
-  const analysisData = useGoalStore((state) => state.fetchSmartAnalysis)
+  const analysisData = useGoalStore((state) => state.fetchSmartAnalysis);
+  const fetchCategoryByGoals = useGoalStore((state) => state.fetchCategoryByGoals);
 
   useEffect(() => {
     fetchTotalActiveGoalAmount();
     fetchLongestTimePeriod();
     analysisData();
-  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData]);
+    fetchCategoryByGoals();
+  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals]);
 
   const handleGoalCreated = useCallback(() => {
     fetchGoals(); // Fetch the updated goals after a new goal is created
     fetchTotalActiveGoalAmount(); // Fetch the updated total active goal amount
     fetchLongestTimePeriod();
     analysisData();
-  }, [fetchGoals, fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData]); 
+    fetchCategoryByGoals();
+  }, [fetchGoals, fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals]); 
 
   const handleGoalInput = function () {
     setIsGoalInputModalOpen(true);
   };
 
-  // Term goals data
-  const termGoals = [
-    {
-      title: "Short Term Goals",
-      timeframe: "< 1 Year",
-      goal: {
-        name: "Emergency Fund",
-        current: "$15,000",
-        target: "$20,000",
-        progress: 75,
-        timeLeft: "4 months left",
-      },
-    },
-    {
-      title: "Medium Term Goals",
-      timeframe: "1-5 Years",
-      goal: {
-        name: "Down Payment",
-        current: "$50,000",
-        target: "$100,000",
-        progress: 50,
-        timeLeft: "2 years left",
-      },
-    },
-    {
-      title: "Long Term Goals",
-      timeframe: "5+ Years",
-      goal: {
-        name: "Retirement",
-        current: "$200K",
-        target: "$1M",
-        progress: 20,
-        timeLeft: "25 years left",
-      },
-    },
-  ];
-
-  // Reallocation data
-  const reallocationData = {
-    adjustments: [
-      {
-        name: "Reduce Entertainment Budget",
-        current: "$500/month",
-        suggested: "$300/month",
-        change: "-$200",
-      },
-      {
-        name: "Optimize Subscriptions",
-        current: "$150/month",
-        suggested: "$100/month",
-        change: "-$50",
-      },
-    ],
-    impact: {
-      monthlySavings: "+$250",
-      speedImprovement: "15% Faster",
-    },
-  };
-
-  // What-if scenarios data
-  const whatIfScenarios = [
-    {
-      title: "Increased Income",
-      current: { label: "Current Monthly", value: "$5,000" },
-      potential: { label: "Potential Monthly", value: "$6,000" },
-      progress: 80,
-      impact: "Goals achieved 20% faster",
-    },
-    {
-      title: "Additional Investment",
-      current: { label: "Current Return", value: "7% APY" },
-      potential: { label: "Enhanced Return", value: "9% APY" },
-      progress: 75,
-      impact: "28% more in 10 years",
-    },
-    {
-      title: "Expense Reduction",
-      current: { label: "Current Expenses", value: "$3,500" },
-      potential: { label: "Target Expenses", value: "$3,000" },
-      progress: 65,
-      impact: "$500 more for goals",
-    },
-  ];
-
   return (
-    <section className="w-full">
-      <div className="w-full max-w-7xl mx-auto">
-        {/* Action Buttons */}
-        <div className="flex justify-end mb-8">
+    <section className="w-full py-6 bg-gray-50">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Header with Title and Action Button */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Financial Goals Dashboard</h1>
           <Button
-            className="bg-[#00a9e0] text-white hover:bg-[#0090c0] mr-4"
+            className="bg-[#00a9e0] text-white hover:bg-[#0090c0] transition-colors duration-200 shadow-md"
             onClick={handleGoalInput}
           >
-            <PlusIcon className="w-3.5 h-4 mr-2" />
+            <PlusIcon className="w-4 h-4 mr-2" />
             Add Goal
           </Button>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="shadow-sm">
+          <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Total Goal Amount</p>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">₹ {totalActiveGoalAmount}</h2>
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-sm font-medium text-gray-600">Total Goal Amount</p>
+                <Wallet className="w-5 h-5 text-[#004a7c]" />
+              </div>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {totalActiveGoalAmount.toLocaleString()}</h2>
+              <div className="w-full bg-gray-100 h-1 rounded-full">
+                <div className="bg-[#00a9e0] h-1 rounded-full w-3/4"></div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm">
+          <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Monthly Payment Required</p>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">₹ {(totalActiveGoalAmount / 12).toFixed(0)}</h2>
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-sm font-medium text-gray-600">Monthly Payment Required</p>
+                <Calendar className="w-5 h-5 text-[#004a7c]" />
+              </div>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {(totalActiveGoalAmount / 12).toLocaleString(undefined, {maximumFractionDigits: 0})}</h2>
+              <div className="w-full bg-gray-100 h-1 rounded-full">
+                <div className="bg-[#00a9e0] h-1 rounded-full w-1/2"></div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm">
+          <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Current Payment Rate</p>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">₹ {(totalActiveGoalAmount / 12).toFixed(0)}</h2>
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-sm font-medium text-gray-600">Current Payment Rate</p>
+                <TrendingUp className="w-5 h-5 text-[#004a7c]" />
+              </div>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {(totalActiveGoalAmount / 12).toLocaleString(undefined, {maximumFractionDigits: 0})}</h2>
+              <div className="w-full bg-gray-100 h-1 rounded-full">
+                <div className="bg-[#00a9e0] h-1 rounded-full w-2/3"></div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm">
+          <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Remaining Time for Longest Goal</p>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-4">{longestTimePeriod ? longestTimePeriod : `0 Y, 0 M, 0 D`}</h2>
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-sm font-medium text-gray-600">Longest Goal Timeline</p>
+                <Clock className="w-5 h-5 text-[#004a7c]" />
+              </div>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">{longestTimePeriod ? longestTimePeriod : `0 Y, 0 M, 0 D`}</h2>
+              <div className="w-full bg-gray-100 h-1 rounded-full">
+                <div className="bg-[#00a9e0] h-1 rounded-full w-4/5"></div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* SMART Goal Progress */}
-        <Card className="mb-8">
-          <CardHeader className="pb-2">
+        <Card className="mb-8 shadow-md overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
             <CardTitle className="text-xl font-semibold">
               SMART Goal Progress
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {['specific', 'measurable', 'achievable', 'relevant', 'timeBound'].map((criteria, index) => {
-                // Use the score from smartAnalysis if available, otherwise default to 0
-                const score = smartAnalysis?.analysisResult?.criteriaScores?.[criteria] || 0;
-
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              {[
+                { name: 'Specific', key: 'specific', color: '#4CAF50' },
+                { name: 'Measurable', key: 'measurable', color: '#2196F3' },
+                { name: 'Achievable', key: 'achievable', color: '#FF9800' },
+                { name: 'Relevant', key: 'relevant', color: '#9C27B0' },
+                { name: 'Time-Bound', key: 'timeBound', color: '#F44336' }
+              ].map((criteria, index) => {
+                const score = smartAnalysis?.analysisResult?.criteriaScores?.[criteria.key] || 0;
+                
                 return (
-                  <div key={index} className="bg-[#004a7c1a] rounded-lg p-4">
-                    <div className="flex justify-between mb-2">
-                      
-                      <span className="font-medium text-black">{criteria.charAt(0).toUpperCase() + criteria.slice(1)}</span>
-                      <span className="text-[#004a7c]">{score}%</span>
+                  <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                    <div className="flex justify-between mb-3">
+                      <span className="font-medium text-gray-700">{criteria.name}</span>
+                      <span className="font-bold text-[#004a7c]">{score}%</span>
                     </div>
-                    <Progress value={score} className="h-2 bg-blue-200" />
+                    <Progress 
+                      value={score} 
+                      className="h-2 bg-gray-100" 
+                      style={{ 
+                        ['--progress-background' as string]: criteria.color 
+                      }} 
+                    />
+                    <div className="mt-2 text-xs text-gray-500 text-right">
+                      {score < 50 ? 'Needs Improvement' : score < 80 ? 'Good' : 'Excellent'}
+                    </div>
                   </div>
                 );
               })}
@@ -194,160 +151,138 @@ export const GoalManagementSection = function () {
 
         {/* Term Goals */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {termGoals.map((term, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg font-semibold">
-                    {term.title}
-                  </CardTitle>
-                  <span className="text-sm text-gray-500">
-                    {term.timeframe}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-neutral-100 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-base">{term.goal.name}</h3>
-                    <Image alt="Options" src="/options_icon.svg" width={4} height={16} />
+          {[
+            { 
+              title: 'Short Term Goals', 
+              timeframe: '< 1 Year', 
+              currentAmount: goalsByCategory.shortTermGoalsCurrntAmount, 
+              targetAmount: goalsByCategory.shortTermGoalsTargetAmount,
+              color: '#4CAF50',
+            },
+            { 
+              title: 'Medium Term Goals', 
+              timeframe: '1-5 Years', 
+              currentAmount: goalsByCategory.mediumTermGoalsCurrntAmount, 
+              targetAmount: goalsByCategory.mediumTermGoalsTargetAmount,
+              color: '#FF9800',
+            },
+            { 
+              title: 'Long Term Goals', 
+              timeframe: '> 5 Years', 
+              currentAmount: goalsByCategory.longTermGoalsCurrntAmount, 
+              targetAmount: goalsByCategory.longTermGoalsTargetAmount,
+              color: '#2196F3',
+            }
+          ].map((goal, index) => {
+            const percentage = goal.targetAmount > 0 
+              ? (100 - Number(((Number(goal.currentAmount) * 100 / Number(goal.targetAmount)).toFixed(2)))) 
+              : "0";
+              
+            return (
+              <Card key={index} className="shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg">
+                <CardHeader className="pb-2 border-b">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-lg font-semibold flex items-center">
+                      <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: goal.color }}></div>
+                      {goal.title}
+                    </CardTitle>
+                    <span className="text-sm text-gray-500">{goal.timeframe}</span>
                   </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-gray-500">
-                      {term.goal.current} / {term.goal.target}
-                    </span>
-                    <span className="text-sm text-[#00a9e0]">
-                      {term.goal.progress}%
-                    </span>
-                  </div>
-                  <Progress
-                    value={term.goal.progress}
-                    className="h-2 bg-gray-200 mb-4"
-                  />
-                  <div className="flex items-center">
-                    <Image
-                      className="mr-2"
-                      alt="Clock"
-                      src="/expiery_icon.svg"
-                      width={14}
-                      height={14}
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="bg-gray-50 rounded-lg p-5 relative">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Progress</p>
+                          <p className="text-xs text-gray-500">{goal.currentAmount} of {goal.targetAmount}</p>
+                        </div>
+                      </div>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Completion</span>
+                      <span className="text-sm font-medium" style={{ color: goal.color }}>{percentage}%</span>
+                    </div>
+                    <Progress
+                      value={Number(percentage)}
+                      className="h-2 bg-gray-200 mb-4"
+                      style={{ ['--progress-background' as string]: goal.color }}
                     />
-                    <span className="text-sm text-gray-500">
-                      {term.goal.timeLeft}
-                    </span>
+                    <div className="text-xs text-gray-500 text-right">
+                      {Number(percentage) < 30 ? 'Getting Started' : Number(percentage) < 70 ? 'In Progress' : 'Almost There'}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
-        {/* Reallocation Opportunities */}
-        <Card className="mb-8">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-semibold">
-              Reallocation Opportunities
+        {/* Improvement Suggestions */}
+        <Card className="mb-8 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
+            <CardTitle className="text-xl font-semibold flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Improvement Suggestions
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Suggested Adjustments */}
-              <div className="bg-neutral-100 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-black mb-6">
-                  Suggested Adjustments
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
+                <h3 className="text-lg font-medium text-gray-900 mb-6 border-b pb-3">
+                  Overall Assessment
                 </h3>
-                <div className="space-y-6">
-                  {reallocationData.adjustments.map((adjustment, index) => (
-                    <div key={index} className="flex justify-between">
-                      <div>
-                        <p className="font-medium text-black mb-2">
-                          {adjustment.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Current: {adjustment.current}
-                        </p>
+                <div className="space-y-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-2 h-2 bg-[#004a7c] rounded-full"></div>
+                    </div>
+                    <div className="ml-3">
+                      <p className="font-medium text-gray-800">
+                        {smartAnalysis?.analysisResult?.feedback?.Overall || "No overall assessment available"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Specific Suggestions */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
+                <h3 className="text-lg font-medium text-gray-900 mb-6 border-b pb-3">
+                  Action Items
+                </h3>
+                <div className="space-y-4">
+                  {smartAnalysis?.analysisResult?.suggestions.map((suggestion, index) => (
+                    <div key={index} className="flex">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-2 h-2 bg-[#00a9e0] rounded-full"></div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-[#00a9e0] mb-2">
-                          {adjustment.change}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Suggested: {adjustment.suggested}
+                      <div className="ml-3">
+                        <p className="font-medium text-gray-800">
+                          {suggestion}
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Potential Impact */}
-              <div className="bg-neutral-100 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-black mb-6">
-                  Potential Impact
-                </h3>
-                <div className="mb-6">
-                  <p className="text-base font-medium text-black mb-1">
-                    Monthly Savings
-                  </p>
-                  <p className="text-3xl font-bold text-[#004a7c]">
-                    {reallocationData.impact.monthlySavings}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-base font-medium text-black mb-1">
-                    Goal Achievement Speed
-                  </p>
-                  <p className="text-lg text-[#00a9e0]">
-                    {reallocationData.impact.speedImprovement}
-                  </p>
+                  )) || (
+                    <div className="flex">
+                      <div className="ml-3">
+                        <p className="font-medium text-gray-800">
+                          No suggestions available
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* What-If Scenarios */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-semibold">
-              What-If Scenarios
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {whatIfScenarios.map((scenario, index) => (
-                <div key={index} className="bg-neutral-100 rounded-lg p-4">
-                  <h3 className="font-medium text-base mb-6">
-                    {scenario.title}
-                  </h3>
-                  <div className="mb-2 flex justify-between">
-                    <span className="text-sm text-black">
-                      {scenario.current.label}
-                    </span>
-                    <span className="text-base font-medium text-black">
-                      {scenario.current.value}
-                    </span>
-                  </div>
-                  <div className="mb-2 flex justify-between">
-                    <span className="text-sm text-black">
-                      {scenario.potential.label}
-                    </span>
-                    <span className="text-base font-medium text-[#00a9e0]">
-                      {scenario.potential.value}
-                    </span>
-                  </div>
-                  <Progress
-                    value={scenario.progress}
-                    className="h-2 bg-gray-200 mb-4"
-                  />
-                  <p className="text-sm text-gray-500">{scenario.impact}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Phone Number Verification Modal */}
+        {/* Goal Input Modal */}
         {isGoalInputModalOpen && (
           <GoalInputModal
             onClose={() => setIsGoalInputModalOpen(false)}

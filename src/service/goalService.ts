@@ -1,3 +1,4 @@
+import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
 import { IGoal, IGoalDetails, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
 
@@ -73,3 +74,18 @@ export const findLongestTimePeriod = async function (): Promise<ILongestTimePeri
         throw error;
     }
 };
+
+export const analyzeGoal = async function (): Promise<ISmartAnalysisResult> {
+    try {
+        // Analyze the goal Data via the backend API 
+        const response = await axiosInstance.get<ISmartAnalysisResult>(`/api/v1/goal/analyze`);
+
+        // Validate the response and return the data if successful, otherwise throw an error.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to retrieve the longest time period details.');
+    } catch (error) {
+        // Log and re-throw any errors for upstrema handling 
+        console.error(`Error while analyzing the goal Data`, error);
+        throw error;
+    }
+}

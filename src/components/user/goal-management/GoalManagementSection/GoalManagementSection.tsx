@@ -12,33 +12,28 @@ export const GoalManagementSection = function () {
   const [isGoalInputModalOpen, setIsGoalInputModalOpen] = useState(false);
   const totalActiveGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
   const longestTimePeriod = useGoalStore((state) => state.longestTimePeriod);
+  const smartAnalysis = useGoalStore((state) => state.smartAnalysis);
   const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const fetchGoals = useGoalStore(state => state.fetchGoals);
+  const analysisData = useGoalStore((state) => state.fetchSmartAnalysis)
 
   useEffect(() => {
     fetchTotalActiveGoalAmount();
     fetchLongestTimePeriod();
-  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod]);
+    analysisData();
+  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData]);
 
   const handleGoalCreated = useCallback(() => {
     fetchGoals(); // Fetch the updated goals after a new goal is created
     fetchTotalActiveGoalAmount(); // Fetch the updated total active goal amount
     fetchLongestTimePeriod();
-  }, [fetchGoals, fetchTotalActiveGoalAmount, fetchLongestTimePeriod]);
+    analysisData();
+  }, [fetchGoals, fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData]); 
 
   const handleGoalInput = function () {
     setIsGoalInputModalOpen(true);
   };
-
-  // SMART goals data
-  const smartGoals = [
-    { name: "Specific", progress: 90 },
-    { name: "Measurable", progress: 85 },
-    { name: "Achievable", progress: 75 },
-    { name: "Realistic", progress: 80 },
-    { name: "Time-bound", progress: 95 },
-  ];
 
   // Term goals data
   const termGoals = [
@@ -136,16 +131,6 @@ export const GoalManagementSection = function () {
             <PlusIcon className="w-3.5 h-4 mr-2" />
             Add Goal
           </Button>
-          {/* <Button variant="outline" className="border-[#004a7c] text-[#004a7c]">
-            <Image
-              className="mr-2"
-              alt="Import/Export"
-              src="/export_import_icon.svg"
-              height={16}
-              width={16}
-            />
-            Import/Export
-          </Button> */}
         </div>
 
         {/* Summary Cards */}
@@ -188,15 +173,21 @@ export const GoalManagementSection = function () {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {smartGoals.map((goal, index) => (
-                <div key={index} className="bg-[#004a7c1a] rounded-lg p-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium text-black">{goal.name}</span>
-                    <span className="text-[#004a7c]">{goal.progress}%</span>
+              {['specific', 'measurable', 'achievable', 'relevant', 'timeBound'].map((criteria, index) => {
+                // Use the score from smartAnalysis if available, otherwise default to 0
+                const score = smartAnalysis?.analysisResult?.criteriaScores?.[criteria] || 0;
+
+                return (
+                  <div key={index} className="bg-[#004a7c1a] rounded-lg p-4">
+                    <div className="flex justify-between mb-2">
+                      
+                      <span className="font-medium text-black">{criteria.charAt(0).toUpperCase() + criteria.slice(1)}</span>
+                      <span className="text-[#004a7c]">{score}%</span>
+                    </div>
+                    <Progress value={score} className="h-2 bg-blue-200" />
                   </div>
-                  <Progress value={goal.progress} className="h-2 bg-gray-200" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

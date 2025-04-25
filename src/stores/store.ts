@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import IUserState from './interfaces/IUserState';
 import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
-import { findLongestTimePeriod, getTotalActiveGoalAmount, getUserGoals } from '@/service/goalService';
+import { analyzeGoal, findLongestTimePeriod, getTotalActiveGoalAmount, getUserGoals } from '@/service/goalService';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -27,15 +27,35 @@ interface Goal {
     endDate: Date;
 }
 
+export interface IAnalysisResult {
+  isSmartCompliant: boolean;
+  feedback: {
+    Overall: string;
+    [key: string]: string;
+  };
+  suggestions: string[];
+  totalScore: number;
+  criteriaScores: {
+    specific: number;
+    measurable: number;
+    achievable: number;
+    relevant: number;
+    timeBound: number;
+    [key: string]: number;
+  };
+}
+
 interface GoalState {
     goals: Goal[]; // Array of goals 
     totalActiveGoalAmount: number; // Total active goal amount
     longestTimePeriod: string; // Longest Time Period acheving the goal
+    smartAnalysis: IAnalysisResult | null; // SMART analysis result
     fetchGoals: () => Promise<void>; // Function to fetch goals 
     addGoal: (newGoal: Goal) => void; // Function to add a new goal
     deleteGoal: (goalId: string) => void; // Function to delete a goal by ID    
     fetchTotalActiveGoalAmount: () => Promise<void>; // Function to fetch total active goal amount
     fetchLongestTimePeriod: () => Promise<void>; // Function to fetch longest time period
+    fetchSmartAnalysis: () => Promise<void>; // Function to fetch SMART analysis
 }
 
 export const useGoalStore = create<GoalState>()(
@@ -44,6 +64,7 @@ export const useGoalStore = create<GoalState>()(
             goals: [], // Initial state: empty array of goals
             totalActiveGoalAmount: 0,
             longestTimePeriod: '',
+            smartAnalysis: null, // Initial SMART analysis state
 
             // Function to fetch initial goals
             fetchGoals: async () => {
@@ -54,6 +75,17 @@ export const useGoalStore = create<GoalState>()(
                 } catch (error) {
                     console.error(`Failed to fetch goals:`, error);
                 }
+            },
+
+            // In your store.ts file, update the fetchSmartAnalysis function:
+            fetchSmartAnalysis: async () => {
+              try {         
+                const response = await analyzeGoal();
+                const data = await response.data;
+                set({ smartAnalysis: data }); // Store the complete SMART analysis result
+              } catch (error) {
+                console.error(`Failed to fetch SMART analysis:`, error);
+              }
             },
 
             // Function to add a new goal

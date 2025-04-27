@@ -223,7 +223,7 @@ export const GoalManagementSection = function () {
 
         {/* Improvement Suggestions */}
         <Card className="mb-8 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
+          <CardHeader className="bg-gradient-to-r rounded-lg from-[#004a7c] to-[#00a9e0] text-white">
             <CardTitle className="text-xl font-semibold flex items-center">
               <TrendingUp className="w-5 h-5 mr-2" />
               Improvement Suggestions

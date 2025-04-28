@@ -1,5 +1,5 @@
 interface IUserImageUrl {
-    userProfilePictureUrl: string;
+    profilePictureUrl: string;
 }
 
 interface IUserProfilePictureUrl {

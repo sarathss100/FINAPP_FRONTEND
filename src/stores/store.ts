@@ -4,29 +4,56 @@ import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
 import { analyzeGoal, findLongestTimePeriod, getTotalActiveGoalAmount, getUserGoals, goalsByCategory } from '@/service/goalService';
 import { IGoal } from '@/types/IGoal';
+import { getUserProfilePictureUrl } from '@/service/userService';
 
 export const useUserStore = create<IUserState>()(
     persist(
         (set) => ({
             user: null,
+            profilePictureUrl: './user.png',
             login: (userData: IUser) => set(() => ({ user: { ...userData } })),
+            
+            // fetchtheProfileUrl
+            fetchProfilePictureUrl: async () => {
+              try {         
+                const response = await getUserProfilePictureUrl();
+                  const data = await response.data;
+                  console.log(`userStoreData`, data);
+                  set({ profilePictureUrl: data.profilePictureUrl });
+              } catch (error) {
+                  console.error(`Failed to fetch Profile Picture Url:`, error);
+                  set({ profilePictureUrl: './user.png' });
+              }
+            }, 
+
+            // updteProfilePictureUrl
+            updateProfilePictureUrl: (url: string) => {
+                set({ profilePictureUrl: url });
+            },
+
+            reset: () => {
+                // Clear the user state
+                set(() => ({ user: null }));
+                set(() => ({ profilePictureUrl: '' }));
+            },
+
             logout: () => {
                 // Reset the goal store 
                 useGoalStore.getState().reset();
+
+                // Reset the user store
+                useUserStore.getState().reset();
 
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');
                 }
-                
-                // Clear the user state
-                set(() => ({ user: null }))
 
                 // Clear the persisted user storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('user-storage');
                 }
-            } 
+            }
         }),
         {
             name: 'user-storage'

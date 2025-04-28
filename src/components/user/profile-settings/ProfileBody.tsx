@@ -18,6 +18,7 @@ import ResetPasswordModal from '@/components/base/auth/forgetpassword/ResetPassw
 import { Switch } from '@/components/base/switch';
 import { signout } from '@/service/authenticationService';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import ProfilePicture from '@/components/base/ProfilePicture';
 
 export const ProfileBody = function () {
   const [loading, setLoading] = useState(true);
@@ -226,17 +227,9 @@ export const ProfileBody = function () {
       {/* Page title */}
       <PageTitle title={`Profile & Settings`} tag={`Manage your account settings and preferences`} />
       
-      {/* Profile header with avatar */}
-      <div className="mb-8 flex flex-col items-center">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center mb-4 shadow-lg">
-          <span className="text-3xl font-bold text-white">
-            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-          </span>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-800">{user?.firstName} {user?.lastName}</h2>
-        <p className="text-gray-500">{user?.phoneNumber}</p>
-      </div>
-
+      {/* Profile Picture Component */}
+      <ProfilePicture />
+      
       {/* Account Settings Card */}
       <Card className="mb-6 shadow-md border border-gray-100 overflow-hidden transform transition-all hover:shadow-lg">
         <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">

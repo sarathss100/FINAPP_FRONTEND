@@ -51,6 +51,7 @@ export const getUserProfilePictureUrl = async function (): Promise<IUserProfileP
     try {
         // Send a POST request to user profile picture url
         const response = await axiosInstance.get<IUserProfilePictureUrl>('/api/v1/user/profile/profile-picture');
+        
         // Validate the response 
         if (response.data && response.data.success) {
             return response.data; // Return the user profile picture url if successfull.

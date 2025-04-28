@@ -197,13 +197,13 @@ export const GoalManagementSection = function () {
                     </div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700">Completion</span>
-                      <span className="text-sm font-medium" style={{ color: goal.color }}>{percentage}%</span>
+                      <span className="text-sm font-medium" style={{ color: goal.color }}>{Number(percentage).toFixed(2)}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="h-2 rounded-full" 
                           style={{ 
-                            width: `${Number(percentage)}%`, 
+                            width: `${Number(percentage).toFixed(2)}%`, 
                             backgroundColor: Number(percentage) === 100 ? '#10b981' : Number(percentage) < 30 ? '#ef4444' : '#f59e0b'
                           }}
                         ></div>

@@ -48,6 +48,8 @@ export const resetPasswordSchema = z.object({
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 export const goalSchema = z.object({
+    _id: z.string().optional(),
+    user_id: z.string().optional(),
     tenant_id: z.string().optional(),
     goal_name: z
         .string()
@@ -57,6 +59,7 @@ export const goalSchema = z.object({
         .enum(['Education', 'Retirement', 'Travel', 'Investment', 'Other'])
         .nullable().optional(),
     target_amount: z.number().min(0, 'Target amount must be non-negative.'),
+    current_amount: z.number().min(0, 'Current amount must be non-negative').optional(),
     initial_investment: z.number().min(0, 'Initial investment must be non-negative.'),
     currency: z.enum(['USD', 'EUR', 'INR', 'GBP']).default('INR'),
     target_date: z
@@ -72,6 +75,10 @@ export const goalSchema = z.object({
     is_completed: z.boolean().default(false),
     created_by: z.string().min(1, 'Created by user ID is required.').optional(),
     last_updated_by: z.string().optional(),
+    timeframe: z.string().optional(),
+    startDate: z.date().optional(),
+    endDate: z.date().optional(),
+    createdAt: z.date().optional(),
 }).refine(
     (data) => data.initial_investment < data.target_amount,
     {

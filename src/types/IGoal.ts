@@ -1,5 +1,6 @@
 
 export interface IGoal {
+    _id: string;
     user_id: string;
     tenant_id: string;
     goal_name: string;
@@ -14,17 +15,21 @@ export interface IGoal {
     description: string;
     reminder_frequency: string;
     goal_type: string;
-    tags: string;
-    dependencies: string;
+    tags: string[];
+    dependencies: string[]
     is_completed: boolean;
     created_by: string;
     last_updated_by: string;
+    timeframe: string;
+    startDate: Date;
+    endDate: Date;
+    createdAt: Date;
 }
 
 export interface IGoalDetails {
     success: boolean,
     message: string,
-    data: IGoal;
+    data: IGoal[];
 }
 
 export interface ITotalActiveGoalAmount {
@@ -37,4 +42,10 @@ export interface ILongestTimePeriod {
     success: boolean,
     message: string,
     data: { longestTimePeriod: string };
+}
+
+export interface IGoalDeleted {
+    success: boolean,
+    message: string,
+    data: { isDeleted: boolean };
 }

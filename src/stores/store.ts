@@ -3,6 +3,7 @@ import IUserState from './interfaces/IUserState';
 import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
 import { analyzeGoal, findLongestTimePeriod, getTotalActiveGoalAmount, getUserGoals, goalsByCategory } from '@/service/goalService';
+import { IGoal } from '@/types/IGoal';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -33,32 +34,22 @@ export const useUserStore = create<IUserState>()(
     )
 );
 
-interface Goal {
-    _id: string;
-    goal_name: string;
-    targetAmount: number;
-    currentAmount: number;
-    timeframe: string;
-    startDate: Date;
-    endDate: Date;
-}
-
 export interface IAnalysisResult {
-  isSmartCompliant: boolean;
-  feedback: {
-    Overall: string;
-    [key: string]: string;
-  };
-  suggestions: string[];
-  totalScore: number;
-  criteriaScores: {
-    specific: number;
-    measurable: number;
-    achievable: number;
-    relevant: number;
-    timeBound: number;
-    [key: string]: number;
-  };
+    isSmartCompliant: boolean;
+    feedback: {
+        Overall: string;
+        [key: string]: string;
+    };
+    suggestions: string[];
+    totalScore: number;
+    criteriaScores: {
+        specific: number;
+        measurable: number;
+        achievable: number;
+        relevant: number;
+        timeBound: number;
+        [key: string]: number;
+    };
 }
 
 interface ICategoryByGoals {
@@ -71,18 +62,19 @@ interface ICategoryByGoals {
 }
 
 interface GoalState {
-    goals: Goal[]; // Array of goals 
+    goals: IGoal[]; // Array of goals 
     totalActiveGoalAmount: number; // Total active goal amount
     longestTimePeriod: string; // Longest Time Period acheving the goal
     smartAnalysis: IAnalysisResult | null; // SMART analysis result
     categoryByGoals: ICategoryByGoals; // Category By Goals
-    fetchGoals: () => Promise<void>; // Function to fetch goals 
-    addGoal: (newGoal: Goal) => void; // Function to add a new goal
+    fetchAllGoals: () => Promise<void>; // Function to fetch goals 
+    addGoal: (newGoal: IGoal) => void; // Function to add a new goal
     deleteGoal: (goalId: string) => void; // Function to delete a goal by ID    
     fetchTotalActiveGoalAmount: () => Promise<void>; // Function to fetch total active goal amount
     fetchLongestTimePeriod: () => Promise<void>; // Function to fetch longest time period
     fetchSmartAnalysis: () => Promise<void>; // Function to fetch SMART analysis
     fetchCategoryByGoals: () => Promise<void>;
+    reset: () => void;
 }
 
 export const useGoalStore = create<GoalState>()(
@@ -118,30 +110,20 @@ export const useGoalStore = create<GoalState>()(
                     }
                 }),
 
-            // Function to fetch initial goals
-            fetchGoals: async () => {
-                try {
-                    const response = await getUserGoals();
-                    const data = await response.data;
-                    set({ goals: Array.isArray(data) ? data : [data] });
-                } catch (error) {
-                    console.error(`Failed to fetch goals:`, error);
-                }
-            },
-
             // In your store.ts file, update the fetchSmartAnalysis function:
             fetchSmartAnalysis: async () => {
               try {         
                 const response = await analyzeGoal();
-                const data = await response.data;
-                set({ smartAnalysis: data }); // Store the complete SMART analysis result
+                  const data = await response.data;
+                  set({ smartAnalysis: data }); // Store the complete SMART analysis result
               } catch (error) {
-                console.error(`Failed to fetch SMART analysis:`, error);
+                  console.error(`Failed to fetch SMART analysis:`, error);
+                  set({ smartAnalysis: null });
               }
             },
 
             // Function to add a new goal
-            addGoal: (newGoal: Goal) => (
+            addGoal: (newGoal: IGoal) => (
                 set((state) => ({
                     goals: [...state.goals, newGoal],
                 }))
@@ -162,6 +144,7 @@ export const useGoalStore = create<GoalState>()(
                     set({ totalActiveGoalAmount: data.totalActiveGoalAmount });
                 } catch (error) {
                     console.error(`Failed to fetch goals:`, error);
+                    set({ totalActiveGoalAmount: 0 });
                 }
             },
 
@@ -173,6 +156,7 @@ export const useGoalStore = create<GoalState>()(
                     set({ longestTimePeriod: data.longestTimePeriod});
                 } catch (error) {
                     console.error(`Failed to fetch the longest time period`, error);
+                    set({ longestTimePeriod: `0 Y 0 M 0 D` });
                 }
             },
 
@@ -184,8 +168,29 @@ export const useGoalStore = create<GoalState>()(
                     set({ categoryByGoals: data.goalsByCategory });
                 } catch (error) {
                     console.error(`Failed to get the goal by category`, error);
+                    set({
+                        categoryByGoals: {
+                        shortTermGoalsCurrntAmount: 0,
+                        shortTermGoalsTargetAmount: 0,
+                        mediumTermGoalsCurrntAmount: 0,
+                        mediumTermGoalsTargetAmount: 0,
+                        longTermGoalsCurrntAmount: 0,
+                        longTermGoalsTargetAmount: 0,
+                    }})
                 }
             },
+
+            // Function to fetch all goals 
+            fetchAllGoals: async () => {
+                try {
+                    const response = await getUserGoals();
+                    const data = await response.data;
+                    set({ goals: data });
+                } catch (error) {
+                    console.error(`Failed to get all goals`, error);
+                    set({ goals: [] });
+                }
+            }
         }),
         {
             name: 'goal-storage', // Persisted state key

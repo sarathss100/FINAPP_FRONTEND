@@ -1,6 +1,6 @@
 "use client";
 import { PlusIcon, MoreVertical, TrendingUp, Clock, Wallet, Calendar } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import { Progress } from '@/components/base/progress';
@@ -15,24 +15,17 @@ export const GoalManagementSection = function () {
   const goalsByCategory = useGoalStore((state) => state.categoryByGoals);
   const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const fetchGoals = useGoalStore(state => state.fetchGoals);
   const analysisData = useGoalStore((state) => state.fetchSmartAnalysis);
   const fetchCategoryByGoals = useGoalStore((state) => state.fetchCategoryByGoals);
+  const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
 
-  useEffect(() => {
+  const handleGoalCreated = useCallback(() => {
     fetchTotalActiveGoalAmount();
     fetchLongestTimePeriod();
     analysisData();
     fetchCategoryByGoals();
-  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals]);
-
-  const handleGoalCreated = useCallback(() => {
-    fetchGoals(); // Fetch the updated goals after a new goal is created
-    fetchTotalActiveGoalAmount(); // Fetch the updated total active goal amount
-    fetchLongestTimePeriod();
-    analysisData();
-    fetchCategoryByGoals();
-  }, [fetchGoals, fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals]); 
+    fetchAllGoals();
+  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals, fetchAllGoals]); 
 
   const handleGoalInput = function () {
     setIsGoalInputModalOpen(true);
@@ -124,7 +117,7 @@ export const GoalManagementSection = function () {
                 { name: 'Relevant', key: 'relevant', color: '#9C27B0' },
                 { name: 'Time-Bound', key: 'timeBound', color: '#F44336' }
               ].map((criteria, index) => {
-                const score = smartAnalysis?.analysisResult?.criteriaScores?.[criteria.key] || 0;
+                const score = smartAnalysis?.criteriaScores?.[criteria.key] || 0;
                 
                 return (
                   <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
@@ -206,11 +199,15 @@ export const GoalManagementSection = function () {
                       <span className="text-sm font-medium text-gray-700">Completion</span>
                       <span className="text-sm font-medium" style={{ color: goal.color }}>{percentage}%</span>
                     </div>
-                    <Progress
-                      value={Number(percentage)}
-                      className="h-2 bg-gray-200 mb-4"
-                      style={{ ['--progress-background' as string]: goal.color }}
-                    />
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full" 
+                          style={{ 
+                            width: `${Number(percentage)}%`, 
+                            backgroundColor: Number(percentage) === 100 ? '#10b981' : Number(percentage) < 30 ? '#ef4444' : '#f59e0b'
+                          }}
+                        ></div>
+                    </div>
                     <div className="text-xs text-gray-500 text-right">
                       {Number(percentage) < 30 ? 'Getting Started' : Number(percentage) < 70 ? 'In Progress' : 'Almost There'}
                     </div>
@@ -243,7 +240,7 @@ export const GoalManagementSection = function () {
                     </div>
                     <div className="ml-3">
                       <p className="font-medium text-gray-800">
-                        {smartAnalysis?.analysisResult?.feedback?.Overall || "No overall assessment available"}
+                        {smartAnalysis?.feedback?.Overall || "No overall assessment available"}
                       </p>
                     </div>
                   </div>
@@ -256,7 +253,7 @@ export const GoalManagementSection = function () {
                   Action Items
                 </h3>
                 <div className="space-y-4">
-                  {smartAnalysis?.analysisResult?.suggestions.map((suggestion, index) => (
+                  {smartAnalysis?.suggestions.map((suggestion: string, index: number) => (
                     <div key={index} className="flex">
                       <div className="flex-shrink-0 mt-1">
                         <div className="w-2 h-2 bg-[#00a9e0] rounded-full"></div>

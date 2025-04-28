@@ -1,9 +1,8 @@
 "use client";
-import { LockIcon, ShieldIcon } from "lucide-react";
+import { LockIcon, ShieldIcon, UserIcon, DownloadIcon, TrashIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '../../base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../base/Card';
-// import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
@@ -173,112 +172,113 @@ export const ProfileBody = function () {
     setIsDeleteConfirmationOpen(false);
   };
 
-
-  // Connected accounts data
-  // const connectedAccounts = [
-  //   {
-  //     name: "Google",
-  //     status: "Not connected",
-  //     icon: "/frame-3.svg",
-  //     connected: false,
-  //   },
-  // ];
-
-  // Family members data
-  // const familyMembers = [
-  //   {
-  //     title: "Show Accounts",
-  //     description: "Add on accounts",
-  //     action: "Show Related Acconts",
-  //   },
-  //   {
-  //     title: "Remove add on Account",
-  //     description: "Remoces Add On Accounts",
-  //     action: "Delete Account",
-  //   },
-  // ];
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <svg
-          className="animate-spin h-10 w-10 text-blue-500"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0012 20c4.411 0 8-3.589 8-8H4c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3z"
-          ></path>
-        </svg>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-b from-blue-50 to-white">
+        <div className="p-8 rounded-lg shadow-lg bg-white">
+          <svg
+            className="animate-spin h-12 w-12 text-blue-600 mx-auto"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0012 20c4.411 0 8-3.589 8-8H4c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3z"
+            ></path>
+          </svg>
+          <p className="mt-4 text-center text-gray-600 font-medium">Loading your profile...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-red-500 text-lg">{error}</p>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-b from-red-50 to-white">
+        <div className="p-8 rounded-lg shadow-lg bg-white border border-red-200">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-red-50">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <p className="text-red-600 text-lg text-center font-medium">{error}</p>
+          <p className="mt-2 text-gray-500 text-center">Please try refreshing the page or contact support.</p>
+        </div>
       </div>
     );
   }
 
-    return (
-    <main className="max-w-[1184px] mx-auto p-8 font-sans">
+  return (
+    <main className="max-w-[1184px] mx-auto p-4 md:p-8 font-sans min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Header with search and profile */}
       <UserHeader />
 
       {/* Page title */}
       <PageTitle title={`Profile & Settings`} tag={`Manage your account settings and preferences`} />
+      
+      {/* Profile header with avatar */}
+      <div className="mb-8 flex flex-col items-center">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center mb-4 shadow-lg">
+          <span className="text-3xl font-bold text-white">
+            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+          </span>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800">{user?.firstName} {user?.lastName}</h2>
+        <p className="text-gray-500">{user?.phoneNumber}</p>
+      </div>
 
       {/* Account Settings Card */}
-      <Card className="mb-6 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-semibold text-[#004a7c]">
+      <Card className="mb-6 shadow-md border border-gray-100 overflow-hidden transform transition-all hover:shadow-lg">
+        <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardTitle className="text-xl font-semibold text-[#004a7c] flex items-center gap-2">
+            <UserIcon className="h-5 w-5" />
             Account Settings
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                 First Name
               </label>
               <Input
                 defaultValue={user?.firstName}
-                  className="h-[42px] font-normal text-base"
-                  readOnly
+                className="h-[42px] font-normal text-base rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                readOnly
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                 Last Name
               </label>
               <Input
                 defaultValue={user?.lastName}
-                className="h-[42px] font-normal text-base"
+                className="h-[42px] font-normal text-base rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 readOnly
               />
             </div>
           </div>
 
           <div className="space-y-2 mt-6">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
               Phone Number
             </label>
             <Input
               defaultValue={user?.phoneNumber}
-              className="h-[42px] font-normal text-base"
+              className="h-[42px] font-normal text-base rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
               readOnly
             />
           </div>
@@ -286,48 +286,60 @@ export const ProfileBody = function () {
       </Card>
 
       {/* Security Card */}
-      <Card className="mb-6 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-semibold text-[#004a7c]">
+      <Card className="mb-6 shadow-md border border-gray-100 overflow-hidden transform transition-all hover:shadow-lg">
+        <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardTitle className="text-xl font-semibold text-[#004a7c] flex items-center gap-2">
+            <ShieldIcon className="h-5 w-5" />
             Security
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors duration-200">
               <div className="flex items-start gap-3">
-                <LockIcon className="h-4 w-4 mt-1" />
+                <div className="p-2 rounded-full bg-blue-100">
+                  <LockIcon className="h-5 w-5 text-blue-600" />
+                </div>
                 <div>
-                  <p className="font-medium text-base">Password</p>
+                  <p className="font-medium text-base text-gray-800">Password</p>
+                  <p className="text-sm text-gray-500">Secure your account with a strong password</p>
                 </div>
               </div>
-                <Button
-                  className="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsPhoneNumberVerificationModalOpen(true);
-                  }}
-                >
-                  Change Password
-                </Button>
+              <Button
+                className="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 px-4 py-2 rounded-md font-medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsPhoneNumberVerificationModalOpen(true);
+                }}
+              >
+                Change Password
+              </Button>
             </div>
 
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors duration-200">
               <div className="flex items-start gap-3">
-                <ShieldIcon className="h-4 w-4 mt-1" />
+                <div className="p-2 rounded-full bg-blue-100">
+                  <ShieldIcon className="h-5 w-5 text-blue-600" />
+                </div>
                 <div>
-                  <p className="font-medium text-base">
+                  <p className="font-medium text-base text-gray-800">
                     Two-Factor Authentication
                   </p>
                   <p className="text-sm text-gray-500">
-                    Add an extra layer of security
+                    Add an extra layer of security to your account
                   </p>
                 </div>
               </div>
-              <Switch
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${isTwoFactorEnabled ? 'text-green-600' : 'text-gray-500'}`}>
+                  {isTwoFactorEnabled ? 'Enabled' : 'Disabled'}
+                </span>
+                <Switch
                   checked={isTwoFactorEnabled}
                   onCheckedChange={() => handleToggle2FA()}
-              />
+                  className="data-[state=checked]:bg-blue-600"
+                />
+              </div>
             </div>
           </div>
           {/* Hidden reCAPTCHA Container */}
@@ -335,172 +347,113 @@ export const ProfileBody = function () {
         </CardContent>
       </Card>
 
-      {/* Connected Accounts Card */}
-      {/* <Card className="mb-6 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-semibold text-[#004a7c]">
-            Connected Accounts
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {connectedAccounts.map((account, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-start gap-3">
-                  <Image
-                    src={account.icon}
-                    alt={account.name}
-                    className="mt-1"
-                    width={20}
-                    height={20}
-                  />
-                  <div>
-                    <p className="font-medium text-base">{account.name}</p>
-                    <p className="text-sm text-gray-500">{account.status}</p>
-                  </div>
-                </div>
-                <Button
-                  className={
-                    account.connected ? "text-red-500" : "bg-blue-600"
-                  } 
-                >
-                  {account.connected ? "Disconnect" : "Connect"}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>  */}
-
-      {/* Family Members Card */}
-      {/* <Card className="mb-6 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-semibold text-[#004a7c]">
-            Family memebers
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {familyMembers.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 mt-1"></div>
-                  <div>
-                    <p className="font-medium text-base">{item.title}</p>
-                    <p className="text-sm text-gray-500">{item.description}</p>
-                  </div>
-                </div>
-                <Button
-                  className={
-                    item.action.includes("Delete")
-                      ? "text-red-500"
-                      : "text-[#004a7c]"
-                  }
-                >
-                  {item.action}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card> */}
-
       {/* Account Management Card */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-semibold text-[#004a7c]">
+      <Card className="shadow-md border border-gray-100 overflow-hidden transform transition-all hover:shadow-lg">
+        <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardTitle className="text-xl font-semibold text-[#004a7c] flex items-center gap-2">
+            <UserIcon className="h-5 w-5" />
             Account Management
           </CardTitle>
         </CardHeader>
-        <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 mt-1"></div>
-                  <div>
-                    <p className="font-medium text-base">Back up Data</p>
-                    <p className="text-sm text-gray-500">Export Data</p>
-                  </div>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors duration-200">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-blue-100">
+                  <DownloadIcon className="h-5 w-5 text-blue-600" />
                 </div>
-                <Button className="text-white bg-red-600 hover:bg-red-700">Import/Export</Button>
-              </div>
-            </div>
-            <div className="space-y-4 mt-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 mt-1"></div>
-                  <div>
-                    <p className="font-medium text-base">Delete Account</p>
-                    <p className="text-sm text-gray-500">Destroy Data</p>
-                  </div>
+                <div>
+                  <p className="font-medium text-base text-gray-800">Back up Data</p>
+                  <p className="text-sm text-gray-500">Export your account data for safekeeping</p>
                 </div>
-                <Button
-                  className="text-white bg-red-600 hover:bg-red-700"
-                  onClick={openDeleteConfirmation}
-                >
-                  Delete Account
-                </Button>
               </div>
+              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-md px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200">
+                Import/Export
+              </Button>
             </div>
+          </div>
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center justify-between p-4 border border-red-100 rounded-lg bg-red-50 hover:bg-red-100 transition-colors duration-200">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-red-100">
+                  <TrashIcon className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-base text-gray-800">Delete Account</p>
+                  <p className="text-sm text-gray-500">Permanently remove your account and data</p>
+                </div>
+              </div>
+              <Button
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-md px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200"
+                onClick={openDeleteConfirmation}
+              >
+                Delete Account
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card> 
         
-        {/* Phone Number Verification Modal */}
-        {isPhoneNumberVerificationModalOpen && (
-          <PhoneNumberVerificationModal
-            onClose={() => setIsPhoneNumberVerificationModalOpen(false)}
-            onSuccess={handlePhoneVerificationSuccess}
-            onFailure={handleFailure}
-            isLoading={isPhoneNumberLoading}
-          />
-        )}
-      
-        {/* OTP Verification Modal */}
-        {isOtpModalOpen && (
-          <ResetPasswordOtpVerificationModal
-            onClose={() => setIsOtpModalOpen(false)}
-            onSuccess={handleOTPVerificationSuccess}
-            onFailure={handleFailure}
-            phoneNumber={phoneNumber}
-            confirmationResult={confirmationResult}
-            isLoading={isOTPLoading}
-          />
-        )}
-      
-        {/* Password Reset Modal */}
-        {isResetPasswordModalOpen && (
-          <ResetPasswordModal
-            onClose={() => setIsResetPasswordModalOpen(false)}
-            onSuccess={handleResetPasswordSuccess}
-            onFailure={handleFailure}
-            phoneNumber={phoneNumber}
-            isLoading={isResetPasswordLoading}
-          />
-        )}
+      {/* Phone Number Verification Modal */}
+      {isPhoneNumberVerificationModalOpen && (
+        <PhoneNumberVerificationModal
+          onClose={() => setIsPhoneNumberVerificationModalOpen(false)}
+          onSuccess={handlePhoneVerificationSuccess}
+          onFailure={handleFailure}
+          isLoading={isPhoneNumberLoading}
+        />
+      )}
+    
+      {/* OTP Verification Modal */}
+      {isOtpModalOpen && (
+        <ResetPasswordOtpVerificationModal
+          onClose={() => setIsOtpModalOpen(false)}
+          onSuccess={handleOTPVerificationSuccess}
+          onFailure={handleFailure}
+          phoneNumber={phoneNumber}
+          confirmationResult={confirmationResult}
+          isLoading={isOTPLoading}
+        />
+      )}
+    
+      {/* Password Reset Modal */}
+      {isResetPasswordModalOpen && (
+        <ResetPasswordModal
+          onClose={() => setIsResetPasswordModalOpen(false)}
+          onSuccess={handleResetPasswordSuccess}
+          onFailure={handleFailure}
+          phoneNumber={phoneNumber}
+          isLoading={isResetPasswordLoading}
+        />
+      )}
 
-        {/* Confirmation Modal */}
+      {/* Confirmation Modal */}
       <Dialog
         open={isDeleteConfirmationOpen}
         onClose={closeDeleteConfirmation}
         aria-labelledby="delete-account-confirmation-title"
         aria-describedby="delete-account-confirmation-description"
+        PaperProps={{
+          style: {
+            borderRadius: '12px',
+            padding: '12px'
+          }
+        }}
       >
-        <DialogTitle id="delete-account-confirmation-title">
+        <DialogTitle id="delete-account-confirmation-title" style={{ fontWeight: 'bold', color: '#DC2626' }}>
           Confirm Account Deletion
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-account-confirmation-description">
-              Are you sure you want to delete your account?
+            This action cannot be undone. All your data will be permanently deleted.
+            Are you sure you want to delete your account?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDeleteConfirmation} color="primary">
+          <Button 
+            onClick={closeDeleteConfirmation} 
+            className="text-gray-700 bg-gray-200 hover:bg-gray-300"
+          >
             Cancel
           </Button>
           <Button
@@ -508,7 +461,7 @@ export const ProfileBody = function () {
               handleAccountDeletion(); // Call the deletion function
               closeDeleteConfirmation(); // Close the modal
             }}
-            className='bg-red-600 hover:bg-red-700'
+            className='bg-red-600 hover:bg-red-700 text-white'
             autoFocus
           >
             Delete

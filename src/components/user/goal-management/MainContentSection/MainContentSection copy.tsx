@@ -1,4 +1,3 @@
-"use client";
 import React, { useState } from "react";
 import { Badge } from '@/components/base/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
@@ -8,25 +7,103 @@ import {
   DollarSign, ChevronLeft, ChevronRight, Search, SlidersHorizontal 
 } from "lucide-react";
 import Button from "@/components/base/Button";
-import { toast } from 'react-toastify';
-import { deleteGoal } from '@/service/goalService';
-import { useGoalStore } from '@/stores/store';
 
-export const MainContentSection = () => {
-  const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
-  const fetchCategoryByGoals = useGoalStore((state) => state.fetchCategoryByGoals);
-  const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
-  const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const fetchSmartAnalysis = useGoalStore((state) => state.fetchSmartAnalysis);
-  const goals = useGoalStore((state) => state.goals);
-
-  const globalFetch = function () {
-    fetchAllGoals();
-    fetchCategoryByGoals();
-    fetchLongestTimePeriod();
-    fetchTotalActiveGoalAmount();
-    fetchSmartAnalysis();
-  }
+export const MainContentSectionDemo = () => {
+  
+  // Sample expanded data for the goal list table
+  const allGoals = [
+    {
+      name: "Credit Card A",
+      amount: "$3,200",
+      pendingAmount: "$1,800",
+      priorityLevel: "High",
+      priorityColor: "bg-red-100 text-red-800",
+      targetDate: "Dec 31, 2025",
+      status: "In Progress",
+      statusColor: "bg-amber-100 text-amber-800",
+      statusIcon: <Clock className="w-3 h-3 mr-1" />,
+      completion: 45,
+      createdAt: "Jan 5, 2025"
+    },
+    {
+      name: "Personal Loan",
+      amount: "$1,580",
+      pendingAmount: "$0",
+      priorityLevel: "Medium",
+      priorityColor: "bg-blue-100 text-blue-800",
+      targetDate: "Jun 15, 2025",
+      status: "Completed",
+      statusColor: "bg-emerald-100 text-emerald-800",
+      statusIcon: <CheckCircle className="w-3 h-3 mr-1" />,
+      completion: 100,
+      createdAt: "Oct 10, 2024"
+    },
+    {
+      name: "Emergency Fund",
+      amount: "$5,000",
+      pendingAmount: "$3,500",
+      priorityLevel: "Critical",
+      priorityColor: "bg-purple-100 text-purple-800",
+      targetDate: "Aug 20, 2025",
+      status: "At Risk",
+      statusColor: "bg-red-100 text-red-800",
+      statusIcon: <AlertCircle className="w-3 h-3 mr-1" />,
+      completion: 30,
+      createdAt: "Feb 15, 2025"
+    },
+    {
+      name: "Car Down Payment",
+      amount: "$2,500",
+      pendingAmount: "$0",
+      priorityLevel: "Low",
+      priorityColor: "bg-gray-100 text-gray-800",
+      targetDate: "Mar 10, 2025",
+      status: "Completed",
+      statusColor: "bg-emerald-100 text-emerald-800",
+      statusIcon: <CheckCircle className="w-3 h-3 mr-1" />,
+      completion: 100,
+      createdAt: "Sep 5, 2024"
+    },
+    {
+      name: "Home Renovation",
+      amount: "$15,000",
+      pendingAmount: "$10,200",
+      priorityLevel: "Medium",
+      priorityColor: "bg-blue-100 text-blue-800",
+      targetDate: "Nov 30, 2026",
+      status: "In Progress",
+      statusColor: "bg-amber-100 text-amber-800",
+      statusIcon: <Clock className="w-3 h-3 mr-1" />,
+      completion: 32,
+      createdAt: "Mar 1, 2025"
+    },
+    {
+      name: "Wedding Fund",
+      amount: "$8,000",
+      pendingAmount: "$0",
+      priorityLevel: "High",
+      priorityColor: "bg-red-100 text-red-800",
+      targetDate: "Oct 15, 2024",
+      status: "Completed",
+      statusColor: "bg-emerald-100 text-emerald-800",
+      statusIcon: <CheckCircle className="w-3 h-3 mr-1" />,
+      completion: 100,
+      createdAt: "Jan 20, 2024"
+    },
+    {
+      name: "Vacation Trip",
+      amount: "$3,000",
+      pendingAmount: "$1,200",
+      priorityLevel: "Low",
+      priorityColor: "bg-gray-100 text-gray-800",
+      targetDate: "Jul 1, 2025",
+      status: "In Progress",
+      statusColor: "bg-amber-100 text-amber-800",
+      statusIcon: <Clock className="w-3 h-3 mr-1" />,
+      completion: 60,
+      createdAt: "Dec 12, 2024"
+    }
+  ];
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,92 +114,8 @@ export const MainContentSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Calculate status and completion data for each goal
-  const processedGoals = Object.values(goals).map(goal => {
-    // Calculate completion percentage
-    const completionPercentage = Math.min(100 - Math.round((goal.current_amount / goal.target_amount) * 100), 100);
-    
-    // Determine status based on completion and target date
-    let status = "In Progress";
-    let statusColor = "bg-amber-100 text-amber-800";
-    let statusIcon = <Clock className="w-3 h-3 mr-1" />;
-    
-    if (goal.is_completed || completionPercentage === 100) {
-      status = "Completed";
-      statusColor = "bg-emerald-100 text-emerald-800";
-      statusIcon = <CheckCircle className="w-3 h-3 mr-1" />;
-    } else {
-      // Check if target date is approaching (within 30 days)
-      const targetDate: Date = new Date(goal.target_date);
-      const today: Date = new Date();
-      const daysRemaining: number = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysRemaining < 0) {
-        status = "Overdue";
-        statusColor = "bg-red-100 text-red-800";
-        statusIcon = <AlertCircle className="w-3 h-3 mr-1" />;
-      } else if (daysRemaining < 30 && completionPercentage < 70) {
-        status = "At Risk";
-        statusColor = "bg-red-100 text-red-800";
-        statusIcon = <AlertCircle className="w-3 h-3 mr-1" />;
-      }
-    }
-    
-    // Format dates
-    const formattedTargetDate = new Date(goal.target_date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    
-    const formattedCreatedDate = new Date(goal.createdAt).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    
-    // Determine priority color
-    let priorityColor = "bg-blue-100 text-blue-800"; // Default for Medium
-    
-    if (goal.priority_level === "High") {
-      priorityColor = "bg-red-100 text-red-800";
-    } else if (goal.priority_level === "Critical") {
-      priorityColor = "bg-purple-100 text-purple-800";
-    } else if (goal.priority_level === "Low") {
-      priorityColor = "bg-gray-100 text-gray-800";
-    }
-    
-    // Calculate pending amount
-    const pendingAmount = Math.max(goal.target_amount - goal.current_amount, 0);
-    
-    // Format currency amounts
-    const formatCurrency = (amount: number) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: goal.currency || 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount);
-    };
-    
-    return {
-      ...goal,
-      name: goal.goal_name,
-      amount: formatCurrency(goal.target_amount),
-      pendingAmount: formatCurrency(pendingAmount),
-      priorityLevel: goal.priority_level,
-      priorityColor,
-      targetDate: formattedTargetDate,
-      status,
-      statusColor,
-      statusIcon,
-      completion: completionPercentage,
-      createdAt: formattedCreatedDate
-    };
-  });
-
   // Filtered goals based on status and search term
-  const filteredGoals = processedGoals.filter((goal) => {
+  const filteredGoals = allGoals.filter((goal) => {
     const matchesStatus = statusFilter === "all" || goal.status === statusFilter;
     const matchesSearch = goal.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
@@ -149,32 +142,23 @@ export const MainContentSection = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  const handleEdit = (goalId: string) => {
-    console.log(`Editing goal with ID: ${goalId}`);
+  const handleEdit = (goalName: string) => {
+    console.log(`Editing goal: ${goalName}`);
     // Implementation for edit functionality
   };
 
-  const handleDelete = async (goalId: string) => {
-    try {
-      const response = await deleteGoal(goalId);
-      if (response.data) {
-        toast.success(response.message || `Your goal has been successfully deleted. You can always create a new one whenever you're ready!`);
-      } 
-      setTimeout(() => {
-        globalFetch();
-      }, 300);
-    } catch (error) {
-      toast.error((error as Error).message || `Oops! Something went wrong. Please try again later or contact support if the issue persists.`);
-    }
+  const handleDelete = (goalName: string) => {
+    console.log(`Deleting goal: ${goalName}`);
+    // Implementation for delete functionality
   };
 
-  const handleView = (goalId: string) => {
-    console.log(`Viewing goal with ID: ${goalId}`);
+  const handleView = (goalName: string) => {
+    console.log(`Viewing goal: ${goalName}`);
     // Implementation for view functionality
   };
 
-  const handleContribute = (goalId: string) => {
-    console.log(`Contributing to goal with ID: ${goalId}`);
+  const handleContribute = (goalName: string) => {
+    console.log(`Contributing to goal: ${goalName}`);
     // Implementation for contribution functionality
   };
 
@@ -215,7 +199,7 @@ export const MainContentSection = () => {
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">Status:</span>
               <div className="flex space-x-2">
-                {["all", "In Progress", "Completed", "At Risk", "Overdue"].map((status) => (
+                {["all", "In Progress", "Completed", "At Risk"].map((status) => (
                   <Button
                     key={status}
                     onClick={() => handleStatusFilterChange(status)}
@@ -234,7 +218,7 @@ export const MainContentSection = () => {
         </div>
       )}
 
-      <CardContent>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader className="bg-gray-50">
@@ -267,10 +251,12 @@ export const MainContentSection = () => {
             </TableHeader>
             <TableBody>
               {currentGoals.length > 0 ? (
-                currentGoals.map((goal) => (
+                currentGoals.map((goal, index) => (
                   <TableRow
-                    key={goal._id}
-                    className={`border-t border-solid hover:bg-gray-50 transition-colors duration-150`}
+                    key={index}
+                    className={`border-t border-solid hover:bg-gray-50 transition-colors duration-150 ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                    }`}
                   >
                     <TableCell className="py-4 font-medium text-gray-900">
                       <div>
@@ -320,7 +306,7 @@ export const MainContentSection = () => {
                       <div className="flex space-x-2">
                         {goal.status !== "Completed" && (
                           <Button
-                            onClick={() => handleContribute(goal._id)}
+                            onClick={() => handleContribute(goal.name)}
                             className="w-8 h-8 p-0 rounded-full bg-green-50 hover:bg-green-100 text-green-600"
                             title="Add Contribution"
                           >
@@ -328,21 +314,21 @@ export const MainContentSection = () => {
                           </Button>
                         )}
                         <Button
-                          onClick={() => handleView(goal._id)}
+                          onClick={() => handleView(goal.name)}
                           className="w-8 h-8 p-0 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleEdit(goal._id)}
+                          onClick={() => handleEdit(goal.name)}
                           className="w-8 h-8 p-0 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600"
                           title="Edit Goal"
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDelete(goal._id)}
+                          onClick={() => handleDelete(goal.name)}
                           className="w-8 h-8 p-0 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
                           title="Delete Goal"
                         >
@@ -445,6 +431,6 @@ export const MainContentSection = () => {
           </div>
         </div>
       </CardContent>
-    </Card>
+      </Card>
   );
 };

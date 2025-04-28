@@ -1,6 +1,6 @@
 import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
-import { IGoal, IGoalDetails, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
+import { IGoal, IGoalDeleted, IGoalDetails, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
 import ICategoryByGoals from '@/types/ICategoryByGoals';
 
 // Sends a request to create a new goal for a user via the backend API
@@ -108,3 +108,21 @@ export const goalsByCategory = async function (): Promise<ICategoryByGoals> {
         throw error;
     }
 }
+
+// Sends a request to delete a specific goal associated with the user via the backend API.
+export const deleteGoal = async function (goalId: string): Promise<IGoalDeleted> {
+    try {
+        // Send a DELETE request to the backend API to delete the goal with the specified `goalId`.
+        const response = await axiosInstance.delete<IGoalDeleted>(`/api/v1/goal/delete`, { params: { goalId } });
+
+        // Validate the response and return the data if successful, otherwise throw an error.
+        if (response.data && response.data.success) {
+            return response.data;
+        }
+        throw new Error(response.data?.message || 'Failed to delete the goal.');
+    } catch (error) {
+        // Log the error and re-throw it for upstream handling.
+        console.error(`Error while deleting the goal with ID: ${goalId}`, error);
+        throw error;
+    }
+};

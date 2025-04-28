@@ -1,6 +1,6 @@
 import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
-import { IGoal, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
+import { IGoal, IGoalDetail, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
 import ICategoryByGoals from '@/types/ICategoryByGoals';
 
 // Sends a request to create a new goal for a user via the backend API
@@ -155,6 +155,22 @@ export const getMonthlyContribution = async function (): Promise<IGoalMonthlyCon
     } catch (error) {
         // Log and rethrow the error for upstream handling.
         console.error(`Error fetching monthly contribution data`, error);
+        throw error;
+    }
+}
+
+// Fetches the detailed information for a specific goal, including monthly contribution analysis, from the backend API.
+export const getGoalDetails = async function (goalId: string): Promise<IGoalDetail> {
+    try {
+        // Send a GET request to retrieve detailed goal data, including monthly contributions, using the provided goalId.
+        const response = await axiosInstance.get<IGoalDetail>(`/api/v1/goal/goal-detail`, { params: { goalId } });
+
+        // Return the goal details if the request was successful; otherwise, throw an error with the message from the response or a default error message.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to retrieve goal details.');
+    } catch (error) {
+        // Log the error for debugging purposes and rethrow it to allow upstream error handling.
+        console.error(`Error fetching goal details for goalId: ${goalId}`, error);
         throw error;
     }
 }

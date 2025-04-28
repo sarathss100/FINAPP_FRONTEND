@@ -24,6 +24,9 @@ export interface IGoal {
     startDate: Date;
     endDate: Date;
     createdAt: Date;
+    updatedAt?: Date;
+    dailyContribution?: number;
+    monthlyContribution?: number;
 }
 
 export interface IGoalDetails {
@@ -60,4 +63,10 @@ export interface IGoalMonthlyContributionAmount {
     success: boolean,
     message: string,
     data: { monthlyContribution: number };
+}
+
+export interface IGoalDetail {
+    success: boolean,
+    message: string,
+    data: { goalDetails: IGoal };
 }

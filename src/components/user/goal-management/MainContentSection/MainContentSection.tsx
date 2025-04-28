@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/Table';
 import { 
   Edit2, Trash2, Eye, AlertCircle, CheckCircle, Clock, 
-  DollarSign, ChevronLeft, ChevronRight, Search, SlidersHorizontal 
+  ChevronLeft, ChevronRight, Search, SlidersHorizontal, 
+  IndianRupee
 } from "lucide-react";
 import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
-import { deleteGoal } from '@/service/goalService';
+import { deleteGoal, getGoalDetails } from '@/service/goalService';
 import { useGoalStore } from '@/stores/store';
+import { GoalDetailsModal } from '../GoalViewModal';
 
 export const MainContentSection = () => {
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
@@ -31,6 +33,9 @@ export const MainContentSection = () => {
     fetchDailyContribution();
     fetchMonthlyContribution();
   }
+
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [isViewGoalModal, setIsViewGoalModal] = useState(false);
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -103,7 +108,7 @@ export const MainContentSection = () => {
     const formatCurrency = (amount: number) => {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: goal.currency || 'USD',
+        currency: goal.currency || 'INR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       }).format(amount);
@@ -172,9 +177,16 @@ export const MainContentSection = () => {
     }
   };
 
-  const handleView = (goalId: string) => {
-    console.log(`Viewing goal with ID: ${goalId}`);
-    // Implementation for view functionality
+  const handleView = async (goalId: string) => {
+    try {
+      const response = await getGoalDetails(goalId);
+      if (response.success) {
+        setSelectedGoal(response.data.goalDetails);
+        setIsViewGoalModal(true);
+      }
+    } catch (error) {
+      toast.error((error as Error).message || `Oops! Something went wrong. Please try again later or contact support if the issue persists.`);
+    }
   };
 
   const handleContribute = (goalId: string) => {
@@ -328,7 +340,7 @@ export const MainContentSection = () => {
                             className="w-8 h-8 p-0 rounded-full bg-green-50 hover:bg-green-100 text-green-600"
                             title="Add Contribution"
                           >
-                            <DollarSign className="w-4 h-4" />
+                            <IndianRupee className="w-4 h-4" />
                           </Button>
                         )}
                         <Button
@@ -443,12 +455,24 @@ export const MainContentSection = () => {
               className="bg-green-600 text-white hover:bg-green-700 flex items-center"
               onClick={() => console.log("Quick contribution clicked")}
             >
-              <DollarSign className="w-4 h-4 mr-1" />
+              <IndianRupee className="w-4 h-4 mr-1" />
               Quick Contribute
             </Button>
           </div>
         </div>
       </CardContent>
+
+      {/* Goal Details Modal */}
+      <GoalDetailsModal
+        isOpen={isViewGoalModal}
+        onClose={() => setIsViewGoalModal(false)}
+        goalData={selectedGoal}
+        onEditGoal={(goalId: string) => {
+          setIsViewGoalModal(false);
+          handleEdit(goalId);
+        }}
+      />
+
     </Card>
   );
 };

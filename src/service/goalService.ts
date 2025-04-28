@@ -1,6 +1,6 @@
 import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
-import { IGoal, IGoalDeleted, IGoalDetails, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
+import { IGoal, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
 import ICategoryByGoals from '@/types/ICategoryByGoals';
 
 // Sends a request to create a new goal for a user via the backend API
@@ -126,3 +126,35 @@ export const deleteGoal = async function (goalId: string): Promise<IGoalDeleted>
         throw error;
     }
 };
+
+// Fetches the user's daily goal contribution analysis from the backend API.
+export const getDailyContribution = async function (): Promise<IGoalDailyContributionAmount> {
+    try {
+        // Send a GET request to retrieve daily contribution data.
+        const response = await axiosInstance.get<IGoalDailyContributionAmount>(`/api/v1/goal/daily-contribution`);
+
+        // Return the data if the request was successful; otherwise, throw an error.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to retrieve daily contribution details.');
+    } catch (error) {
+        // Log and rethrow the error for upstream handling.
+        console.error(`Error fetching daily contribution data`, error);
+        throw error;
+    }
+}
+
+// Fetches the user's monthly goal contribution analysis from the backend API.
+export const getMonthlyContribution = async function (): Promise<IGoalMonthlyContributionAmount> {
+    try {
+        // Send a GET request to retrieve monthly contribution data.
+        const response = await axiosInstance.get<IGoalMonthlyContributionAmount>(`/api/v1/goal/monthly-contribution`);
+
+        // Return the data if the request was successful; otherwise, throw an error.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to retrieve monthly contribution details.');
+    } catch (error) {
+        // Log and rethrow the error for upstream handling.
+        console.error(`Error fetching monthly contribution data`, error);
+        throw error;
+    }
+}

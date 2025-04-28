@@ -18,6 +18,8 @@ export const MainContentSection = () => {
   const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const fetchSmartAnalysis = useGoalStore((state) => state.fetchSmartAnalysis);
+  const fetchDailyContribution = useGoalStore((state) => state.fetchDailyContribution);
+  const fetchMonthlyContribution = useGoalStore((state) => state.fetchMonthlyContribution);
   const goals = useGoalStore((state) => state.goals);
 
   const globalFetch = function () {
@@ -26,6 +28,8 @@ export const MainContentSection = () => {
     fetchLongestTimePeriod();
     fetchTotalActiveGoalAmount();
     fetchSmartAnalysis();
+    fetchDailyContribution();
+    fetchMonthlyContribution();
   }
 
   // State for pagination
@@ -179,8 +183,8 @@ export const MainContentSection = () => {
   };
 
   return (
-    <Card className="w-full py-6 rounded-xl shadow-md border border-gray-100 overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white p-6">
+    <Card className="py-6 w-full rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
           <CardTitle className="text-xl font-semibold">
             Financial Goals

@@ -13,11 +13,15 @@ export const GoalManagementSection = function () {
   const longestTimePeriod = useGoalStore((state) => state.longestTimePeriod);
   const smartAnalysis = useGoalStore((state) => state.smartAnalysis);
   const goalsByCategory = useGoalStore((state) => state.categoryByGoals);
+  const dailyContributionAmount = useGoalStore((state) => state.dailyContribution);
+  const monthlyContributionAmount = useGoalStore((state) => state.monthlyContribution);
   const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const analysisData = useGoalStore((state) => state.fetchSmartAnalysis);
   const fetchCategoryByGoals = useGoalStore((state) => state.fetchCategoryByGoals);
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
+  const fetchDailyContribution = useGoalStore((state) => state.fetchDailyContribution);
+  const fetchMonthlyContribution = useGoalStore((state) => state.fetchMonthlyContribution);
 
   const handleGoalCreated = useCallback(() => {
     fetchTotalActiveGoalAmount();
@@ -25,7 +29,9 @@ export const GoalManagementSection = function () {
     analysisData();
     fetchCategoryByGoals();
     fetchAllGoals();
-  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals, fetchAllGoals]); 
+    fetchDailyContribution();
+    fetchMonthlyContribution();
+  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals, fetchAllGoals, fetchDailyContribution, fetchMonthlyContribution]); 
 
   const handleGoalInput = function () {
     setIsGoalInputModalOpen(true);
@@ -54,7 +60,7 @@ export const GoalManagementSection = function () {
                 <p className="text-sm font-medium text-gray-600">Total Goal Amount</p>
                 <Wallet className="w-5 h-5 text-[#004a7c]" />
               </div>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {totalActiveGoalAmount.toLocaleString()}</h2>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number(totalActiveGoalAmount.toFixed(0)).toLocaleString()}</h2>
               <div className="w-full bg-gray-100 h-1 rounded-full">
                 <div className="bg-[#00a9e0] h-1 rounded-full w-3/4"></div>
               </div>
@@ -64,10 +70,10 @@ export const GoalManagementSection = function () {
           <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-3">
-                <p className="text-sm font-medium text-gray-600">Monthly Payment Required</p>
+                <p className="text-sm font-medium text-gray-600">Daily Contribution</p>
                 <Calendar className="w-5 h-5 text-[#004a7c]" />
               </div>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {(totalActiveGoalAmount / 12).toLocaleString(undefined, {maximumFractionDigits: 0})}</h2>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number(dailyContributionAmount.toFixed(0)).toLocaleString()}</h2>
               <div className="w-full bg-gray-100 h-1 rounded-full">
                 <div className="bg-[#00a9e0] h-1 rounded-full w-1/2"></div>
               </div>
@@ -77,10 +83,10 @@ export const GoalManagementSection = function () {
           <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-3">
-                <p className="text-sm font-medium text-gray-600">Current Payment Rate</p>
+                <p className="text-sm font-medium text-gray-600">Monthly Contribution </p>
                 <TrendingUp className="w-5 h-5 text-[#004a7c]" />
               </div>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {(totalActiveGoalAmount / 12).toLocaleString(undefined, {maximumFractionDigits: 0})}</h2>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number(monthlyContributionAmount.toFixed(0)).toLocaleString()}</h2>
               <div className="w-full bg-gray-100 h-1 rounded-full">
                 <div className="bg-[#00a9e0] h-1 rounded-full w-2/3"></div>
               </div>
@@ -90,7 +96,7 @@ export const GoalManagementSection = function () {
           <Card className="shadow-md border-t-4 border-[#00a9e0] transition-transform duration-200 hover:scale-105">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-3">
-                <p className="text-sm font-medium text-gray-600">Longest Goal Timeline</p>
+                <p className="text-sm font-medium text-gray-600">Longest Goal Duration</p>
                 <Clock className="w-5 h-5 text-[#004a7c]" />
               </div>
               <h2 className="text-3xl font-bold text-[#004a7c] mb-2">{longestTimePeriod ? longestTimePeriod : `0 Y, 0 M, 0 D`}</h2>
@@ -188,7 +194,7 @@ export const GoalManagementSection = function () {
                       <div className="flex items-center">
                         <div>
                           <p className="text-sm font-medium text-gray-900">Progress</p>
-                          <p className="text-xs text-gray-500">{goal.currentAmount} of {goal.targetAmount}</p>
+                          <p className="text-xs text-gray-500">{goal.currentAmount.toLocaleString()} of {goal.targetAmount.toLocaleString()}</p>
                         </div>
                       </div>
                       <button className="text-gray-400 hover:text-gray-600">

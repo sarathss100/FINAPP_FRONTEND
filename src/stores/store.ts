@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import IUserState from './interfaces/IUserState';
 import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
-import { analyzeGoal, findLongestTimePeriod, getTotalActiveGoalAmount, getUserGoals, goalsByCategory } from '@/service/goalService';
+import { analyzeGoal, findLongestTimePeriod, getDailyContribution, getMonthlyContribution, getTotalActiveGoalAmount, getUserGoals, goalsByCategory } from '@/service/goalService';
 import { IGoal } from '@/types/IGoal';
 import { getUserProfilePictureUrl } from '@/service/userService';
 
@@ -94,13 +94,17 @@ interface GoalState {
     longestTimePeriod: string; // Longest Time Period acheving the goal
     smartAnalysis: IAnalysisResult | null; // SMART analysis result
     categoryByGoals: ICategoryByGoals; // Category By Goals
+    dailyContribution: number; // Daily Contribution Amount 
+    monthlyContribution: number; // Monthly Contribution Amount
     fetchAllGoals: () => Promise<void>; // Function to fetch goals 
     addGoal: (newGoal: IGoal) => void; // Function to add a new goal
     deleteGoal: (goalId: string) => void; // Function to delete a goal by ID    
     fetchTotalActiveGoalAmount: () => Promise<void>; // Function to fetch total active goal amount
     fetchLongestTimePeriod: () => Promise<void>; // Function to fetch longest time period
     fetchSmartAnalysis: () => Promise<void>; // Function to fetch SMART analysis
-    fetchCategoryByGoals: () => Promise<void>;
+    fetchCategoryByGoals: () => Promise<void>; // Function to fetch Category Goals
+    fetchDailyContribution: () => Promise<void>; // Function to daily contribution
+    fetchMonthlyContribution: () => Promise<void>; // Functon to monthly contribution
     reset: () => void;
 }
 
@@ -119,6 +123,8 @@ export const useGoalStore = create<GoalState>()(
                 longTermGoalsCurrntAmount: 0,
                 longTermGoalsTargetAmount: 0
             },
+            dailyContribution: 0,
+            monthlyContribution: 0,
 
             // Reset function
             reset: () => 
@@ -134,7 +140,9 @@ export const useGoalStore = create<GoalState>()(
                         mediumTermGoalsTargetAmount: 0,
                         longTermGoalsCurrntAmount: 0,
                         longTermGoalsTargetAmount: 0,
-                    }
+                    },
+                    dailyContribution: 0,
+                    monthlyContribution: 0,
                 }),
 
             // In your store.ts file, update the fetchSmartAnalysis function:
@@ -217,7 +225,31 @@ export const useGoalStore = create<GoalState>()(
                     console.error(`Failed to get all goals`, error);
                     set({ goals: [] });
                 }
-            }
+            },
+
+            // Function to dailyContribution goals
+            fetchDailyContribution: async () => {
+                try {
+                    const response = await getDailyContribution();
+                    const data = await response.data;
+                    set({ dailyContribution: data.dailyContribution });
+                } catch (error) {
+                    console.error(`Failed to get Daily Contribution`, error);
+                    set({ dailyContribution: 0 });
+                }
+            },
+
+            // Function to monthlyContribution goals
+            fetchMonthlyContribution: async () => {
+                try {
+                    const response = await getMonthlyContribution();
+                    const data = await response.data;
+                    set({ monthlyContribution: data.monthlyContribution });
+                } catch (error) {
+                    console.error(`Failed to get Monthly Contribution`, error);
+                    set({ monthlyContribution: 0 });
+                }
+            },
         }),
         {
             name: 'goal-storage', // Persisted state key

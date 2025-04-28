@@ -49,3 +49,15 @@ export interface IGoalDeleted {
     message: string,
     data: { isDeleted: boolean };
 }
+
+export interface IGoalDailyContributionAmount {
+    success: boolean,
+    message: string,
+    data: { dailyContribution: number };
+}
+
+export interface IGoalMonthlyContributionAmount {
+    success: boolean,
+    message: string,
+    data: { monthlyContribution: number };
+}

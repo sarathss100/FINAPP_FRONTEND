@@ -13,6 +13,8 @@ export const GoalManagementBody = () => {
   const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const fetchSmartAnalysis = useGoalStore((state) => state.fetchSmartAnalysis);
+  const fetchDailyContribution = useGoalStore((state) => state.fetchDailyContribution);
+  const fetchMonthlyContribution = useGoalStore((state) => state.fetchMonthlyContribution);
 
   useEffect(() => {
     fetchAllGoals();
@@ -20,7 +22,9 @@ export const GoalManagementBody = () => {
     fetchLongestTimePeriod();
     fetchTotalActiveGoalAmount();
     fetchSmartAnalysis();
-  }, [fetchAllGoals, fetchCategoryByGoals, fetchLongestTimePeriod, fetchTotalActiveGoalAmount, fetchSmartAnalysis]);
+    fetchDailyContribution();
+    fetchMonthlyContribution();
+  }, [fetchAllGoals, fetchCategoryByGoals, fetchLongestTimePeriod, fetchTotalActiveGoalAmount, fetchSmartAnalysis, fetchDailyContribution, fetchMonthlyContribution]);
 
   return (
     <div className="max-w-[1184px] mx-auto font-sans">

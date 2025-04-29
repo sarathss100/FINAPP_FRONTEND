@@ -4,7 +4,6 @@ import { GoalManagementSection } from './GoalManagementSection/GoalManagementSec
 import { MainContentSection } from './MainContentSection/MainContentSection';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
-// import { MainContentSectionDemo } from './MainContentSection/MainContentSection copy';
 import { useGoalStore } from '@/stores/store';
 
 export const GoalManagementBody = () => {
@@ -36,7 +35,6 @@ export const GoalManagementBody = () => {
       <main className="w-full">
         <GoalManagementSection />
         <MainContentSection />
-        {/* <MainContentSectionDemo /> */}
       </main>
     </div>
   );

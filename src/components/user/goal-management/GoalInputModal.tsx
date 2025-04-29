@@ -241,7 +241,7 @@ const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalP
                       </SelectTrigger>
                       <SelectContent className="bg-white rounded-md shadow-lg">
                         <SelectItem value='Monthly'>Monthly</SelectItem>
-                        <SelectItem value='Quarterly'>Quarterly</SelectItem>
+                        <SelectItem value='Quaterly'>Quaterly</SelectItem>
                         <SelectItem value='Yearly'>Yearly</SelectItem>
                       </SelectContent>
                     </Select>

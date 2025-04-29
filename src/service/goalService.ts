@@ -132,7 +132,7 @@ export const getDailyContribution = async function (): Promise<IGoalDailyContrib
     try {
         // Send a GET request to retrieve daily contribution data.
         const response = await axiosInstance.get<IGoalDailyContributionAmount>(`/api/v1/goal/daily-contribution`);
-
+        
         // Return the data if the request was successful; otherwise, throw an error.
         if (response.data && response.data.success) return response.data;
         throw new Error(response.data?.message || 'Failed to retrieve daily contribution details.');

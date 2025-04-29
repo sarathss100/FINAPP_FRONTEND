@@ -1,6 +1,6 @@
 import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
-import { IGoal, IGoalDetail, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount } from '@/types/IGoal';
+import { IGoal, IGoalDetail, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount, IGoalTransaction } from '@/types/IGoal';
 import ICategoryByGoals from '@/types/ICategoryByGoals';
 
 // Sends a request to create a new goal for a user via the backend API
@@ -168,6 +168,22 @@ export const getGoalDetails = async function (goalId: string): Promise<IGoalDeta
         // Return the goal details if the request was successful; otherwise, throw an error with the message from the response or a default error message.
         if (response.data && response.data.success) return response.data;
         throw new Error(response.data?.message || 'Failed to retrieve goal details.');
+    } catch (error) {
+        // Log the error for debugging purposes and rethrow it to allow upstream error handling.
+        console.error(`Error fetching goal details for goalId: ${goalId}`, error);
+        throw error;
+    }
+}
+
+// Update the Goal Contribution Transaction History, using the backend API.
+export const updateTransaction = async function (goalId: string, amount: number): Promise<IGoalTransaction> {
+    try {
+        // Send a GET request to update the tranasction in goal data, using the provided goalId.
+        const response = await axiosInstance.post<IGoalTransaction>(`/api/v1/goal/update-transaction`, { goalId, amount});
+
+        // Return the goal tranasction updation status if the request was successful; otherwise, throw an error with the message from the response or a default error message.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to update goal contribution details.');
     } catch (error) {
         // Log the error for debugging purposes and rethrow it to allow upstream error handling.
         console.error(`Error fetching goal details for goalId: ${goalId}`, error);

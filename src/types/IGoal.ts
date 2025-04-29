@@ -70,3 +70,9 @@ export interface IGoalDetail {
     message: string,
     data: { goalDetails: IGoal };
 }
+
+export interface IGoalTransaction {
+    success: boolean,
+    message: string,
+    data: { isUpdated: boolean };
+}

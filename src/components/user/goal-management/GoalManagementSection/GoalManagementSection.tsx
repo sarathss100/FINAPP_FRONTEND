@@ -194,7 +194,7 @@ export const GoalManagementSection = function () {
                       <div className="flex items-center">
                         <div>
                           <p className="text-sm font-medium text-gray-900">Progress</p>
-                          <p className="text-xs text-gray-500">{goal.currentAmount.toLocaleString()} of {goal.targetAmount.toLocaleString()}</p>
+                          <p className="text-xs text-gray-500">{`₹ ${goal.currentAmount.toLocaleString()}`} of {`₹ ${goal.targetAmount.toLocaleString()}`}</p>
                         </div>
                       </div>
                       <button className="text-gray-400 hover:text-gray-600">

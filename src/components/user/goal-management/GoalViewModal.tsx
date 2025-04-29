@@ -15,6 +15,7 @@ interface GoalDetailsModalProps {
     onClose: () => void;
     goalData: IGoal | null;
     onEditGoal: (goalId: string) => void;
+    onAddContribution: (goalId: string, goalName: string) => void;
 }
 
 // Goal Details Modal Component
@@ -22,7 +23,8 @@ export const GoalDetailsModal = ({
   isOpen, 
   onClose, 
   goalData, 
-  onEditGoal 
+  onEditGoal,
+  onAddContribution
 }: GoalDetailsModalProps) => {
   if (!goalData) return null;
   
@@ -77,9 +79,12 @@ export const GoalDetailsModal = ({
     }).format(amount);
   };
   
-  // Handle contribution
+  // Handle contribution - now connecting to the main contribution flow
   const handleContribute = () => {
-    toast.info("Contribution feature will be implemented soon!");
+    if (goalData && goalData._id) {
+      onClose(); // Close the current modal
+      onAddContribution(goalData._id, goalData.goal_name);
+    }
   };
   
   // Determine priority color
@@ -288,25 +293,28 @@ export const GoalDetailsModal = ({
           </div>
           
           <div className="flex gap-2 mt-3 sm:mt-0">
-            <Button 
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center"
-              onClick={() => onEditGoal(goalData._id)}
-            >
-              <RefreshCw className="w-4 h-4 mr-1" />
-              Adjust Plan
-            </Button>
+            {status !== "Completed" && (
+              <Button 
+                className="bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center"
+                onClick={() => onEditGoal(goalData._id)}
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                Adjust Plan
+              </Button>
+            )}
             
-            <Button 
-              className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 flex items-center"
-              onClick={() => toast.info("Feature coming soon!")}
-            >
-              <Bell className="w-4 h-4 mr-1" />
-              Set Reminder
-            </Button>
+            {status !== "Completed" && (
+              <Button
+                className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 flex items-center"
+                onClick={() => toast.info("Feature coming soon!")}
+              >
+                <Bell className="w-4 h-4 mr-1" />
+                Set Reminder
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-

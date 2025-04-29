@@ -10,9 +10,17 @@ import {
 } from "lucide-react";
 import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
-import { deleteGoal, getGoalDetails } from '@/service/goalService';
+import { deleteGoal, getGoalDetails, updateTransaction } from '@/service/goalService';
 import { useGoalStore } from '@/stores/store';
 import { GoalDetailsModal } from '../GoalViewModal';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button as MUIButton
+} from "@mui/material";
+import { ContributionModal } from '../GoalContributionModal';
 
 export const MainContentSection = () => {
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
@@ -35,7 +43,11 @@ export const MainContentSection = () => {
   }
 
   const [selectedGoal, setSelectedGoal] = useState(null);
+  const [deleteGoalId, setDeleteGoalId] = useState<string | null>(null);
+  const [goalName, setGoalName] = useState<string | null>(null);
   const [isViewGoalModal, setIsViewGoalModal] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [isContributionModalOpen, setIsContributionModalOpen] = useState(false);
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,7 +114,7 @@ export const MainContentSection = () => {
     }
     
     // Calculate pending amount
-    const pendingAmount = Math.max(goal.target_amount - goal.current_amount, 0);
+    const pendingAmount = Math.max(goal.current_amount, 0);
     
     // Format currency amounts
     const formatCurrency = (amount: number) => {
@@ -177,6 +189,16 @@ export const MainContentSection = () => {
     }
   };
 
+  // Handle block/unblock confirmation modal
+  const openConfirmationModal = (goalId: string) => {
+    setIsConfirmationModalOpen(true);
+    setDeleteGoalId(goalId);
+  };
+
+  const closeConfirmationModal = () => {
+    setIsConfirmationModalOpen(false);
+  };
+
   const handleView = async (goalId: string) => {
     try {
       const response = await getGoalDetails(goalId);
@@ -189,10 +211,35 @@ export const MainContentSection = () => {
     }
   };
 
-  const handleContribute = (goalId: string) => {
-    console.log(`Contributing to goal with ID: ${goalId}`);
-    // Implementation for contribution functionality
+  // Handle contribution modal 
+  const openContributionModal = (goalId: string, goal_name: string) => {
+    setGoalName(goal_name);
+    setDeleteGoalId(goalId);
+    setIsContributionModalOpen(true);
   };
+
+  const closeContributionModal = () => {
+    setGoalName(null);
+    setDeleteGoalId(null);
+    setIsContributionModalOpen(false);
+  }
+
+
+  // Handle contribution submission 
+  const handleContributionSubmit = async (amount: number) => {
+    try {
+      if (deleteGoalId) {
+        const response = await updateTransaction(deleteGoalId, amount);
+        if (response.success) {
+          await globalFetch();
+          return Promise.resolve();
+        }
+      }
+    } catch (error) {
+      console.error(`Error adding contribution:`, error);
+      return Promise.reject(error);
+    }
+  }
 
   return (
     <Card className="py-6 w-full rounded-xl shadow-md border border-gray-100 overflow-hidden">
@@ -336,7 +383,7 @@ export const MainContentSection = () => {
                       <div className="flex space-x-2">
                         {goal.status !== "Completed" && (
                           <Button
-                            onClick={() => handleContribute(goal._id)}
+                            onClick={() => openContributionModal(goal._id, goal.goal_name)}
                             className="w-8 h-8 p-0 rounded-full bg-green-50 hover:bg-green-100 text-green-600"
                             title="Add Contribution"
                           >
@@ -350,15 +397,17 @@ export const MainContentSection = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
+                        {goal.status !== "Completed" && (
+                          <Button
+                            onClick={() => handleEdit(goal._id)}
+                            className="w-8 h-8 p-0 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600"
+                            title="Edit Goal"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button
-                          onClick={() => handleEdit(goal._id)}
-                          className="w-8 h-8 p-0 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600"
-                          title="Edit Goal"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(goal._id)}
+                          onClick = {() => openConfirmationModal(goal._id)}
                           className="w-8 h-8 p-0 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
                           title="Delete Goal"
                         >
@@ -451,13 +500,6 @@ export const MainContentSection = () => {
           </div>
           
           <div className="flex space-x-3">
-            <Button 
-              className="bg-green-600 text-white hover:bg-green-700 flex items-center"
-              onClick={() => console.log("Quick contribution clicked")}
-            >
-              <IndianRupee className="w-4 h-4 mr-1" />
-              Quick Contribute
-            </Button>
           </div>
         </div>
       </CardContent>
@@ -471,8 +513,47 @@ export const MainContentSection = () => {
           setIsViewGoalModal(false);
           handleEdit(goalId);
         }}
+        onAddContribution={(goalId: string, goalName: string) => {
+          openContributionModal(goalId, goalName);
+        }}
       />
 
+      {/* Confirmation Modal for Deletion */}
+      <Dialog open={isConfirmationModalOpen} onClose={closeConfirmationModal}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <p>
+            Are you sure you want to delete this goal? This action cannot be undone.
+          </p>
+        </DialogContent>
+        <DialogActions>
+          <MUIButton onClick={closeConfirmationModal} color="secondary">
+            Cancel
+          </MUIButton>
+          <MUIButton 
+            onClick={() => {
+              if (deleteGoalId) {
+                handleDelete(deleteGoalId);
+                closeConfirmationModal();
+              }
+            }} 
+            variant="contained" 
+            color="primary"
+          >
+            Confirm
+          </MUIButton>
+        </DialogActions>
+      </Dialog>
+
+      {/* Contribution Modal */}
+      <ContributionModal
+        isOpen={isContributionModalOpen}
+        onClose={closeContributionModal}
+        goalId={deleteGoalId || null}
+        goalName={goalName || null}
+        onSubmit={handleContributionSubmit}
+      />
     </Card>
   );
 };
+

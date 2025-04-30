@@ -18,7 +18,6 @@ export const useUserStore = create<IUserState>()(
               try {         
                 const response = await getUserProfilePictureUrl();
                   const data = await response.data;
-                  console.log(`userStoreData`, data);
                   set({ profilePictureUrl: data.profilePictureUrl });
               } catch (error) {
                   console.error(`Failed to fetch Profile Picture Url:`, error);

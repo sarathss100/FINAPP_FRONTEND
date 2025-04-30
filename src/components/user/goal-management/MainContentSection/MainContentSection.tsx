@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
-import { deleteGoal, getGoalDetails, updateTransaction } from '@/service/goalService';
+import { deleteGoal, getGoalDetails, updateGoal, updateTransaction } from '@/service/goalService';
 import { useGoalStore } from '@/stores/store';
 import { GoalDetailsModal } from '../GoalViewModal';
 import {
@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import { ContributionModal } from '../GoalContributionModal';
 import { GoalEditModal } from '../GoalEditModal';
+import { IGoal } from '@/types/IGoal';
 
 export const MainContentSection = () => {
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
@@ -43,7 +44,7 @@ export const MainContentSection = () => {
     fetchMonthlyContribution();
   }
 
-  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [selectedGoal, setSelectedGoal] = useState<IGoal | null>(null);
   const [deleteGoalId, setDeleteGoalId] = useState<string | null>(null);
   const [goalName, setGoalName] = useState<string | null>(null);
   const [isViewGoalModal, setIsViewGoalModal] = useState(false);
@@ -59,6 +60,8 @@ export const MainContentSection = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const MemoizedGoalEditModal = React.memo(GoalEditModal);
 
   // Calculate status and completion data for each goal
   const processedGoals = Object.values(goals).map(goal => {
@@ -175,13 +178,11 @@ export const MainContentSection = () => {
   const handleEdit = async (goalId?: string) => {
     try {
       // Fetch goal details
-      if (!selectedGoal || selectedGoal._id !== goalId) {
-        const response = await getGoalDetails(goalId);
-        if (response.success) {
-          setSelectedGoal(response.data.goalDetails);
-        }
-        setIsEditModalOpen(true);
+      const response = await getGoalDetails(String(goalId));
+      if (response.success) {
+        setSelectedGoal(response.data.goalDetails);
       }
+      setIsEditModalOpen(true);
     } catch (error) {
       toast.error((error as Error).message || `Failed to load goal details`);
     }
@@ -523,6 +524,7 @@ export const MainContentSection = () => {
         goalData={selectedGoal}
         onEditGoal={(goalId: string) => {
           setIsViewGoalModal(false);
+          setIsEditModalOpen(true);
           handleEdit(goalId);
         }}
         onAddContribution={(goalId: string, goalName: string) => {
@@ -566,14 +568,18 @@ export const MainContentSection = () => {
         onSubmit={handleContributionSubmit}
       />
 
-      <GoalEditModal
+      {/* Goal Edit Modal */}
+      <MemoizedGoalEditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         goalData={selectedGoal}
-        onSaveGoal={(updatedGoal) => {
-          toast.success(`Goal updated successfully`);
-          setIsEditModalOpen(false);
-          globalFetch();
+        onSaveGoal={async (goalData) => {
+          const respone = await updateGoal(goalData._id, goalData);
+          if (respone.success) {
+            toast.success(`Goal updated successfully`);
+            await globalFetch();
+            setIsEditModalOpen(false);
+          }
         }}
       />
     </Card>

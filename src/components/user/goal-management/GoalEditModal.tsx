@@ -1,18 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/base/Dialog';
+import { Dialog, DialogContent } from '@/components/base/Dialog';
 import { 
   Calendar, IndianRupee, Target, Clock, 
-  Save, X, AlertCircle
+  Save, AlertCircle
 } from "lucide-react";
 import Button from "@/components/base/Button";
-import { toast } from 'react-toastify';
 import { IGoal } from '@/types/IGoal';
-import { Badge } from '@/components/base/Badge';
+// import { Badge } from '@/components/base/Badge';
 import Input from '@/components/base/Input';
-import { Select } from '@/components/base/select';
+import { Select } from '@/components/base/newSelect';
 import Label from '@/components/base/Label';
-import { Textarea } from '@/components/base/TextArea';
+// import { Textarea } from '@/components/base/TextArea';
 
 interface GoalEditModalProps {
   isOpen: boolean;
@@ -23,19 +22,20 @@ interface GoalEditModalProps {
 }
 
 // Goal Categories
-const GOAL_CATEGORIES = [
-  "Education", "Emergency Fund", "Retirement", "Home", "Vehicle", 
-  "Vacation", "Wedding", "Healthcare", "Business", "Other"
-];
+// const GOAL_CATEGORIES = [
+//   "Education", "Emergency Fund", "Retirement", "Home", "Vehicle",
+//   "Vacation", "Wedding", "Healthcare", "Business", "Other"
+// ];
+const GOAL_CATEGORIES = ["Education", "Retirement", "Travel", "Investment", "Other"];
 
 // Goal Types
-const GOAL_TYPES = ["Short Term", "Medium Term", "Long Term"];
+const GOAL_TYPES = ['Savings', 'Investment', 'Debt Repayment', 'Other'];
 
 // Priority Levels
-const PRIORITY_LEVELS = ["Low", "Medium", "High", "Critical"];
+const PRIORITY_LEVELS = ["Low", "Medium", "High"];
 
 // Contribution Frequencies
-const CONTRIBUTION_FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly", "Yearly"];
+const CONTRIBUTION_FREQUENCIES = ["Monthly", "Quarterly", "Yearly"];
 
 // Reminder Frequencies
 const REMINDER_FREQUENCIES = ["None", "Daily", "Weekly", "Monthly"];
@@ -49,7 +49,7 @@ export const GoalEditModal = ({
   const [formData, setFormData] = useState<IGoal | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [tagInput, setTagInput] = useState("");
+  // const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (goalData) {
@@ -104,36 +104,43 @@ export const GoalEditModal = ({
     }
   };
 
-  const addTag = () => {
-    if (!tagInput.trim()) return;
+  // const addTag = () => {
+  //   if (!tagInput.trim()) return;
     
-    const newTag = tagInput.trim();
-    const currentTags = formData?.tags || [];
+  //   const newTag = tagInput.trim();
+  //   const currentTags = formData?.tags || [];
     
-    // Don't add duplicate tags
-    if (!currentTags.includes(newTag)) {
-      setFormData(prev => prev ? ({
-        ...prev,
-        tags: [...currentTags, newTag]
-      }) : null);
-      setIsFormDirty(true);
-    }
+  //   // Don't add duplicate tags
+  //   if (!currentTags.includes(newTag)) {
+  //     setFormData(prev => prev ? ({
+  //       ...prev,
+  //       tags: [...currentTags, newTag]
+  //     }) : null);
+  //     setIsFormDirty(true);
+  //   }
     
-    setTagInput("");
-  };
+  //   setTagInput("");
+  // };
 
-  const removeTag = (tagToRemove: string) => {
-    const updatedTags = formData?.tags?.filter(tag => tag !== tagToRemove) || [];
-    setFormData(prev => prev ? ({
-      ...prev,
-      tags: updatedTags
-    }) : null);
-    setIsFormDirty(true);
-  };
+  // const removeTag = (tagToRemove: string) => {
+  //   const updatedTags = formData?.tags?.filter(tag => tag !== tagToRemove) || [];
+  //   setFormData(prev => prev ? ({
+  //     ...prev,
+  //     tags: updatedTags
+  //   }) : null);
+  //   setIsFormDirty(true);
+  // };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+    if (formData?.target_amount < formData?.current_amount) {
+      newErrors.current_amount = "Current amount cannot be greater than target amount";
+    }
+
+    if (formData?.target_amount < formData?.initial_investment) {
+      newErrors.initial_investment = "Current amount cannot be greater than target amount";
+    }
+
     if (!formData?.goal_name?.trim()) {
       newErrors.goal_name = "Goal name is required";
     }
@@ -178,8 +185,6 @@ export const GoalEditModal = ({
     };
     
     onSaveGoal(updatedGoal);
-    toast.success("Goal updated successfully!");
-    onClose();
   };
 
   // Format date for input
@@ -191,13 +196,13 @@ export const GoalEditModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="relative pb-0">
+        {/* <DialogContent className="relative pb-0">
           <div className="flex justify-between items-center gap-4 pt-2">
             <DialogTitle className="text-2xl font-bold text-gray-900">
-              Edit Goal
+              EditGoal
             </DialogTitle>
           </div>
-        </DialogHeader>
+        </DialogContent> */}
         
         <div className="mt-6 space-y-6">
           {/* Basic Information Section */}
@@ -277,9 +282,6 @@ export const GoalEditModal = ({
                     onChange={handleChange}
                   >
                     <option value="INR">Indian Rupee (₹)</option>
-                    <option value="USD">US Dollar ($)</option>
-                    <option value="EUR">Euro (€)</option>
-                    <option value="GBP">British Pound (£)</option>
                   </Select>
                 </div>
               </div>
@@ -321,6 +323,9 @@ export const GoalEditModal = ({
                     onChange={handleChange}
                     min={0}
                   />
+                  {errors.current_amount && (
+                    <p className="text-red-500 text-sm mt-1">{errors.current_amount}</p>
+                  )}
                 </div>
                 
                 <div>
@@ -334,6 +339,9 @@ export const GoalEditModal = ({
                     min={0}
                   />
                 </div>
+                {errors.initial_investment && (
+                  <p className="text-red-500 text-sm mt-1">{errors.initial_investment}</p>
+                )}
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -344,7 +352,7 @@ export const GoalEditModal = ({
                       id="target_date"
                       name="target_date"
                       type="date"
-                      value={formatDateForInput(formData.target_date || '')}
+                      value={formatDateForInput(String(formData.target_date) || '')}
                       onChange={handleDateChange}
                       className={`pl-10 ${errors.target_date ? "border-red-500" : ""}`}
                     />
@@ -446,7 +454,7 @@ export const GoalEditModal = ({
           </div>
           
           {/* Tags Section */}
-          <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-5">
+          {/* <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-5">
             <h3 className="text-lg font-medium text-gray-800 mb-4">Tags</h3>
             
             <div className="flex flex-wrap gap-2 mb-3">
@@ -486,10 +494,10 @@ export const GoalEditModal = ({
                 Add
               </Button>
             </div>
-          </div>
+          </div> */}
           
           {/* Notes or Description */}
-          <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-5">
+          {/* <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-5">
             <h3 className="text-lg font-medium text-gray-800 mb-4">Notes</h3>
             
             <Textarea 
@@ -500,7 +508,7 @@ export const GoalEditModal = ({
               rows={3}
               placeholder="Add any additional notes about this goal..."
             />
-          </div>
+          </div> */}
         </div>
         
         {/* Bottom Action Bar */}

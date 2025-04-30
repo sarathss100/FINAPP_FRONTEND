@@ -24,7 +24,7 @@ export interface IGoal {
     startDate: Date;
     endDate: Date;
     createdAt: Date;
-    updatedAt?: Date;
+    updatedAt?: Date | string;
     dailyContribution?: number;
     monthlyContribution?: number;
 }

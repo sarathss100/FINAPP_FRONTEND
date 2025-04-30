@@ -17,6 +17,11 @@ interface DialogOverlayProps {
   className?: string;
 }
 
+interface DialogHeaderProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
 const DialogOverlay = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Overlay>,
   DialogOverlayProps
@@ -53,7 +58,7 @@ const DialogContent = React.forwardRef<
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = ({ className, ...props })  => (
+const DialogHeader = ({ className, ...props }: DialogHeaderProps)  => (
   <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
 );
 DialogHeader.displayName = "DialogHeader";

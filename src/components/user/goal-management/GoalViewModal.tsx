@@ -296,7 +296,9 @@ export const GoalDetailsModal = ({
             {status !== "Completed" && (
               <Button 
                 className="bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center"
-                onClick={() => onEditGoal(goalData._id)}
+                onClick={() => {
+                  onEditGoal(goalData._id)
+                }}
               >
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Adjust Plan

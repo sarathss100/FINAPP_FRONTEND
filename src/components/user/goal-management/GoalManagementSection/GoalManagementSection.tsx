@@ -129,7 +129,7 @@ export const GoalManagementSection = function () {
                   <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                     <div className="flex justify-between mb-3">
                       <span className="font-medium text-gray-700">{criteria.name}</span>
-                      <span className="font-bold text-[#004a7c]">{score}%</span>
+                      <span className="font-bold text-[#004a7c]">{score}</span>
                     </div>
                     <Progress 
                       value={score} 

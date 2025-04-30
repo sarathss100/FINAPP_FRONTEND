@@ -190,3 +190,19 @@ export const updateTransaction = async function (goalId: string, amount: number)
         throw error;
     }
 }
+
+// Update the Goal Contribution Transaction History via the backend API.
+export const updateGoal = async function (goalId: string, goalData: Partial<IGoal>): Promise<IGoalTransaction> {
+    try {
+        // Send a POST request to update the goal with the provided goalId and updated goal data.
+        const response = await axiosInstance.post<IGoalTransaction>(`/api/v1/goal/update`, { goalId, goalData });
+
+        // If the update is successful, return the transaction data; otherwise, throw an error.
+        if (response.data && response.data.success) return response.data;
+        throw new Error(response.data?.message || 'Failed to update goal contribution details.');
+    } catch (error) {
+        // Log the error for debugging and rethrow it for upstream handling.
+        console.error(`Error updating goal with goalId: ${goalId}`, error);
+        throw error;
+    }
+}

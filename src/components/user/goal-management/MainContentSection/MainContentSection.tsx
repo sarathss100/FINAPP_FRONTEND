@@ -21,6 +21,7 @@ import {
   Button as MUIButton
 } from "@mui/material";
 import { ContributionModal } from '../GoalContributionModal';
+import { GoalEditModal } from '../GoalEditModal';
 
 export const MainContentSection = () => {
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
@@ -48,6 +49,7 @@ export const MainContentSection = () => {
   const [isViewGoalModal, setIsViewGoalModal] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [isContributionModalOpen, setIsContributionModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -170,9 +172,19 @@ export const MainContentSection = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  const handleEdit = (goalId: string) => {
-    console.log(`Editing goal with ID: ${goalId}`);
-    // Implementation for edit functionality
+  const handleEdit = async (goalId?: string) => {
+    try {
+      // Fetch goal details
+      if (!selectedGoal || selectedGoal._id !== goalId) {
+        const response = await getGoalDetails(goalId);
+        if (response.success) {
+          setSelectedGoal(response.data.goalDetails);
+        }
+        setIsEditModalOpen(true);
+      }
+    } catch (error) {
+      toast.error((error as Error).message || `Failed to load goal details`);
+    }
   };
 
   const handleDelete = async (goalId: string) => {
@@ -552,6 +564,17 @@ export const MainContentSection = () => {
         goalId={deleteGoalId || null}
         goalName={goalName || null}
         onSubmit={handleContributionSubmit}
+      />
+
+      <GoalEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        goalData={selectedGoal}
+        onSaveGoal={(updatedGoal) => {
+          toast.success(`Goal updated successfully`);
+          setIsEditModalOpen(false);
+          globalFetch();
+        }}
       />
     </Card>
   );

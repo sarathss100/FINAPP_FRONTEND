@@ -73,7 +73,7 @@ export const GoalManagementSection = function () {
                 <p className="text-sm font-medium text-gray-600">Daily Contribution</p>
                 <Calendar className="w-5 h-5 text-[#004a7c]" />
               </div>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number(dailyContributionAmount.toFixed(0)).toLocaleString()}</h2>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number((dailyContributionAmount ?? 0).toFixed(0)).toLocaleString()}</h2>
               <div className="w-full bg-gray-100 h-1 rounded-full">
                 <div className="bg-[#00a9e0] h-1 rounded-full w-1/2"></div>
               </div>
@@ -86,7 +86,7 @@ export const GoalManagementSection = function () {
                 <p className="text-sm font-medium text-gray-600">Monthly Contribution </p>
                 <TrendingUp className="w-5 h-5 text-[#004a7c]" />
               </div>
-              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number(monthlyContributionAmount.toFixed(0)).toLocaleString()}</h2>
+              <h2 className="text-3xl font-bold text-[#004a7c] mb-2">₹ {Number((monthlyContributionAmount ?? 0).toFixed(0)).toLocaleString()}</h2>
               <div className="w-full bg-gray-100 h-1 rounded-full">
                 <div className="bg-[#00a9e0] h-1 rounded-full w-2/3"></div>
               </div>

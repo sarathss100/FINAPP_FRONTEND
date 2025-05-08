@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const InsightsSection = function () {
   // Budget data
@@ -410,6 +411,7 @@ const InsightsSection = function () {
       </div>
 
       {/* Spending Behavior Score Section */}
+      <Link href={'/spending-behavior-score-details'} passHref >
       <Card className="mt-6 shadow-[0px_1px_2px_#0000000d] rounded-xl">
         <CardHeader className="pb-2">
           <CardTitle className="text-3xl font-normal [font-family:'Poppins',Helvetica] text-[#004a7c]">
@@ -432,7 +434,8 @@ const InsightsSection = function () {
             </p>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+        </Link>
 
       {/* Smart Insights Section */}
       <Card className="mt-6 shadow-[0px_1px_2px_#0000000d] rounded-xl">

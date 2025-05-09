@@ -1,3 +1,4 @@
+
 interface IUser {
     userId: string;
     firstName: string;
@@ -17,3 +18,40 @@ interface IAdminUserDetails {
 }
 
 export default IAdminUserDetails;
+
+export interface INewRegistrationCount {
+    success: boolean,
+    message: string,
+    data: {
+        newRegistrationCount: number
+    }
+}
+
+export interface IHealthStatus {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    score?: number;
+    details?: string;
+    checks?: string[];
+    lastChecked?: Date;
+}
+
+export interface ISystemHealthStatus {
+    success: boolean,
+    message: string,
+    data: {
+        healthStatus: IHealthStatus
+    }
+}
+
+export interface SystemMetrics {
+    ramUsage: number;
+    diskUsage: number;
+}
+
+export interface ISystemMetrics {
+    success: boolean,
+    message: string,
+    data: {
+        usageStatics: SystemMetrics
+    }
+}

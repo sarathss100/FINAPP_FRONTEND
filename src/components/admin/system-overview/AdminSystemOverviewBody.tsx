@@ -194,7 +194,7 @@ const AdminSystemOverviewBody = function () {
                         <AlertTriangleIcon className="w-5 h-5 text-red-700 mr-3" />
                         <div>
                           <p className="text-red-700 font-medium text-base">
-                            High CPU Usage
+                            High RAM Usage
                           </p>
                           <p className="text-red-500 text-sm mt-1">
                             {systemMetrics.ramUsage.toFixed(2)} % capacity used
@@ -205,7 +205,7 @@ const AdminSystemOverviewBody = function () {
                       <div className="flex items-center">
                         <CheckCircle className="w-5 h-5 text-green-700 mr-3" />
                         <div>
-                          <p className="text-green-700 font-medium text-base">Normal CPU Usage</p>
+                          <p className="text-green-700 font-medium text-base">Normal RAM Usage</p>
                           <p className="text-green-500 text-sm mt-1">
                             {systemMetrics.ramUsage.toFixed(2)} % capacity used
                           </p>
@@ -243,18 +243,6 @@ const AdminSystemOverviewBody = function () {
                   </div>
                 </div>
               </div>
-
-              {/* <div>
-                <p className="text-gray-600 font-medium text-base mb-4">
-                  Quick Actions
-                </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button className="bg-[#004a7c] hover:bg-[#003a6c] h-10 rounded-lg text-white font-medium">
-                    <RotateCwIcon className="w-4 h-4 mr-2" />
-                    Restart Server
-                  </Button>
-                </div>
-              </div> */}
             </CardContent>
           </Card>
         </div>

@@ -104,33 +104,6 @@ export const GoalEditModal = ({
     }
   };
 
-  // const addTag = () => {
-  //   if (!tagInput.trim()) return;
-    
-  //   const newTag = tagInput.trim();
-  //   const currentTags = formData?.tags || [];
-    
-  //   // Don't add duplicate tags
-  //   if (!currentTags.includes(newTag)) {
-  //     setFormData(prev => prev ? ({
-  //       ...prev,
-  //       tags: [...currentTags, newTag]
-  //     }) : null);
-  //     setIsFormDirty(true);
-  //   }
-    
-  //   setTagInput("");
-  // };
-
-  // const removeTag = (tagToRemove: string) => {
-  //   const updatedTags = formData?.tags?.filter(tag => tag !== tagToRemove) || [];
-  //   setFormData(prev => prev ? ({
-  //     ...prev,
-  //     tags: updatedTags
-  //   }) : null);
-  //   setIsFormDirty(true);
-  // };
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (formData?.target_amount < formData?.current_amount) {

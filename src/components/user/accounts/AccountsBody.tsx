@@ -1,296 +1,361 @@
+"use client";
 import {
   ChevronRightIcon,
   CreditCardIcon,
   LandmarkIcon,
   PlusCircleIcon,
-  TargetIcon,
   TrendingUpIcon,
   WalletIcon,
+  TrashIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from "lucide-react";
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import PageTitle from '../base/PageTitle';
 import UserHeader from '../base/Header';
-import Image from 'next/image';
+import { AccountModal } from './AccountInputModal';
+import { IAccount } from '@/types/IAccounts';
+import { useAccountsStore } from '@/stores/store';
+import { removeAccount } from '@/service/accountService';
+import { toast } from 'react-toastify';
 
 const AccountsBody = function () {
-  // Bank accounts data
-  const bankAccounts = [
-    {
-      name: "Chase Bank",
-      type: "Checking **** 1234",
-      balance: "$12,450.00",
-      icon: <LandmarkIcon className="w-4 h-4" />,
-    },
-    {
-      name: "Bank of America",
-      type: "Savings **** 5678",
-      balance: "$32,800.00",
-      icon: <LandmarkIcon className="w-4 h-4" />,
-    },
-  ];
+  const [isInputModalOpen, setIsInputModalOpen] = useState(false);
+  const [accountToEdit, setAccountToEdit] = useState<IAccount | undefined>(undefined);
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  
+  const totalBalance = useAccountsStore((state) => state.totalBalance);
+  const totalBankBalance = useAccountsStore((state) => state.totalBankBalance);
+  const totalDebt = useAccountsStore((state) => state.totalDebt);
+  const totalInvestment = useAccountsStore((state) => state.totalInvestment);
+  const bankAccounts = useAccountsStore((state) => state.bankAccounts);
+  const investmentAccounts = useAccountsStore((state) => state.investmentAccounts);
+  const liquidAccounts = useAccountsStore((state) => state.liquidAccounts);
+  const debtAccounts = useAccountsStore((state) => state.debtAccounts);
+  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
+  const fetchTotalBankBalance = useAccountsStore((state) => state.fetchTotalBankBalance);
+  const fetchTotalDebt = useAccountsStore((state) => state.fetchTotalDebt);
+  const fetchTotalInvestment = useAccountsStore((state) => state.fetchTotalInvestment);
+  const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
 
-  // Investment accounts data
-  const investmentAccounts = [
-    {
-      name: "Vanguard 401(k)",
-      type: "Retirement",
-      balance: "$45,000.00",
-      icon: <TrendingUpIcon className="w-4 h-4" />,
-    },
-    {
-      name: "Fidelity Stocks",
-      type: "Trading Account",
-      balance: "$30,500.00",
-      icon: <TrendingUpIcon className="w-[18px] h-4" />,
-    },
-  ];
+  const handleStore = useCallback(() => {
+    fetchTotalBalance();
+    fetchTotalBankBalance();
+    fetchTotalDebt();
+    fetchTotalInvestment();
+    fetchAllAccounts();
+  }, [fetchTotalBalance, fetchTotalBankBalance, fetchTotalDebt, fetchTotalInvestment, fetchAllAccounts]);
 
-  // Cash accounts data
-  const cashAccounts = [
-    {
-      name: "Emergency Fund",
-      type: "Savings",
-      balance: "$10,000.00",
-      icon: <WalletIcon className="w-4 h-4" />,
-    },
-    {
-      name: "Vacation Fund",
-      type: "Goals",
-      balance: "$5,000.00",
-      icon: <TargetIcon className="w-[18px] h-4" />,
-    },
-  ];
+  useEffect(() => {
+    handleStore();
+  }, [handleStore]);
 
-  // Credit cards data
-  const creditCards = [
-    {
-      name: "Chase Sapphire",
-      number: "**** 9012",
-      balance: "-$2,150.00",
-      icon: <CreditCardIcon className="w-[18px] h-4" />,
-    },
-    {
-      name: "Amex Gold",
-      number: "**** 3456",
-      balance: "-$1,600.00",
-      icon: <CreditCardIcon className="w-[18px] h-4" />,
-    },
-  ];
+  const handleAddAccount = function () {
+    setAccountToEdit(undefined);
+    setIsInputModalOpen(true);
+  }
+
+  const handleEditAccount = function (account: IAccount) {
+    setAccountToEdit(account);
+    setIsInputModalOpen(true);
+  }
+
+  const handleDeleteAccount = async function (accountId: string) {
+    try {
+      const response = await removeAccount(accountId);
+      if (response.success) {
+        toast.success(response.message || `Account Successfully Removed`);
+        await handleStore();
+        setDeleteConfirmationId(null);
+      }
+    } catch (error) {
+      toast.error((error as Error).message || `Failed Remove the Account`);
+    }
+  }
+
+  const handleSaveAccount = async function () {
+    await handleStore();
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
+  // Function to render account item with animation and delete button
+  const renderAccountItem = (account: IAccount, icon: React.ReactNode, isDebt: boolean = false) => (
+    <div
+      key={account._id}
+      className="flex justify-between items-center bg-white hover:bg-gray-50 rounded-xl p-5 mb-4 last:mb-0 border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md group relative"
+    >
+      <div className="flex items-center">
+        <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg text-[#004a7c]">
+          {icon}
+        </div>
+        <div className="ml-4">
+          <div className="text-lg font-medium text-gray-800">{account.account_name}</div>
+          <div className="text-base text-gray-600">{account.institution}</div>
+          <div className="text-sm text-gray-500 mt-1">{account.account_type}</div>
+        </div>
+      </div>
+      <div className="flex items-center gap-6">
+        <div className={`text-lg font-semibold ${isDebt ? 'text-[#004a7c]' : 'text-[#004a7c]'}`}>
+          {formatCurrency(account.current_balance || 0)}
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => handleEditAccount(account)}
+            className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-[#004a7c] transition-colors duration-200 opacity-0 group-hover:opacity-100"
+            title="Edit Account"
+          >
+            <ChevronRightIcon className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => account._id ? setDeleteConfirmationId(account._id) : null}
+            className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-[#004a7c] transition-colors duration-200 opacity-0 group-hover:opacity-100"
+            title="Delete Account"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Delete confirmation overlay */}
+      {deleteConfirmationId === account._id && (
+        <div className="absolute inset-0 bg-white bg-opacity-95 rounded-xl flex items-center justify-center p-4 z-10 backdrop-blur-sm">
+          <div className="text-center">
+            <p className="text-gray-800 mb-4">Are you sure you want to delete this account?</p>
+            <div className="flex justify-center gap-3">
+              <Button 
+                onClick={() => account._id && handleDeleteAccount(account._id)}
+                className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2"
+              >
+                Delete
+              </Button>
+              <Button 
+                onClick={() => setDeleteConfirmationId(null)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="w-full max-w-[1187px] mx-auto py-8">
+    <div className="w-full max-w-[1187px] mx-auto py-8 px-4 sm:px-6 lg:px-0">
       {/* Header with search and profile */}
       <UserHeader />
 
-      {/* Page title */}
-      <PageTitle title={`Accounts Management`} tag={`Manage your accounts efficiently`} />
-
-      {/* Page title and action buttons */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex gap-4">
-          <Button className=" hover:bg-[#00a9e0]/90 text-white flex items-center gap-2 h-[42px]">
-            <PlusCircleIcon className="w-3.5 h-4" />
-            Add Accounts
-          </Button>
-
-          <Button
-            variant="outline"
-            className="border-[#004a7c] text-[#004a7c] flex items-center gap-2 h-[42px]"
-          >
-            <Image alt="Frame" src="/export_import_icon.svg" width={16} height={16} />
-            Import/Export
-          </Button>
-        </div>
+      {/* Page title with animation */}
+      <div className="mb-8">
+        <PageTitle title={`Accounts Management`} tag={`Manage your accounts efficiently`} />
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="rounded-xl border-l-4 border-l-[#004a7c] shadow-sm">
+      {/* Page action buttons */}
+      <div className="flex justify-end items-center mb-8">
+        <Button
+          className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 flex items-center gap-2 h-[42px] px-5 rounded-full transition-all duration-300 transform hover:scale-105"
+          onClick={handleAddAccount}
+        >
+          <PlusCircleIcon className="w-4 h-4" />
+          Add Accounts
+        </Button>
+      </div>
+
+      {/* Summary Cards with hover effects */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <Card className="rounded-xl overflow-hidden relative bg-gradient-to-br from-blue-50 to-white border-none shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-[#004a7c]"></div>
           <CardContent className="p-7">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#004a7c] font-['Poppins',Helvetica] leading-[18px]">
-                Total Balance
+              <h3 className="text-lg text-[#004a7c] font-medium">
+                Grand Total Balance
               </h3>
-              <ChevronRightIcon className="w-2.5 h-4" />
+              <ChevronRightIcon className="w-5 h-5 text-[#004a7c]" />
             </div>
-            <div className="text-2xl font-normal mb-4">$124,500.00</div>
-            <div className="text-sm text-emerald-500">
-              +2.4% from last month
+            <div className="text-3xl font-bold text-gray-800 mb-2">
+              {formatCurrency(totalBalance)}
+            </div>
+            <div className="text-sm text-[#004a7c] flex items-center">
+              <ArrowUpIcon className="w-3.5 h-3.5 mr-1" />
+              Net Asset Value
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-l-4 border-l-[#00a9e0] shadow-sm">
+        <Card className="rounded-xl overflow-hidden relative bg-gradient-to-br from-blue-50 to-white border-none shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-[#004a7c]"></div>
           <CardContent className="p-7">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#004a7c] font-['Poppins',Helvetica] leading-[18px]">
-                Bank Accounts
+              <h3 className="text-lg text-[#004a7c] font-medium">
+                Total Bank Balance
               </h3>
-              <LandmarkIcon className="w-4 h-4" />
+              <LandmarkIcon className="w-5 h-5 text-[#004a7c]" />
             </div>
-            <div className="text-2xl font-normal mb-4">$45,250.00</div>
-            <div className="text-sm text-gray-500">4 Active Accounts</div>
+            <div className="text-3xl font-bold text-gray-800 mb-2">
+              {formatCurrency(totalBankBalance)}
+            </div>
+            <div className="text-sm text-[#004a7c] flex items-center">
+              <ArrowUpIcon className="w-3.5 h-3.5 mr-1" />
+              Liquid Assets
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-l-4 border-l-[#004a7c] shadow-sm">
+        <Card className="rounded-xl overflow-hidden relative bg-gradient-to-br from-blue-50 to-white border-none shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-[#004a7c]"></div>
           <CardContent className="p-7">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#004a7c] font-['Poppins',Helvetica] leading-[18px]">
-                Credit Cards
+              <h3 className="text-lg text-[#004a7c] font-medium">
+                Total Debt
               </h3>
-              <CreditCardIcon className="w-[18px] h-4" />
+              <CreditCardIcon className="w-5 h-5 text-[#004a7c]" />
             </div>
-            <div className="text-2xl font-normal mb-4">$3,750.00</div>
-            <div className="text-sm text-gray-500">2 Active Cards</div>
+            <div className="text-3xl font-bold text-gray-800 mb-2">
+              {formatCurrency(totalDebt)}
+            </div>
+            <div className="text-sm text-[#004a7c] flex items-center">
+              <ArrowDownIcon className="w-3.5 h-3.5 mr-1" />
+              Liabilities
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-l-4 border-l-[#00a9e0] shadow-sm">
+        <Card className="rounded-xl overflow-hidden relative bg-gradient-to-br from-blue-50 to-white border-none shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-[#004a7c]"></div>
           <CardContent className="p-7">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg text-[#004a7c] font-['Poppins',Helvetica] leading-[18px]">
-                Investments
+              <h3 className="text-lg text-[#004a7c] font-medium">
+                Total Investments
               </h3>
-              <TrendingUpIcon className="w-4 h-4" />
+              <TrendingUpIcon className="w-5 h-5 text-[#004a7c]" />
             </div>
-            <div className="text-2xl font-normal mb-4">$75,500.00</div>
-            <div className="text-sm text-emerald-500">+5.2% return</div>
+            <div className="text-3xl font-bold text-gray-800 mb-2">
+              {formatCurrency(totalInvestment)}
+            </div>
+            <div className="text-sm text-[#004a7c] flex items-center">
+              <ArrowUpIcon className="w-3.5 h-3.5 mr-1" />
+              Growth Assets
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Bank Accounts Section */}
-      <Card className="rounded-xl shadow-sm mb-6">
-        <CardHeader className="flex flex-row items-center justify-between p-6 pb-0">
-          <CardTitle className="text-xl text-[#004a7c] font-['Poppins',Helvetica] leading-5">
-            Bank Accounts
-          </CardTitle>
-          <Button
-            className="text-[#00a9e0] bg-transparent hover:bg-transparent p-0 flex items-center gap-1 h-6"
-          >
-            <PlusCircleIcon className="w-3.5 h-4" />
-            Add Account
-          </Button>
-        </CardHeader>
-        <CardContent className="p-6">
-          {bankAccounts.map((account, index) => (
-            <div
-              key={`bank-${index}`}
-              className="flex justify-between items-center bg-gray-50 rounded-lg p-4 mb-4 last:mb-0"
-            >
-              <div className="flex items-center">
-                {account.icon}
-                <div className="ml-3">
-                  <div className="text-base font-normal">{account.name}</div>
-                  <div className="text-sm text-gray-500">{account.type}</div>
-                </div>
-              </div>
-              <div className="text-base font-normal">{account.balance}</div>
+      {bankAccounts.length > 0 && 
+        <Card className="rounded-xl shadow-lg border-none mb-8 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between p-6 bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
+            <CardTitle className="text-xl text-white font-medium flex items-center gap-2">
+              <LandmarkIcon className="w-5 h-5" />
+              Bank Accounts
+            </CardTitle>
+            <div className="rounded-full bg-[#004a7c] bg-opacity-30 px-3 py-1 text-white text-sm">
+              {bankAccounts.length} accounts
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-white">
+            {bankAccounts.map((account) => 
+              renderAccountItem(account, <LandmarkIcon className="w-5 h-5" />)
+            )}
+          </CardContent>
+        </Card>
+      }
 
       {/* Investment Accounts Section */}
-      <Card className="rounded-xl shadow-sm mb-6">
-        <CardHeader className="flex flex-row items-center justify-between p-6 pb-0">
-          <CardTitle className="text-xl text-[#004a7c] font-['Poppins',Helvetica] leading-5">
-            Investment Accounts
-          </CardTitle>
-          <Button
-            className="text-[#00a9e0] bg-transparent hover:bg-transparent p-0 flex items-center gap-1 h-6"
-          >
-            <PlusCircleIcon className="w-3.5 h-4" />
-            Add Investment
-          </Button>
-        </CardHeader>
-        <CardContent className="p-6">
-          {investmentAccounts.map((account, index) => (
-            <div
-              key={`investment-${index}`}
-              className="flex justify-between items-center bg-gray-50 rounded-lg p-4 mb-4 last:mb-0"
-            >
-              <div className="flex items-center">
-                {account.icon}
-                <div className="ml-3">
-                  <div className="text-base font-normal">{account.name}</div>
-                  <div className="text-sm text-gray-500">{account.type}</div>
-                </div>
-              </div>
-              <div className="text-base font-normal">{account.balance}</div>
+      {investmentAccounts.length > 0 && 
+        <Card className="rounded-xl shadow-lg border-none mb-8 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between p-6 bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
+            <CardTitle className="text-xl text-white font-medium flex items-center gap-2">
+              <TrendingUpIcon className="w-5 h-5" />
+              Investment Accounts
+            </CardTitle>
+            <div className="rounded-full bg-[#004a7c] bg-opacity-30 px-3 py-1 text-white text-sm">
+              {investmentAccounts.length} accounts
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-white">
+            {investmentAccounts.map((account) => 
+              renderAccountItem(account, <TrendingUpIcon className="w-5 h-5" />)
+            )}
+          </CardContent>
+        </Card>
+      }
 
       {/* Cash Accounts Section */}
-      <Card className="rounded-xl shadow-sm mb-6">
-        <CardHeader className="flex flex-row items-center justify-between p-6 pb-0">
-          <CardTitle className="text-xl text-[#004a7c] font-['Poppins',Helvetica] leading-5">
-            Cash Accounts
-          </CardTitle>
-          <Button
-            className="text-[#00a9e0] bg-transparent hover:bg-transparent p-0 flex items-center gap-1 h-6"
-          >
-            <PlusCircleIcon className="w-3.5 h-4" />
-            Add Cash Account
-          </Button>
-        </CardHeader>
-        <CardContent className="p-6">
-          {cashAccounts.map((account, index) => (
-            <div
-              key={`cash-${index}`}
-              className="flex justify-between items-center bg-gray-50 rounded-lg p-4 mb-4 last:mb-0"
-            >
-              <div className="flex items-center">
-                {account.icon}
-                <div className="ml-3">
-                  <div className="text-base font-normal">{account.name}</div>
-                  <div className="text-sm text-gray-500">{account.type}</div>
-                </div>
-              </div>
-              <div className="text-base font-normal">{account.balance}</div>
+      {liquidAccounts.length > 0 &&
+        <Card className="rounded-xl shadow-lg border-none mb-8 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between p-6 bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
+            <CardTitle className="text-xl text-white font-medium flex items-center gap-2">
+              <WalletIcon className="w-5 h-5" />
+              Liquid Cash
+            </CardTitle>
+            <div className="rounded-full bg-[#004a7c] bg-opacity-30 px-3 py-1 text-white text-sm">
+              {liquidAccounts.length} accounts
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-white">
+            {liquidAccounts.map((account) => 
+              renderAccountItem(account, <WalletIcon className="w-5 h-5" />)
+            )}
+          </CardContent>
+        </Card>
+      }
 
       {/* Credit Cards Section */}
-      <Card className="rounded-xl shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between p-6 pb-0">
-          <CardTitle className="text-xl text-[#004a7c] font-['Poppins',Helvetica] leading-5">
-            Credit Cards
-          </CardTitle>
-          <Button
-            className="text-[#00a9e0] bg-transparent hover:bg-transparent p-0 flex items-center gap-1 h-6"
-          >
-            <PlusCircleIcon className="w-3.5 h-4" />
-            Add Card
-          </Button>
-        </CardHeader>
-        <CardContent className="p-6">
-          {creditCards.map((card, index) => (
-            <div
-              key={`credit-${index}`}
-              className="flex justify-between items-center bg-gray-50 rounded-lg p-4 mb-4 last:mb-0"
-            >
-              <div className="flex items-center">
-                {card.icon}
-                <div className="ml-3">
-                  <div className="text-base font-normal">{card.name}</div>
-                  <div className="text-sm text-gray-500">{card.number}</div>
-                </div>
-              </div>
-              <div className="text-base font-normal text-red-500">
-                {card.balance}
-              </div>
+      {debtAccounts.length > 0 &&
+        <Card className="rounded-xl shadow-lg border-none mb-8 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between p-6 bg-gradient-to-r from-[#004a7c] to-[#00a9e0] text-white">
+            <CardTitle className="text-xl text-white font-medium flex items-center gap-2">
+              <CreditCardIcon className="w-5 h-5" />
+              Debt Accounts
+            </CardTitle>
+            <div className="rounded-full bg-[#004a7c] bg-opacity-30 px-3 py-1 text-white text-sm">
+              {debtAccounts.length} accounts
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-white">
+            {debtAccounts.map((account) => 
+              renderAccountItem(account, <CreditCardIcon className="w-5 h-5" />, true)
+            )}
+          </CardContent>
+        </Card>
+      }
+
+      {/* Empty state if no accounts */}
+      {bankAccounts.length === 0 && investmentAccounts.length === 0 && 
+       liquidAccounts.length === 0 && debtAccounts.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="mb-4 p-4 rounded-full bg-blue-50">
+            <WalletIcon className="w-12 h-12 text-blue-500" />
+          </div>
+          <h3 className="text-xl font-medium text-gray-800 mb-2">No accounts yet</h3>
+          <p className="text-gray-600 mb-6">Start by adding your first account</p>
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 flex items-center gap-2 h-[42px] px-5 rounded-full"
+            onClick={handleAddAccount}
+          >
+            <PlusCircleIcon className="w-4 h-4" />
+            Add First Account
+          </Button>
+        </div>
+      )}
+
+      {/* Render the account modal */}
+      <AccountModal
+        isOpen={isInputModalOpen}
+        onClose={() => setIsInputModalOpen(false)}
+        onSave={handleSaveAccount}
+        accountToEdit={accountToEdit}
+      />
     </div>
   );
 };

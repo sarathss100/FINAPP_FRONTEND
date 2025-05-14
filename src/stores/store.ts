@@ -45,6 +45,9 @@ export const useUserStore = create<IUserState>()(
                 // Reset the user store
                 useUserStore.getState().reset();
 
+                // Reset the account store 
+                useAccountsStore.getState().reset();
+
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');

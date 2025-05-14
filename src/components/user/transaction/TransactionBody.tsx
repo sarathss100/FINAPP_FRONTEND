@@ -1,6 +1,6 @@
 "use client";
-import { Plus, Search, Filter, Calendar, PieChart, ChevronRight, Tag, ChevronLeft } from "lucide-react";
-import React, { useState } from "react";
+import { Plus, Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import Input from '@/components/base/Input';
@@ -11,8 +11,28 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/base/Tabs';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 import AdvancedFinancialCalendar from './AdvancedFinancialCalendar';
+import { TransactionInputModal } from './TransactionInputModal';
+import { ITransaction } from '@/types/ITransaction';
+import { addTransaction } from '@/service/transactionService';
+import { useAccountsStore } from '@/stores/store';
+import { updateAccount } from '@/service/accountService';
 
 const TransactionBody = function () {
+  const [isTransactionInputModalOpen, setIsTransactionInputModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<ITransaction | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const bankAccounts = useAccountsStore((state) => state.bankAccounts);
+  const investmentAccounts = useAccountsStore((state) => state.investmentAccounts);
+  const liquidAccounts = useAccountsStore((state) => state.liquidAccounts);
+  const debtAccounts = useAccountsStore((state) => state.debtAccounts);
+  const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
+
+  useEffect(() => {
+    fetchAllAccounts();
+  }, [fetchAllAccounts]);
+
+  const accounts = [...bankAccounts, ...investmentAccounts, ...debtAccounts, ...liquidAccounts]
+
   type IconPath = '/restaurant_icon.svg' | '/shopping_bag_icon.svg' | '/bank_icon.svg' | '/transport_icon.svg' | '/utilities_icon.svg' | '/entertainment_icon.svg';
   
   interface Transaction {
@@ -111,7 +131,8 @@ const TransactionBody = function () {
     { name: "Shopping", value: 128.99, percentage: "40%" },
     { name: "Transport", value: 24.75, percentage: "8%" },
     { name: "Utilities", value: 95.2, percentage: "29%" },
-    { name: "Entertainment", value: 32, percentage: "10%" }
+    { name: "Entertainment", value: 32, percentage: "10%" },
+    { name: "Other", value: 10, percentage: "10%" }
   ];
 
   // Upcoming bills
@@ -130,27 +151,7 @@ const TransactionBody = function () {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
-  const [showTransactionForm, setShowTransactionForm] = useState(false);
   const itemsPerPage = 5;
-
-  // Transaction form state
-  const [newTransaction, setNewTransaction] = useState({
-    category: '',
-    merchant: '',
-    amount: '',
-    date: '',
-    tags: ''
-  });
-
-  // Placeholders for icons - in a real app these would be actual image paths
-  const iconPlaceholders = {
-    '/restaurant_icon.svg': '/restaurant_icon.svg',
-    '/shopping_bag_icon.svg': '/shopping_bag_icon.svg',
-    '/bank_icon.svg': '/bank_icon.svg',
-    '/transport_icon.svg': '/transport_icon.svg',
-    '/utilities_icon.svg': '/utilities_icon.svg',
-    '/entertainment_icon.svg': '/entertainment_icon.svg'
-  };
 
   // Filter transactions based on search term and filters
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,51 +231,116 @@ const TransactionBody = function () {
     setCurrentPage(1);
   };
 
-  // Handle transaction form input changes
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewTransaction({
-      ...newTransaction,
-      [name]: value
-    });
+  // Open the transaction modal for adding new transaction
+  const handleAddTransaction = () => {
+    setSelectedTransaction(null);
+    setIsEditing(false);
+    setIsTransactionInputModalOpen(true);
   };
 
-  // Handle form submission
-  const handleSubmitTransaction = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send this to your backend API
-    console.log("New transaction submitted:", newTransaction);
-    
-    // For demo purposes, we'll add it to our local state
-    const newId = allTransactions.length + 1;
-    const isIncome = newTransaction.amount.trim().startsWith('+');
-    
-    const newTransactionObj: Transaction = {
-      id: newId,
-      category: newTransaction.category,
-      merchant: newTransaction.merchant,
-      date: newTransaction.date || 'Today',
-      amount: isIncome ? newTransaction.amount : `-${newTransaction.amount.replace(/^\+|-/, '')}`,
-      amountColor: isIncome ? 'text-emerald-500' : 'text-red-500',
-      icon: newTransaction.category.toLowerCase().includes('restaurant') 
-        ? '/restaurant_icon.svg' 
-        : newTransaction.category.toLowerCase().includes('shopping')
-          ? '/shopping_bag_icon.svg'
-          : '/bank_icon.svg',
-      status: 'Completed',
-      tags: newTransaction.tags ? newTransaction.tags.split(',').map(tag => tag.trim()) : []
+  // Open the transaction modal for editing an existing transaction
+  const handleEditTransaction = (transaction: Transaction) => {
+    // Convert the Transaction format to ITransaction format for the modal
+    const formattedTransaction: ITransaction = {
+      _id: transaction.id.toString(),
+      user_id: 'user123',
+      transaction_type: transaction.amountColor === 'text-emerald-500' ? 'INCOME' : 'EXPENSE',
+      type: 'REGULAR',
+      category: (transaction.category.toUpperCase() === 'RESTAURANT' ? 'FOOD' : 
+                transaction.category.toUpperCase() === 'UTILITIES' ? 'BILLS' :
+                transaction.category.toUpperCase() === 'SHOPPING MALL' ? 'SHOPPING' :
+                transaction.category.toUpperCase() === 'SALARY DEPOSIT' ? 'SAVINGS' :
+                transaction.category === 'Transport' ? 'TRANSPORT' :
+                transaction.category === 'Entertainment' ? 'ENTERTAINMENT' : 'MISCELLANEOUS') as ITransaction['category'],
+      amount: Number(transaction.amount.replace(/[^0-9.-]+/g, '')),
+      currency: 'INR',
+      date: new Date().toISOString(), // Using current date as placeholder since we don't have exact date
+      description: transaction.merchant,
+      tags: transaction.tags || [],
+      status: (transaction.status?.toUpperCase() === 'PENDING' ? 'PENDING' : transaction.status?.toUpperCase() === 'FAILED' ? 'FAILED' : 'COMPLETED') as 'COMPLETED' | 'PENDING' | 'FAILED',
+      account_id: accounts[0]._id || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     
-    // Add to transactions and reset form
-    setTransactions([newTransactionObj, ...transactions]);
-    setNewTransaction({
-      category: '',
-      merchant: '',
-      amount: '',
-      date: '',
-      tags: ''
-    });
-    setShowTransactionForm(false);
+    setSelectedTransaction(formattedTransaction);
+    setIsEditing(true);
+    setIsTransactionInputModalOpen(true);
+  };
+
+  // Handle saving the transaction from modal
+  const handleSaveTransaction = async (transactionData: ITransaction) => {
+    if (transactionData.transaction_type === 'INCOME' && transactionData.type !== 'TRANSFER') {
+      const accountDetails = accounts.filter((account) => account._id === transactionData.account_id);
+      const newBalance = (accountDetails[0]?.current_balance || 0) + Number(transactionData.amount);
+      accountDetails[0].current_balance = newBalance;
+      await updateAccount(transactionData.account_id, {...accountDetails[0]});
+    } else if (transactionData.transaction_type === 'EXPENSE' && transactionData.type !== 'TRANSFER') {
+      const accountDetails = accounts.filter((account) => account._id === transactionData.account_id);
+      const newBalance = (accountDetails[0]?.current_balance || 0) - Number(transactionData.amount);
+      accountDetails[0].current_balance = newBalance;
+      await updateAccount(transactionData.account_id, {...accountDetails[0]});
+    } else if (transactionData.transaction_type === 'INCOME' && transactionData.type === 'TRANSFER') {
+      const debitedAccountDetails = accounts.filter((account) => account._id === transactionData.account_id);
+      const debtiedAccountBalance = (debitedAccountDetails[0]?.current_balance || 0) - Number(transactionData.amount);
+      await updateAccount(transactionData.account_id, { ...debitedAccountDetails[0], current_balance: debtiedAccountBalance });
+      const creditedAccountDetails = accounts.filter((account) => account._id === transactionData.related_account_id);
+      const creditedAccountBalance = (creditedAccountDetails[0]?.current_balance || 0) + Number(transactionData.amount);
+      await updateAccount(transactionData.related_account_id || '', { ...creditedAccountDetails[0], current_balance: creditedAccountBalance });
+    } else if (transactionData.transaction_type === 'EXPENSE' && transactionData.type === 'TRANSFER') {
+      const debitedAccountDetails = accounts.filter((account) => account._id === transactionData.account_id);
+      const debtiedAccountBalance = (debitedAccountDetails[0]?.current_balance || 0) - Number(transactionData.amount);
+      await updateAccount(transactionData.account_id, { ...debitedAccountDetails[0], current_balance: debtiedAccountBalance });
+      const creditedAccountDetails = accounts.filter((account) => account._id === transactionData.related_account_id);
+      const creditedAccountBalance = (creditedAccountDetails[0]?.current_balance || 0) - Number(transactionData.amount);
+      await updateAccount(transactionData.related_account_id || '', { ...creditedAccountDetails[0], current_balance: creditedAccountBalance });
+    }
+
+    const isIncome = transactionData.transaction_type === 'INCOME';
+    const amountPrefix = isIncome ? '+' : '-';
+    const amountStr = `${amountPrefix}$${Math.abs(Number(transactionData.amount)).toFixed(2)}`;
+    
+    const newTransaction: Transaction = {
+      id: isEditing ? Number(transactionData._id) : transactions.length + 1,
+      category: transactionData.category,
+      merchant: transactionData.description || "Unknown",
+      date: "Today",
+      amount: amountStr,
+      amountColor: isIncome ? 'text-emerald-500' : 'text-red-500',
+      icon: getIconForCategory(transactionData.category),
+      status: transactionData.status as string,
+      tags: transactionData.tags
+    };
+    
+    if (isEditing) {
+      // Update existing transaction
+      setTransactions(transactions.map(t => 
+        t.id === newTransaction.id ? newTransaction : t
+      ));
+    } else {
+      const response = await addTransaction(transactionData);
+      console.log(`Response`, response.data);
+      // Add new transaction
+      setTransactions([newTransaction, ...transactions]);
+    }
+  };
+
+  // Utility function to get icon based on category
+  const getIconForCategory = (category: string): IconPath => {
+    const lowerCategory = category.toLowerCase();
+    if (lowerCategory.includes('restaurant') || lowerCategory.includes('food')) {
+      return '/restaurant_icon.svg';
+    } else if (lowerCategory.includes('shopping')) {
+      return '/shopping_bag_icon.svg';
+    } else if (lowerCategory.includes('bank') || lowerCategory.includes('salary')) {
+      return '/bank_icon.svg';
+    } else if (lowerCategory.includes('transport')) {
+      return '/transport_icon.svg';
+    } else if (lowerCategory.includes('utilities')) {
+      return '/utilities_icon.svg';
+    } else {
+      return '/entertainment_icon.svg';
+    }
   };
 
   // Calculate pagination
@@ -338,11 +404,6 @@ const TransactionBody = function () {
                     </div>
                   ))}
                 </div>
-                <div className="mt-8 flex justify-end">
-                  <Button className="p-2">
-                    <PieChart className="w-4 h-4 mr-1" /> View Details
-                  </Button>
-                </div>
               </CardContent>
             </Card>
             
@@ -363,97 +424,9 @@ const TransactionBody = function () {
                   ))}
                 </div>
               </CardContent>
-              <div className="mt-4 mr-6 mb-8 flex justify-end">
-                <Button className="p-2">
-                  <ChevronRight className="w-4 h-4 mr-1" /> View All Bills 
-                </Button>
-              </div>
             </Card>
           </div>
         </section>
-
-        {/* Add Transaction Form */}
-        {showTransactionForm && (
-          <section>
-            <Card className="shadow-md border border-blue-100">
-              <CardHeader className="border-b bg-blue-50">
-                <CardTitle className="text-lg text-blue-700">Add New Transaction</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmitTransaction} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Merchant</label>
-                    <Input 
-                      name="merchant"
-                      value={newTransaction.merchant}
-                      onChange={handleFormChange}
-                      placeholder="Enter merchant name"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Category</label>
-                    <Input 
-                      name="category"
-                      value={newTransaction.category}
-                      onChange={handleFormChange}
-                      placeholder="Enter transaction category"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Amount</label>
-                    <Input 
-                      name="amount"
-                      value={newTransaction.amount}
-                      onChange={handleFormChange}
-                      placeholder="Enter amount (e.g. +50.00 or -25.99)"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Date</label>
-                    <Input 
-                      name="date"
-                      value={newTransaction.date}
-                      onChange={handleFormChange}
-                      placeholder="Today"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-gray-700">Tags (comma separated)</label>
-                    <Input 
-                      name="tags"
-                      value={newTransaction.tags}
-                      onChange={handleFormChange}
-                      placeholder="e.g. Food, Personal, Bills"
-                    />
-                  </div>
-                  
-                  <div className="md:col-span-2 flex justify-end gap-4">
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => setShowTransactionForm(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="submit"
-                      className="bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      Save Transaction
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </section>
-        )}
 
         {/* General Transactions Section */}
         <section>
@@ -463,10 +436,10 @@ const TransactionBody = function () {
               <div className="flex gap-3">
                 <Button
                   className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
-                  onClick={() => setShowTransactionForm(!showTransactionForm)}
+                  onClick={handleAddTransaction}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  {showTransactionForm ? "Hide Form" : "Add Transaction"}
+                  Add Transaction
                 </Button>
               </div>
             </div>
@@ -573,13 +546,14 @@ const TransactionBody = function () {
                       <TableRow
                         key={transaction.id}
                         className="cursor-pointer hover:bg-gray-50 transition-colors duration-150"
+                        onClick={() => handleEditTransaction(transaction)}
                       >
                         <TableCell className="py-4">
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
                               <Image
                                 alt={transaction.category}
-                                src={iconPlaceholders[transaction.icon]}
+                                src={transaction.icon}
                                 width={14}
                                 height={16}
                               />
@@ -696,22 +670,22 @@ const TransactionBody = function () {
                       </span>
                     </div>
 
-          <button
-            onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              currentPage === totalPages
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            aria-label="Next page"
-          >
-            <span className="hidden sm:inline mr-1">Next</span>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
+                    <button
+                      onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        currentPage === totalPages
+                          ? "text-gray-300 cursor-not-allowed"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                      aria-label="Next page"
+                    >
+                      <span className="hidden sm:inline mr-1">Next</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </Card>
           </div>
         </section>
@@ -721,6 +695,16 @@ const TransactionBody = function () {
           <AdvancedFinancialCalendar />
         </section>
       </div>
+
+      {/* Transaction Input Modal */}
+      <TransactionInputModal
+        isOpen={isTransactionInputModalOpen}
+        onClose={() => setIsTransactionInputModalOpen(false)}
+        onSaveTransaction={handleSaveTransaction}
+        accounts={accounts}
+        initialData={selectedTransaction}
+        isEditing={isEditing}
+      />
     </div>
   );
 };

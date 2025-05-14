@@ -352,7 +352,10 @@ const AccountsBody = function () {
       {/* Render the account modal */}
       <AccountModal
         isOpen={isInputModalOpen}
-        onClose={() => setIsInputModalOpen(false)}
+        onClose={async () => { 
+          await handleStore();
+          setIsInputModalOpen(false);
+        }}
         onSave={handleSaveAccount}
         accountToEdit={accountToEdit}
       />

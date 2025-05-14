@@ -231,7 +231,6 @@ export const AccountModal = ({
         
         if (response.success) {
           toast.success(`Account ${accountToEdit ? 'updated' : 'created'} successfully!`);
-          await handleStore();
           onClose();
         }
         
@@ -239,6 +238,7 @@ export const AccountModal = ({
         toast.error(`Failed to ${accountToEdit ? 'update' : 'create'} account`);
         console.error(`Error ${accountToEdit ? 'updating' : 'saving'} account:`, error);
       } finally {
+        await handleStore();
         setIsSubmitting(false);
       }
     } else {

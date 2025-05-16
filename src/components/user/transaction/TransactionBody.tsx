@@ -1,6 +1,6 @@
 "use client";
 import { Plus, Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import Input from '@/components/base/Input';
@@ -14,7 +14,7 @@ import AdvancedFinancialCalendar from './AdvancedFinancialCalendar';
 import { TransactionInputModal } from './TransactionInputModal';
 import { ITransaction } from '@/types/ITransaction';
 import { addTransaction } from '@/service/transactionService';
-import { useAccountsStore } from '@/stores/store';
+import { useAccountsStore, useTransactionStore } from '@/stores/store';
 import { updateAccount } from '@/service/accountService';
 
 const TransactionBody = function () {
@@ -25,11 +25,31 @@ const TransactionBody = function () {
   const investmentAccounts = useAccountsStore((state) => state.investmentAccounts);
   const liquidAccounts = useAccountsStore((state) => state.liquidAccounts);
   const debtAccounts = useAccountsStore((state) => state.debtAccounts);
+  const totalBalance = useAccountsStore((state) => state.totalBalance);
+  const currentMonthTotalIncome = useTransactionStore((state) => state.currentMonthTotalIncome);
+  const previousMonthTotalIncome = useTransactionStore((state) => state.previousMonthTotalIncome);
+  const currentMonthTotalExpense = useTransactionStore((state) => state.currentMonthTotalExpense);
+  const categoryBreakdown = useTransactionStore((state) => state.categoryWiseMonthlyExpense);
+  // const allTransactions = useTransactionStore((state) => state.allTransactions);
   const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
+  const fetchTotalMonthlyIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
+  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
+  const fetchMonthlyTotalExpense = useTransactionStore((state) => state.fetchMonthlyTotalExpense);
+  const fetchCategoryWiseExpenses = useTransactionStore((state) => state.fetchCategoryWiseExpenses);
+  // const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
+
+  const handleStore = useCallback(() => {
+    fetchAllAccounts();
+    fetchTotalMonthlyIncome();
+    fetchTotalBalance();
+    fetchMonthlyTotalExpense();
+    fetchCategoryWiseExpenses();
+    // fetchAllTransactions();
+  }, [fetchAllAccounts, fetchTotalMonthlyIncome, fetchTotalBalance, fetchMonthlyTotalExpense, fetchCategoryWiseExpenses]);
 
   useEffect(() => {
-    fetchAllAccounts();
-  }, [fetchAllAccounts]);
+    handleStore();
+  }, [handleStore]);
 
   const accounts = [...bankAccounts, ...investmentAccounts, ...debtAccounts, ...liquidAccounts]
 
@@ -117,30 +137,12 @@ const TransactionBody = function () {
     },
   ];
 
-  // Financial summary data
-  const financialSummary = {
-    totalIncome: "+$3,500.00",
-    totalExpenses: "-$323.44",
-    netBalance: "+$3,176.56",
-    savingsRate: "28%"
-  };
-
-  // Category breakdown data for the chart
-  const categoryBreakdown = [
-    { name: "Food & Dining", value: 42.5, percentage: "13%" },
-    { name: "Shopping", value: 128.99, percentage: "40%" },
-    { name: "Transport", value: 24.75, percentage: "8%" },
-    { name: "Utilities", value: 95.2, percentage: "29%" },
-    { name: "Entertainment", value: 32, percentage: "10%" },
-    { name: "Other", value: 10, percentage: "10%" }
-  ];
-
   // Upcoming bills
-  const upcomingBills = [
-    { name: "Rent", amount: "$1,200.00", dueDate: "May 15, 2025" },
-    { name: "Electric Bill", amount: "$87.50", dueDate: "May 20, 2025" },
-    { name: "Internet", amount: "$65.00", dueDate: "May 22, 2025" }
-  ];
+  // const upcomingBills = [
+  //   { name: "Rent", amount: "$1,200.00", dueDate: "May 15, 2025" },
+  //   { name: "Electric Bill", amount: "$87.50", dueDate: "May 20, 2025" },
+  //   { name: "Internet", amount: "$65.00", dueDate: "May 22, 2025" }
+  // ];
 
   // State for filtering and pagination
   const [transactions, setTransactions] = useState(allTransactions);
@@ -361,7 +363,7 @@ const TransactionBody = function () {
       <div className="space-y-8">
         {/* Financial Summary Section */}
         <section className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium text-gray-600">Monthly Summary</CardTitle>
@@ -370,19 +372,24 @@ const TransactionBody = function () {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Income</p>
-                    <p className="text-lg font-semibold text-emerald-500">{financialSummary.totalIncome}</p>
+                    <p className="text-lg font-semibold text-emerald-500">₹ {currentMonthTotalIncome.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Expenses</p>
-                    <p className="text-lg font-semibold text-red-500">{financialSummary.totalExpenses}</p>
+                    <p className="text-lg font-semibold text-red-500">₹ -{currentMonthTotalExpense.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Net Balance</p>
-                    <p className="text-lg font-semibold text-[#004a7c]">{financialSummary.netBalance}</p>
+                    <p className="text-lg font-semibold text-[#004a7c]">₹ {totalBalance.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Savings Rate</p>
-                    <p className="text-lg font-semibold text-[#00a9e0]">{financialSummary.savingsRate}</p>
+                    <p className="text-lg font-semibold text-[#00a9e0]">
+                      {previousMonthTotalIncome === 0
+                        ? currentMonthTotalIncome > 0 ? '100%' : '0%'
+                        : `${(((currentMonthTotalIncome - previousMonthTotalIncome) / Math.abs(previousMonthTotalIncome)) * 100).toFixed(2)} %`
+                      }
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -398,16 +405,16 @@ const TransactionBody = function () {
                     <div key={index} className="flex justify-between items-center">
                       <div className="flex items-center">
                         <div className={`w-2 h-2 rounded-full ${index % 2 === 0 ? 'bg-blue-500' : 'bg-indigo-600'} mr-2`}></div>
-                        <span className="text-sm">{category.name}</span>
+                        <span className="text-sm">{category.category}</span>
                       </div>
-                      <span className="text-sm font-medium">{category.percentage}</span>
+                      <span className="text-sm font-medium">₹ {category.value.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-white">
+            {/* <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium text-gray-600">Upcoming Bills</CardTitle>
               </CardHeader>
@@ -424,7 +431,7 @@ const TransactionBody = function () {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </section>
 
@@ -474,11 +481,10 @@ const TransactionBody = function () {
                         <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                         <SelectValue placeholder="Date Range" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="last-30-days">Last 30 Days</SelectItem>
                         <SelectItem value="last-90-days">Last 90 Days</SelectItem>
                         <SelectItem value="this-year">This Year</SelectItem>
-                        <SelectItem value="custom">Custom Range</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -490,7 +496,7 @@ const TransactionBody = function () {
                       <SelectTrigger className="w-full md:w-48 h-10">
                         <SelectValue placeholder="All Categories" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="all-categories">All Categories</SelectItem>
                         <SelectItem value="restaurant">Food & Dining</SelectItem>
                         <SelectItem value="shopping">Shopping</SelectItem>
@@ -504,7 +510,7 @@ const TransactionBody = function () {
                       <SelectTrigger className="w-full md:w-48 h-10">
                         <SelectValue placeholder="All Statuses" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="all-statuses">All Statuses</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
                         <SelectItem value="pending">Pending</SelectItem>
@@ -699,7 +705,10 @@ const TransactionBody = function () {
       {/* Transaction Input Modal */}
       <TransactionInputModal
         isOpen={isTransactionInputModalOpen}
-        onClose={() => setIsTransactionInputModalOpen(false)}
+        onClose={async () => { 
+          await handleStore();
+          setIsTransactionInputModalOpen(false)
+        }}
         onSaveTransaction={handleSaveTransaction}
         accounts={accounts}
         initialData={selectedTransaction}

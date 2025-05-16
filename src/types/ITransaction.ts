@@ -1,4 +1,3 @@
-
 // Predefined enums
 export const TRANSACTION_TYPES = [
     'REGULAR',
@@ -76,4 +75,28 @@ export interface ITransactionDetails {
     success: boolean,
     message: string,
     data: { addedTransaction: ITransaction };
+}
+
+export interface ITotalMonthlyIncome {
+    success: boolean,
+    message: string,
+    data: { currentMonthTotal: number, previousMonthTotal: number };
+}
+
+export interface ITotalMonthlyExpense {
+    success: boolean,
+    message: string,
+    data: { totalMonthlyExpense: number };
+}
+
+export interface ICategoryWiseExpenses {
+    success: boolean,
+    message: string,
+    data: {categoryWiseExpenses: {category: string, value: number}[]};
+}
+
+export interface IAllTransactions {
+    success: boolean,
+    message: string,
+    data: { allTransactions: ITransaction[] },
 }

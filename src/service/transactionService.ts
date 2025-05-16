@@ -1,4 +1,4 @@
-import { ITransaction, ITransactionDetails } from '@/types/ITransaction';
+import { IAllTransactions, ICategoryWiseExpenses, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
 import axiosInstance from './axiosInstance';
 
 // Sends a request to add a new transaction for a user via the backend API
@@ -19,3 +19,131 @@ export const addTransaction = async function (formData: ITransaction): Promise<I
         throw error;
     }
 };
+
+/**
+ * Fetches the total income for the current and previous month for the authenticated user.
+ *
+ * Makes an API request to retrieve calculated monthly income data from the backend,
+ * specifically for the currently authenticated user (based on the session or token).
+ *
+ * @returns {Promise<ITotalMonthlyIncome>} A promise resolving to an object containing:
+ *   - `currentMonthTotal`: Total income for the current month
+ *   - `previousMonthTotal`: Total income for the previous month
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const getTotalMonthlyIncome = async function (): Promise<ITotalMonthlyIncome> {
+    try {
+        // Send a GET request to fetch the monthly income totals from the backend API
+        const response = await axiosInstance.get<ITotalMonthlyIncome>('/api/v1/transaction/monthly-total-income');
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the monthly income totals if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch monthly income totals.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling without modifying it
+        throw error;
+    }
+};
+
+/**
+ * Fetches the total expense amount for the current month
+ * for the authenticated user.
+ *
+ * Makes an API request to retrieve calculated monthly expense data from the backend,
+ * specifically for the currently authenticated user (based on session or token).
+ *
+ * @returns {Promise<ITotalMonthlyExpense>} A promise resolving to an object containing:
+ *   - `currentMonthTotal`: Total expense amount for the current month
+ *   - `previousMonthTotal`: Total expense amount for the previous month
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const getTotalMonthlyExpense = async function (): Promise<ITotalMonthlyExpense> {
+    try {
+        // Send a GET request to fetch the monthly expense totals from the backend API
+        const response = await axiosInstance.get<ITotalMonthlyExpense>('/api/v1/transaction/monthly-total-expense');
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the monthly expense totals if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch monthly expense totals.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling without modifying it
+        throw error;
+    }
+};
+
+/**
+ * Fetches the **category-wise expense breakdown** for the current month
+ * for the authenticated user.
+ *
+ * Makes an API request to retrieve categorized monthly expense data from the backend,
+ * grouped by transaction categories (e.g., FOOD, TRANSPORT, etc.),
+ * specifically for the currently authenticated user (based on session or token).
+ *
+ * @returns {Promise<ICategoryWiseExpenses>} A promise resolving to an object containing:
+ *   - `success`: Boolean indicating whether the request was successful
+ *   - `data`: An array of objects with:
+ *     - `category`: The name of the transaction category
+ *     - `value`: The total amount spent in that category during the current month
+ *   - `message`: A descriptive message (usually on error)
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const getCategoryWiseExpenses = async function (): Promise<ICategoryWiseExpenses> {
+    try {
+        // Send a GET request to fetch the category-wise expense data from the backend API
+        const response = await axiosInstance.get<ICategoryWiseExpenses>('/api/v1/transaction/category-wise-expense');
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the category-wise expense data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch category-wise expense data.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling without modifying it
+        throw error;
+    }
+};
+
+/**
+ * Fetches the total expense amount for the current month
+ * for the authenticated user.
+ *
+ * Makes an API request to retrieve calculated monthly expense data from the backend,
+ * specifically for the currently authenticated user (based on session or token).
+ *
+ * @returns {Promise<ITotalMonthlyExpense>} A promise resolving to an object containing:
+ *   - `currentMonthTotal`: Total expense amount for the current month
+ *   - `previousMonthTotal`: Total expense amount for the previous month
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const getAllTransactions = async function (): Promise<IAllTransactions> {
+    try {
+        // Send a GET request to fetch the monthly expense totals from the backend API
+        const response = await axiosInstance.get<IAllTransactions>('/api/v1/transaction/all');
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the monthly expense totals if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch monthly expense totals.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling without modifying it
+        throw error;
+    }
+};
+

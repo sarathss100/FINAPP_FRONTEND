@@ -7,6 +7,8 @@ import { IGoal } from '@/types/IGoal';
 import { getUserProfilePictureUrl } from '@/service/userService';
 import { getTotalBalance, getTotalBankBalance, getTotalDebt, getTotalInvestment, getUserAccounts } from '@/service/accountService';
 import { IAccount } from '@/types/IAccounts';
+import { getAllTransactions, getCategoryWiseExpenses, getTotalMonthlyExpense, getTotalMonthlyIncome } from '@/service/transactionService';
+import { ITransaction } from '@/types/ITransaction';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -47,6 +49,9 @@ export const useUserStore = create<IUserState>()(
 
                 // Reset the account store 
                 useAccountsStore.getState().reset();
+
+                // Reset the transaction store
+                useTransactionStore.getState().reset();
 
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
@@ -380,6 +385,90 @@ export const useAccountsStore = create<AccountState>()(
     )
 );
 
+interface TransactionState {
+    currentMonthTotalIncome: number; // Current Month Total Income
+    previousMonthTotalIncome: number; // Previous Month Total Income
+    currentMonthTotalExpense: number; // Current Month Total Expense
+    categoryWiseMonthlyExpense: { category: string, value: number }[]; // Current Month Category Wise expense
+    allTransactions: ITransaction[]; // All Transactions 
+    fetchMonthlyTotalIncome: () => Promise<void>; // Function to fetch Monthly Total Income
+    fetchMonthlyTotalExpense: () => Promise<void>; // Function to fetch Monthly Total Expense 
+    fetchCategoryWiseExpenses: () => Promise<void>; // Function to fetch Category Wise Monthly Expenses 
+    fetchAllTransactions: () => Promise<void>; // Function to fetch all transactions 
+    reset: () => void;
+}
 
+export const useTransactionStore = create<TransactionState>()(
+    persist(
+        (set) => ({
+            currentMonthTotalIncome: 0,
+            previousMonthTotalIncome: 0,
+            currentMonthTotalExpense: 0,
+            categoryWiseMonthlyExpense: [],
+            allTransactions: [],
 
+            // Reset function
+            reset: () => 
+                set({
+                    currentMonthTotalIncome: 0,
+                    previousMonthTotalIncome: 0,
+                    currentMonthTotalExpense: 0,
+                    categoryWiseMonthlyExpense: [],
+                    allTransactions: [],
+                }),
+            
+            // fetch Total Balance 
+            fetchMonthlyTotalIncome: async () => {
+                try {
+                    const response = await getTotalMonthlyIncome();
+                    const data = await response.data;
+                    set({ currentMonthTotalIncome: data.currentMonthTotal });
+                    set({ previousMonthTotalIncome: data.previousMonthTotal });
+                } catch (error) {
+                    console.error(`Failed to get total Monthly Income`, error);
+                    set({ currentMonthTotalIncome: 0 });
+                    set({ previousMonthTotalIncome: 0 });
+                }
+            },
 
+            // fetch Total Expense
+            fetchMonthlyTotalExpense: async () => {
+                try {
+                    const response = await getTotalMonthlyExpense();
+                    const data = await response.data;
+                    set({ currentMonthTotalExpense: data.totalMonthlyExpense });
+                } catch (error) {
+                    console.error(`Failed to get total Monthly Expense`, error);
+                    set({ currentMonthTotalExpense: 0 });
+                }
+            },
+
+            // fetch Category Wise Expenses 
+            fetchCategoryWiseExpenses: async () => {
+                try {
+                    const response = await getCategoryWiseExpenses();
+                    const data = await response.data;
+                    set({ categoryWiseMonthlyExpense: data.categoryWiseExpenses});
+                } catch (error) {
+                    console.error(`Failed to get total Monthly Expense`, error);
+                    set({ categoryWiseMonthlyExpense: [] });
+                }
+            },
+
+            // fetch All Transactions 
+            fetchAllTransactions: async () => {
+                try {
+                    const response = await getAllTransactions();
+                    const data = await response.data;
+                    set({ allTransactions: data.allTransactions });
+                } catch (error) {
+                    console.error(`Failed to get total Monthly Expense`, error);
+                    set({ allTransactions: [] });
+                } 
+            }
+        }),
+        {
+            name: 'transactions-storage', // Persisted state key
+        }
+    )
+);

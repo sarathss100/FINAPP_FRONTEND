@@ -23,6 +23,8 @@ export const TRANSACTION_TYPES = [
     'PURCHASE',
     'SALE',
     'EXTRACTION',
+    'INCOME',
+    'EXPENSE',
 ] as const;
 
 export type TransactionType = typeof TRANSACTION_TYPES[number];
@@ -46,23 +48,27 @@ export const TRANSACTION_CATEGORIES = [
 export type TransactionCategory = typeof TRANSACTION_CATEGORIES[number];
 
 export interface ITransaction {
-    _id: string;
-    user_id: string;
+    _id?: string;
+    user_id?: string;
     account_id: string;
     transaction_type: 'INCOME' | 'EXPENSE',
     type: TransactionType;
     category: TransactionCategory;
     amount: number;
+    credit_amount?: number;
+    debit_amount?: number;
+    closing_balance?: number | null;
     currency: 'INR';
     date: string;
     description: string;
     tags: string[];
     status: 'PENDING' | 'COMPLETED' | 'FAILED';
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
     deletedAt?: string;
     isDeleted?: boolean;
     related_account_id?: string;
+    transactionHash?: string;
     linked_entities?: Array<{
         entity_id: string;
         entity_type: 'GOAL' | 'DEBT' | 'INVESTMENT' | 'INSURANCE' | 'LOAN' | 'CREDIT_CARD' | 'SAVINGS_ACCOUNT' | 'MORTGAGE' | 'OTHER';
@@ -74,7 +80,7 @@ export interface ITransaction {
 export interface ITransactionDetails {
     success: boolean,
     message: string,
-    data: { addedTransaction: ITransaction };
+    data: { addedTransaction: ITransaction | ITransaction[] };
 }
 
 export interface ITotalMonthlyIncome {
@@ -99,4 +105,21 @@ export interface IAllTransactions {
     success: boolean,
     message: string,
     data: { allTransactions: ITransaction[] },
+}
+
+export interface IParsedTransaction {
+    date: Date | null;
+    description: string;
+    transaction_id: string;
+    debit_amount?: number;
+    credit_amount?: number;
+    transaction_type: 'income' | 'expense' | 'unknown';
+    amount: number;
+    closing_balance: number | null;
+}
+
+export interface IParsedTransactions {
+    success: boolean,
+    message: string,
+    data: { extractedStatementData: IParsedTransaction[] },
 }

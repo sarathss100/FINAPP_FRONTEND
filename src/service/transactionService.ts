@@ -1,12 +1,12 @@
-import { IAllTransactions, ICategoryWiseExpenses, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
+import { IAllTransactions, ICategoryWiseExpenses, IParsedTransactions, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
 import axiosInstance from './axiosInstance';
 
 // Sends a request to add a new transaction for a user via the backend API
-export const addTransaction = async function (formData: ITransaction): Promise<ITransactionDetails> {
+export const addTransaction = async function (formData: ITransaction | ITransaction[]): Promise<ITransactionDetails> {
     try {
         // Send a POST request to add a transaction
         const response = await axiosInstance.post<ITransactionDetails>('/api/v1/transaction/create', formData);
-
+    
         // Validate the response 
         if (response.data && response.data.success) {
             return response.data; // Return the added transaction details if successful.
@@ -140,6 +140,44 @@ export const getAllTransactions = async function (): Promise<IAllTransactions> {
         } else {
             // Throw an error if the response indicates failure
             throw new Error(response.data?.message || 'Failed to fetch monthly expense totals.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling without modifying it
+        throw error;
+    }
+};
+
+/**
+ * Uploads a bank statement file and extracts structured transaction data from it.
+ *
+ * This function sends the uploaded file to the backend API to be parsed and normalized
+ * into a standardized format containing the list of transactions.
+ *
+ * Supported file formats include:
+ * - CSV
+ * - XLSX, XLS, XLSM (Excel files)
+ *
+ * @param {FormData} file - The form data containing the uploaded file.
+ * @returns {Promise<IParsedTransactions>}
+ *   A promise resolving to an object containing the parsed transaction data.
+ *
+ * @throws {Error} If the file upload or parsing fails on the server side.
+ */
+export const extractStatementData = async function (file: FormData): Promise<IParsedTransactions> {
+    try {
+        // Send a POST request to extract the data from the backend API
+        const response = await axiosInstance.post<IParsedTransactions>('/api/v1/transaction/statement-data', file,{
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the extracted data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to extract the Data from the file');
         }
     } catch (error) {
         // Re-throw the error for upstream handling without modifying it

@@ -1,5 +1,5 @@
 "use client";
-import { Plus, Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft } from "lucide-react";
+import { Plus, Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft, UploadIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
@@ -16,8 +16,11 @@ import { ITransaction } from '@/types/ITransaction';
 import { addTransaction } from '@/service/transactionService';
 import { useAccountsStore, useTransactionStore } from '@/stores/store';
 import { updateAccount } from '@/service/accountService';
+import ImportModal from './ImportModal';
+import BankStatementUploader from './BankStatementUploader';
 
 const TransactionBody = function () {
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isTransactionInputModalOpen, setIsTransactionInputModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<ITransaction | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -50,6 +53,8 @@ const TransactionBody = function () {
   useEffect(() => {
     handleStore();
   }, [handleStore]);
+
+  const importCloseModal = () => setIsImportModalOpen(false);
 
   const accounts = [...bankAccounts, ...investmentAccounts, ...debtAccounts, ...liquidAccounts]
 
@@ -438,8 +443,16 @@ const TransactionBody = function () {
         {/* General Transactions Section */}
         <section>
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div></div>
+            <div className="flex justify-end items-center">
+              <div className="flex gap-3 mr-3">
+                <Button
+                  className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
+                  onClick={() => setIsImportModalOpen(true)}
+                >
+                  <UploadIcon className="w-4 h-4 mr-2" />
+                  Import Transaction
+                </Button>
+              </div>
               <div className="flex gap-3">
                 <Button
                   className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
@@ -714,6 +727,11 @@ const TransactionBody = function () {
         initialData={selectedTransaction}
         isEditing={isEditing}
       />
+
+      {/* Import Modal */}
+      <ImportModal isOpen={isImportModalOpen} onClose={importCloseModal}>
+        <BankStatementUploader onClose={importCloseModal} />
+      </ImportModal>
     </div>
   );
 };

@@ -59,20 +59,6 @@ const TransactionBody = function () {
   };
 
   const accounts = [...bankAccounts, ...investmentAccounts, ...debtAccounts, ...liquidAccounts]
-  
-  // interface Transaction {
-  //   _id: string;
-  //   account_id?: string;
-  //   transaction_type?: string;
-  //   type?: "INCOME" | "EXPENSE";
-  //   currency: string;
-  //   category: string;
-  //   description: string;
-  //   date: string;
-  //   amount: string;
-  //   status?: string;
-  //   tags?: string[];
-  // }
 
   useEffect(() => {
     if (allTransactions && allTransactions.length > 0) {
@@ -168,36 +154,6 @@ const TransactionBody = function () {
     setIsEditing(false);
     setIsTransactionInputModalOpen(true);
   };
-
-  // // Open the transaction modal for editing an existing transaction
-  // const handleEditTransaction = (transaction: Transaction) => {
-  //   // Convert the Transaction format to ITransaction format for the modal
-  //   const formattedTransaction: ITransaction = {
-  //     _id: transaction._id.toString(),
-  //     user_id: 'user123',
-  //     transaction_type: transaction.amountColor === 'text-emerald-500' ? 'INCOME' : 'EXPENSE',
-  //     type: 'REGULAR',
-  //     category: (transaction.category.toUpperCase() === 'RESTAURANT' ? 'FOOD' : 
-  //               transaction.category.toUpperCase() === 'UTILITIES' ? 'BILLS' :
-  //               transaction.category.toUpperCase() === 'SHOPPING MALL' ? 'SHOPPING' :
-  //               transaction.category.toUpperCase() === 'SALARY DEPOSIT' ? 'SAVINGS' :
-  //               transaction.category === 'Transport' ? 'TRANSPORT' :
-  //               transaction.category === 'Entertainment' ? 'ENTERTAINMENT' : 'MISCELLANEOUS') as ITransaction['category'],
-  //     amount: Number(transaction.amount.replace(/[^0-9.-]+/g, '')),
-  //     currency: 'INR',
-  //     date: new Date().toISOString(), // Using current date as placeholder since we don't have exact date
-  //     description: transaction.description,
-  //     tags: transaction.tags || [],
-  //     status: (transaction.status?.toUpperCase() === 'PENDING' ? 'PENDING' : transaction.status?.toUpperCase() === 'FAILED' ? 'FAILED' : 'COMPLETED') as 'COMPLETED' | 'PENDING' | 'FAILED',
-  //     account_id: accounts[0]._id || '',
-  //     createdAt: new Date().toISOString(),
-  //     updatedAt: new Date().toISOString()
-  //   };
-    
-  //   setSelectedTransaction(formattedTransaction);
-  //   setIsEditing(true);
-  //   setIsTransactionInputModalOpen(true);
-  // };
   
   // Open the transaction modal for editing an existing transaction
 const handleEditTransaction = (transaction: ITransaction) => {
@@ -317,11 +273,11 @@ const handleEditTransaction = (transaction: ITransaction) => {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Income</p>
+                    <p className="text-sm text-gray-500">Inflow</p>
                     <p className="text-lg font-semibold text-emerald-500">₹ {currentMonthTotalIncome ? currentMonthTotalIncome.toFixed(2) : 0}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Expenses</p>
+                    <p className="text-sm text-gray-500">Outflow</p>
                     <p className="text-lg font-semibold text-red-500">₹ -{currentMonthTotalExpense ? currentMonthTotalExpense.toFixed(2) : 0}</p>
                   </div>
                   <div>

@@ -5,44 +5,24 @@ import {
   DollarSign,
   Search
 } from "lucide-react";
-
-interface Transaction {
-  id: number;
-  date: string;
-  type: 'income' | 'expense';
-  amount: number;
-  category: string;
-  description: string;
-}
-
-// Mock transaction data
-const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 1, date: "2025-05-01", type: "income", amount: 2500, category: "Salary", description: "Monthly salary" },
-  { id: 2, date: "2025-05-03", type: "expense", amount: 800, category: "Rent", description: "Monthly rent" },
-  { id: 3, date: "2025-05-05", type: "expense", amount: 120, category: "Utilities", description: "Electricity bill" },
-  { id: 4, date: "2025-05-07", type: "expense", amount: 65, category: "Groceries", description: "Weekly groceries" },
-  { id: 5, date: "2025-05-12", type: "income", amount: 400, category: "Freelance", description: "Design project" },
-  { id: 6, date: "2025-05-15", type: "expense", amount: 200, category: "Insurance", description: "Car insurance" },
-  { id: 7, date: "2025-05-18", type: "expense", amount: 35, category: "Entertainment", description: "Movie tickets" },
-  { id: 8, date: "2025-05-20", type: "income", amount: 100, category: "Interest", description: "Savings interest" },
-  { id: 9, date: "2025-05-22", type: "expense", amount: 80, category: "Dining", description: "Dinner with friends" },
-  { id: 10, date: "2025-05-28", type: "expense", amount: 150, category: "Shopping", description: "New clothes" },
-  { id: 11, date: "2025-06-01", type: "income", amount: 2500, category: "Salary", description: "Monthly salary" },
-  { id: 14, date: "2025-04-03", type: "expense", amount: 800, category: "Rent", description: "Monthly rent" },
-] as const;
+import { ITransaction } from '@/types/ITransaction';
+import { useTransactionStore } from '@/stores/store';
 
 export default function AdvancedFinancialCalendar() {
   // State for date management
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState("month"); // "day", "month", "year"
-  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<ITransaction[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  
+  // Get data from the store
+  const allTransactions = useTransactionStore((state) => state.allTransactions);
+  const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
 
   // Extract unique categories from transactions
-  const categories = ["all", ...new Set(transactions.map(t => t.category))];
+  const categories = ["all", ...new Set(allTransactions.map(t => t.category))];
   
   // Summary calculations
   const [summaryData, setSummaryData] = useState({
@@ -50,6 +30,11 @@ export default function AdvancedFinancialCalendar() {
     totalExpenses: 0,
     balance: 0,
   });
+
+  // Fetch transactions on component mount
+  useEffect(() => {
+    fetchAllTransactions();
+  }, [fetchAllTransactions]);
 
   // Helper functions
   interface DateParam {
@@ -97,9 +82,16 @@ export default function AdvancedFinancialCalendar() {
     setCurrentDate(new Date());
   };
 
+  // Map transaction_type to simple type for easier handling
+  const mapTransactionType = (transaction: ITransaction): 'income' | 'expense' => {
+    return transaction.transaction_type === "INCOME" ? 'income' : 'expense';
+  };
+
   // Filter transactions based on current view and filters
   useEffect(() => {
-    let filtered = [...transactions];
+    if (!allTransactions || allTransactions.length === 0) return;
+    
+    let filtered = [...allTransactions].filter(t => !t.isDeleted);
     
     // Filter by date range based on view
     const year = currentDate.getFullYear();
@@ -136,7 +128,9 @@ export default function AdvancedFinancialCalendar() {
     
     // Apply type filter
     if (typeFilter !== "all") {
-      filtered = filtered.filter(t => t.type === typeFilter);
+      filtered = filtered.filter(t => 
+        typeFilter === "income" ? t.transaction_type === "INCOME" : t.transaction_type !== "INCOME"
+      );
     }
     
     // Apply search term
@@ -150,18 +144,21 @@ export default function AdvancedFinancialCalendar() {
     setFilteredTransactions(filtered);
     
     // Calculate summary
-    const income = filtered.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
-    const expenses = filtered.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
+    const income = filtered
+      .filter(t => t.transaction_type === "INCOME")
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const expenses = filtered
+      .filter(t => t.transaction_type !== "INCOME")
+      .reduce((sum, t) => sum + t.amount, 0);
     
     setSummaryData({
       totalIncome: income,
       totalExpenses: expenses,
       balance: income - expenses
     });
-
-    setTransactions(MOCK_TRANSACTIONS);
     
-  }, [currentDate, currentView, transactions, searchTerm, categoryFilter, typeFilter]);
+  }, [currentDate, currentView, allTransactions, searchTerm, categoryFilter, typeFilter]);
 
   // Generate calendar data for month view
   const generateCalendarDays = () => {
@@ -195,8 +192,8 @@ export default function AdvancedFinancialCalendar() {
       
       let indicator = null;
       if (dayTransactions.length > 0) {
-        const hasIncome = dayTransactions.some(t => t.type === "income");
-        const hasExpense = dayTransactions.some(t => t.type === "expense");
+        const hasIncome = dayTransactions.some(t => t.transaction_type === "INCOME");
+        const hasExpense = dayTransactions.some(t => t.transaction_type !== "INCOME");
         
         if (hasIncome && hasExpense) {
           indicator = "bg-amber-500";
@@ -214,7 +211,8 @@ export default function AdvancedFinancialCalendar() {
         indicator,
         transactions: dayTransactions.map(t => ({
           ...t,
-          color: t.type === "income" ? "text-emerald-500" : "text-red-500",
+          color: t.transaction_type === "INCOME" ? "text-emerald-500" : "text-red-500",
+          simplifiedType: mapTransactionType(t)
         }))
       });
     }
@@ -244,13 +242,18 @@ export default function AdvancedFinancialCalendar() {
       const monthStart = new Date(year, month, 1);
       const monthEnd = new Date(year, month + 1, 0);
       
-      const monthTransactions = transactions.filter(t => {
+      const monthTransactions = allTransactions.filter(t => {
         const txDate = new Date(t.date);
-        return txDate >= monthStart && txDate <= monthEnd;
+        return txDate >= monthStart && txDate <= monthEnd && !t.isDeleted;
       });
       
-      const income = monthTransactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
-      const expenses = monthTransactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
+      const income = monthTransactions
+        .filter(t => t.transaction_type === "INCOME")
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const expenses = monthTransactions
+        .filter(t => t.transaction_type !== "INCOME")
+        .reduce((sum, t) => sum + t.amount, 0);
       
       months.push({
         name: new Date(year, month, 1).toLocaleString('default', { month: 'long' }),
@@ -279,7 +282,7 @@ export default function AdvancedFinancialCalendar() {
     current: boolean;
     label: number;
     indicator?: string | null;
-    transactions?: Array<Transaction & { color: string }>;
+    transactions?: Array<ITransaction & { color: string, simplifiedType: 'income' | 'expense' }>;
   }
 
   // Handle day click - switch to day view
@@ -311,12 +314,12 @@ export default function AdvancedFinancialCalendar() {
         
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="bg-green-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Income</div>
+            <div className="text-sm text-gray-600">Inflow</div>
             <div className="text-xl font-bold text-emerald-600">{formatCurrency(summaryData.totalIncome)}</div>
           </div>
           
           <div className="bg-red-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Expenses</div>
+            <div className="text-sm text-gray-600">Outflow</div>
             <div className="text-xl font-bold text-red-600">{formatCurrency(summaryData.totalExpenses)}</div>
           </div>
           
@@ -335,22 +338,25 @@ export default function AdvancedFinancialCalendar() {
             <div className="text-center py-8 text-gray-500">No transactions for this day</div>
           ) : (
             <div className="space-y-3">
-              {filteredTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-full ${transaction.type === 'income' ? 'bg-emerald-100' : 'bg-red-100'}`}>
-                      <DollarSign className={`h-4 w-4 ${transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`} />
+              {filteredTransactions.map((transaction) => {
+                const isIncome = transaction.transaction_type === "INCOME";
+                return (
+                  <div key={transaction._id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-full ${isIncome ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                        <DollarSign className={`h-4 w-4 ${isIncome ? 'text-emerald-600' : 'text-red-600'}`} />
+                      </div>
+                      <div>
+                        <div className="font-medium">{transaction.description}</div>
+                        <div className="text-xs text-gray-500">{transaction.category}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium">{transaction.description}</div>
-                      <div className="text-xs text-gray-500">{transaction.category}</div>
+                    <div className={`font-semibold ${isIncome ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </div>
                   </div>
-                  <div className={`font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
-                    {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -366,17 +372,17 @@ export default function AdvancedFinancialCalendar() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="bg-green-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Month Income</div>
+            <div className="text-sm text-gray-600">Monthly Inflow</div>
             <div className="text-xl font-bold text-emerald-600">{formatCurrency(summaryData.totalIncome)}</div>
           </div>
           
           <div className="bg-red-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Month Expenses</div>
+            <div className="text-sm text-gray-600">Monthly Outflow</div>
             <div className="text-xl font-bold text-red-600">{formatCurrency(summaryData.totalExpenses)}</div>
           </div>
           
           <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Month Balance</div>
+            <div className="text-sm text-gray-600">Monthly Balance</div>
             <div className={`text-xl font-bold ${summaryData.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
               {formatCurrency(summaryData.balance)}
             </div>
@@ -423,7 +429,7 @@ export default function AdvancedFinancialCalendar() {
                     )}
                   </div>
 
-                  {day.transactions && (
+                  {day.transactions && day.transactions.length > 0 && (
                     <div className="mt-1 space-y-1 overflow-auto max-h-20">
                       {day.transactions.slice(0, 3).map((transaction, idx) => (
                         <div
@@ -463,17 +469,17 @@ export default function AdvancedFinancialCalendar() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="bg-green-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Year Income</div>
+            <div className="text-sm text-gray-600">Yearly Inflow</div>
             <div className="text-xl font-bold text-emerald-600">{formatCurrency(summaryData.totalIncome)}</div>
           </div>
           
           <div className="bg-red-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Year Expenses</div>
+            <div className="text-sm text-gray-600">Yearly Outflow</div>
             <div className="text-xl font-bold text-red-600">{formatCurrency(summaryData.totalExpenses)}</div>
           </div>
           
           <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Year Balance</div>
+            <div className="text-sm text-gray-600">Yearly Balance</div>
             <div className={`text-xl font-bold ${summaryData.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
               {formatCurrency(summaryData.balance)}
             </div>
@@ -491,11 +497,11 @@ export default function AdvancedFinancialCalendar() {
                 <div className="font-medium text-lg mb-2">{month.name}</div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Income:</span>
+                    <span className="text-gray-600">Inflow:</span>
                     <span className="text-emerald-600 font-medium">{formatCurrency(month.income)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Expenses:</span>
+                    <span className="text-gray-600">Outflow:</span>
                     <span className="text-red-600 font-medium">{formatCurrency(month.expenses)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -610,8 +616,8 @@ export default function AdvancedFinancialCalendar() {
               onChange={(e) => setTypeFilter(e.target.value)}
             >
               <option value="all">All Types</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
+              <option value="income">Inflow</option>
+              <option value="expense">Outflow</option>
             </select>
           </div>
         </div>
@@ -621,12 +627,12 @@ export default function AdvancedFinancialCalendar() {
         <div className="flex items-center space-x-6">
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full bg-emerald-500 mr-2"></div>
-            <span className="text-sm text-gray-600">Income</span>
+            <span className="text-sm text-gray-600">Inflow</span>
           </div>
 
           <div className="flex items-center">
             <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-            <span className="text-sm text-gray-600">Expense</span>
+            <span className="text-sm text-gray-600">Outflow</span>
           </div>
 
           <div className="flex items-center">

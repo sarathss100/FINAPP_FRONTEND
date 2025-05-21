@@ -62,6 +62,16 @@ export const useUserStore = create<IUserState>()(
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('user-storage');
                 }
+
+                // Clear the persisted transaction storage
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('transactions-storage');
+                }
+
+                // Clear the persisted useraccount storage 
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('accounts-storage');
+                }
             }
         }),
         {

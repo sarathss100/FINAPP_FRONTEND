@@ -114,7 +114,7 @@ export const UserSideBar = () => {
       icon: (
         <Image src="/monarch-butterfly.png" alt="Monarch butterfly" height={16} width={16} />
       ),
-      label: "Butterfly Effect",
+      label: "Future Projection",
       route: "/butterfly-effect"
     }
   ];

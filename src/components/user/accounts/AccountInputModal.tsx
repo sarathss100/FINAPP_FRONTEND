@@ -75,7 +75,7 @@ export const AccountModal = ({
     institution: '',
     account_number: '',
     account_subtype: 'Savings',
-    loan_type: 'Personal',
+    loan_type: 'Personal' as "Mortgage" | "Student" | "Personal" | "Auto" | "Credit Card",
     interest_rate: 0,
     monthly_payment: 0,
     due_date: new Date().toISOString().split('T')[0],
@@ -143,22 +143,22 @@ export const AccountModal = ({
 
   // Handle account type change
   const handleAccountTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newType = e.target.value as 'Bank' | 'Debt' | 'Investment' | 'Cash';
-    setFormData(prev => ({
-      ...prev,
-      account_type: newType,
-      // Reset type-specific fields when changing account type
-      account_subtype: newType === 'Bank' ? 'Savings' : '',
-      loan_type: newType === 'Debt' ? 'Personal' : '',
-      interest_rate: newType === 'Debt' ? 0 : 0,
-      monthly_payment: newType === 'Debt' ? 0 : 0,
-      due_date: newType === 'Debt' ? new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      term_months: newType === 'Debt' ? 12 : 0,
-      investment_platform: newType === 'Investment' ? '' : '',
-      portfolio_value: newType === 'Investment' ? 0 : 0,
-      location: newType === 'Cash' ? 'Wallet' : '',
-    }));
-  };
+      const newType = e.target.value as 'Bank' | 'Debt' | 'Investment' | 'Cash';
+      setFormData(prev => ({
+        ...prev,
+        account_type: newType,
+        // Reset type-specific fields when changing account type
+        account_subtype: newType === 'Bank' ? 'Savings' : '',
+        loan_type: newType === 'Debt' ? 'Personal' : 'Personal', // Always set a valid value
+        interest_rate: newType === 'Debt' ? 0 : 0,
+        monthly_payment: newType === 'Debt' ? 0 : 0,
+        due_date: newType === 'Debt' ? new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        term_months: newType === 'Debt' ? 12 : 0,
+        investment_platform: newType === 'Investment' ? '' : '',
+        portfolio_value: newType === 'Investment' ? 0 : 0,
+        location: newType === 'Cash' ? 'Wallet' : '',
+      }));
+    };
 
   // Validate form data based on account type
   const validateForm = () => {
@@ -213,6 +213,10 @@ export const AccountModal = ({
           // Ensure account_subtype is properly typed
           account_subtype: formData.account_type === 'Bank' 
             ? (formData.account_subtype as "Savings" | "Current" | "FD" | "RD") 
+            : undefined,
+          // Ensure loan_type is properly typed
+          loan_type: formData.account_type === 'Debt'
+            ? (formData.loan_type as "Mortgage" | "Student" | "Personal" | "Auto" | "Credit Card")
             : undefined
         };
         
@@ -223,10 +227,10 @@ export const AccountModal = ({
         let response;
         if (accountToEdit?._id) {
           // If we're editing an existing account
-          response = await updateAccount(accountToEdit._id, cleanData);
+          response = await updateAccount(accountToEdit._id, cleanData as IAccount);
         } else {
           // If we're creating a new account
-          response = await addAccount(cleanData);
+          response = await addAccount(cleanData as IAccount);
         }
         
         if (response.success) {

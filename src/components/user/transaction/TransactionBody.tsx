@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card
 import Input from '@/components/base/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/base/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/Table';
-import Image from 'next/image';
 import { Tabs, TabsList, TabsTrigger } from '@/components/base/Tabs';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
@@ -33,13 +32,13 @@ const TransactionBody = function () {
   const previousMonthTotalIncome = useTransactionStore((state) => state.previousMonthTotalIncome);
   const currentMonthTotalExpense = useTransactionStore((state) => state.currentMonthTotalExpense);
   const categoryBreakdown = useTransactionStore((state) => state.categoryWiseMonthlyExpense);
-  // const allTransactions = useTransactionStore((state) => state.allTransactions);
+  const allTransactions = useTransactionStore((state) => state.allTransactions);
   const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
   const fetchTotalMonthlyIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
   const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
   const fetchMonthlyTotalExpense = useTransactionStore((state) => state.fetchMonthlyTotalExpense);
   const fetchCategoryWiseExpenses = useTransactionStore((state) => state.fetchCategoryWiseExpenses);
-  // const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
+  const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
 
   const handleStore = useCallback(() => {
     fetchAllAccounts();
@@ -47,114 +46,45 @@ const TransactionBody = function () {
     fetchTotalBalance();
     fetchMonthlyTotalExpense();
     fetchCategoryWiseExpenses();
-    // fetchAllTransactions();
-  }, [fetchAllAccounts, fetchTotalMonthlyIncome, fetchTotalBalance, fetchMonthlyTotalExpense, fetchCategoryWiseExpenses]);
+    fetchAllTransactions();
+  }, [fetchAllAccounts, fetchTotalMonthlyIncome, fetchTotalBalance, fetchMonthlyTotalExpense, fetchCategoryWiseExpenses, fetchAllTransactions]);
 
   useEffect(() => {
     handleStore();
   }, [handleStore]);
 
-  const importCloseModal = () => setIsImportModalOpen(false);
+  const importCloseModal = () => {
+    setIsImportModalOpen(false);
+    handleStore();
+  };
 
   const accounts = [...bankAccounts, ...investmentAccounts, ...debtAccounts, ...liquidAccounts]
-
-  type IconPath = '/restaurant_icon.svg' | '/shopping_bag_icon.svg' | '/bank_icon.svg' | '/transport_icon.svg' | '/utilities_icon.svg' | '/entertainment_icon.svg';
   
-  interface Transaction {
-    id: number;
-    category: string;
-    merchant: string;
-    date: string;
-    amount: string;
-    amountColor: string;
-    icon: IconPath;
-    status?: string;
-    tags?: string[];
-  }
+  // interface Transaction {
+  //   _id: string;
+  //   account_id?: string;
+  //   transaction_type?: string;
+  //   type?: "INCOME" | "EXPENSE";
+  //   currency: string;
+  //   category: string;
+  //   description: string;
+  //   date: string;
+  //   amount: string;
+  //   status?: string;
+  //   tags?: string[];
+  // }
 
-  // Enhanced transaction data
-  const allTransactions: Transaction[] = [
-    {
-      id: 1,
-      category: "Restaurant",
-      merchant: "Fusion Bistro",
-      date: "Today, 2:30 PM",
-      amount: "-$42.50",
-      amountColor: "text-red-500",
-      icon: "/restaurant_icon.svg",
-      status: "Completed",
-      tags: ["Dining", "Personal"]
-    },
-    {
-      id: 2,
-      category: "Shopping Mall",
-      merchant: "Urban Outfitters",
-      date: "Yesterday",
-      amount: "-$128.99",
-      amountColor: "text-red-500",
-      icon: "/shopping_bag_icon.svg",
-      status: "Completed",
-      tags: ["Clothing", "Personal"]
-    },
-    {
-      id: 3,
-      category: "Salary Deposit",
-      merchant: "ABC Corporation",
-      date: "Mar 1, 2025",
-      amount: "+$3,500.00",
-      amountColor: "text-emerald-500",
-      icon: "/bank_icon.svg",
-      status: "Completed",
-      tags: ["Income"]
-    },
-    {
-      id: 4,
-      category: "Transport",
-      merchant: "Uber",
-      date: "Feb 28, 2025",
-      amount: "-$24.75",
-      amountColor: "text-red-500",
-      icon: "/transport_icon.svg",
-      status: "Completed",
-      tags: ["Travel"]
-    },
-    {
-      id: 5,
-      category: "Utilities",
-      merchant: "Power Company",
-      date: "Feb 25, 2025",
-      amount: "-$95.20",
-      amountColor: "text-red-500",
-      icon: "/utilities_icon.svg",
-      status: "Pending",
-      tags: ["Bills", "Home"]
-    },
-    {
-      id: 6,
-      category: "Entertainment",
-      merchant: "Cinema Complex",
-      date: "Feb 22, 2025",
-      amount: "-$32.00",
-      amountColor: "text-red-500",
-      icon: "/entertainment_icon.svg",
-      status: "Completed",
-      tags: ["Leisure", "Personal"]
-    },
-  ];
-
-  // Upcoming bills
-  // const upcomingBills = [
-  //   { name: "Rent", amount: "$1,200.00", dueDate: "May 15, 2025" },
-  //   { name: "Electric Bill", amount: "$87.50", dueDate: "May 20, 2025" },
-  //   { name: "Internet", amount: "$65.00", dueDate: "May 22, 2025" }
-  // ];
+  useEffect(() => {
+    if (allTransactions && allTransactions.length > 0) {
+      setTransactions(allTransactions);
+    }
+  }, [allTransactions]);
 
   // State for filtering and pagination
   const [transactions, setTransactions] = useState(allTransactions);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all-categories');
   const [dateFilter, setDateFilter] = useState('last-30-days');
-  const [statusFilter, setStatusFilter] = useState('all-statuses');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
@@ -164,31 +94,26 @@ const TransactionBody = function () {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    filterTransactions(value, categoryFilter, dateFilter, statusFilter);
+    filterTransactions(value, categoryFilter, dateFilter);
   };
 
   const handleCategoryChange = (value: string) => {
     setCategoryFilter(value);
-    filterTransactions(searchTerm, value, dateFilter, statusFilter);
+    filterTransactions(searchTerm, value, dateFilter);
   };
 
   const handleDateChange = (value: string) => {
     setDateFilter(value);
-    filterTransactions(searchTerm, categoryFilter, value, statusFilter);
-  };
-
-  const handleStatusChange = (value: string) => {
-    setStatusFilter(value);
-    filterTransactions(searchTerm, categoryFilter, dateFilter, value);
+    filterTransactions(searchTerm, categoryFilter, value);
   };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     
     if (value === 'income') {
-      setTransactions(allTransactions.filter(t => t.amountColor === 'text-emerald-500'));
+      setTransactions(allTransactions.filter(t => t.transaction_type === 'INCOME'));
     } else if (value === 'expenses') {
-      setTransactions(allTransactions.filter(t => t.amountColor === 'text-red-500'));
+      setTransactions(allTransactions.filter(t => t.transaction_type === 'EXPENSE'));
     } else {
       setTransactions(allTransactions);
     }
@@ -196,20 +121,20 @@ const TransactionBody = function () {
     setCurrentPage(1);
   };
 
-  const filterTransactions = (search: string, category: string, date: string, status: string) => {
+  const filterTransactions = (search: string, category: string, date: string) => {
     let filtered = allTransactions;
     
     // Apply tab filter first
     if (activeTab === 'income') {
-      filtered = filtered.filter(t => t.amountColor === 'text-emerald-500');
+      filtered = filtered.filter(t => t.transaction_type === 'INCOME');
     } else if (activeTab === 'expenses') {
-      filtered = filtered.filter(t => t.amountColor === 'text-red-500');
+      filtered = filtered.filter(t => t.transaction_type === 'EXPENSE');
     }
     
     if (search) {
       filtered = filtered.filter(transaction => 
         transaction.category.toLowerCase().includes(search.toLowerCase()) ||
-        transaction.merchant.toLowerCase().includes(search.toLowerCase())
+        transaction.description.toLowerCase().includes(search.toLowerCase())
       );
     }
     
@@ -219,19 +144,18 @@ const TransactionBody = function () {
       );
     }
     
-    if (status !== 'all-statuses' && status) {
-      filtered = filtered.filter(transaction => 
-        transaction.status?.toLowerCase() === status.toLowerCase()
-      );
-    }
-    
-    // Date filtering is simplified for demo purposes
+    // Date filtering is actual dates 
     if (date === 'last-30-days') {
-      // All transactions are within 30 days in our demo
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      filtered = filtered.filter(transaction => new Date(transaction.date) >= thirtyDaysAgo);
     } else if (date === 'last-90-days') {
-      // All transactions are within 90 days in our demo
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      filtered = filtered.filter(transaction => new Date(transaction.date) >= ninetyDaysAgo);
     } else if (date === 'this-year') {
-      // All transactions are within this year in our demo
+      const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+      filtered = filtered.filter(transaction => new Date(transaction.date) >= startOfYear);
     }
     
     setTransactions(filtered);
@@ -245,35 +169,65 @@ const TransactionBody = function () {
     setIsTransactionInputModalOpen(true);
   };
 
-  // Open the transaction modal for editing an existing transaction
-  const handleEditTransaction = (transaction: Transaction) => {
-    // Convert the Transaction format to ITransaction format for the modal
-    const formattedTransaction: ITransaction = {
-      _id: transaction.id.toString(),
-      user_id: 'user123',
-      transaction_type: transaction.amountColor === 'text-emerald-500' ? 'INCOME' : 'EXPENSE',
-      type: 'REGULAR',
-      category: (transaction.category.toUpperCase() === 'RESTAURANT' ? 'FOOD' : 
-                transaction.category.toUpperCase() === 'UTILITIES' ? 'BILLS' :
-                transaction.category.toUpperCase() === 'SHOPPING MALL' ? 'SHOPPING' :
-                transaction.category.toUpperCase() === 'SALARY DEPOSIT' ? 'SAVINGS' :
-                transaction.category === 'Transport' ? 'TRANSPORT' :
-                transaction.category === 'Entertainment' ? 'ENTERTAINMENT' : 'MISCELLANEOUS') as ITransaction['category'],
-      amount: Number(transaction.amount.replace(/[^0-9.-]+/g, '')),
-      currency: 'INR',
-      date: new Date().toISOString(), // Using current date as placeholder since we don't have exact date
-      description: transaction.merchant,
-      tags: transaction.tags || [],
-      status: (transaction.status?.toUpperCase() === 'PENDING' ? 'PENDING' : transaction.status?.toUpperCase() === 'FAILED' ? 'FAILED' : 'COMPLETED') as 'COMPLETED' | 'PENDING' | 'FAILED',
-      account_id: accounts[0]._id || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+  // // Open the transaction modal for editing an existing transaction
+  // const handleEditTransaction = (transaction: Transaction) => {
+  //   // Convert the Transaction format to ITransaction format for the modal
+  //   const formattedTransaction: ITransaction = {
+  //     _id: transaction._id.toString(),
+  //     user_id: 'user123',
+  //     transaction_type: transaction.amountColor === 'text-emerald-500' ? 'INCOME' : 'EXPENSE',
+  //     type: 'REGULAR',
+  //     category: (transaction.category.toUpperCase() === 'RESTAURANT' ? 'FOOD' : 
+  //               transaction.category.toUpperCase() === 'UTILITIES' ? 'BILLS' :
+  //               transaction.category.toUpperCase() === 'SHOPPING MALL' ? 'SHOPPING' :
+  //               transaction.category.toUpperCase() === 'SALARY DEPOSIT' ? 'SAVINGS' :
+  //               transaction.category === 'Transport' ? 'TRANSPORT' :
+  //               transaction.category === 'Entertainment' ? 'ENTERTAINMENT' : 'MISCELLANEOUS') as ITransaction['category'],
+  //     amount: Number(transaction.amount.replace(/[^0-9.-]+/g, '')),
+  //     currency: 'INR',
+  //     date: new Date().toISOString(), // Using current date as placeholder since we don't have exact date
+  //     description: transaction.description,
+  //     tags: transaction.tags || [],
+  //     status: (transaction.status?.toUpperCase() === 'PENDING' ? 'PENDING' : transaction.status?.toUpperCase() === 'FAILED' ? 'FAILED' : 'COMPLETED') as 'COMPLETED' | 'PENDING' | 'FAILED',
+  //     account_id: accounts[0]._id || '',
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   };
     
-    setSelectedTransaction(formattedTransaction);
-    setIsEditing(true);
-    setIsTransactionInputModalOpen(true);
+  //   setSelectedTransaction(formattedTransaction);
+  //   setIsEditing(true);
+  //   setIsTransactionInputModalOpen(true);
+  // };
+  
+  // Open the transaction modal for editing an existing transaction
+const handleEditTransaction = (transaction: ITransaction) => {
+  // Convert the Transaction format to ITransaction format for the modal
+  const formattedTransaction: ITransaction = {
+    _id: transaction._id?.toString(),
+    user_id: 'user123',
+    transaction_type: (transaction.transaction_type === 'INCOME' ? 'INCOME' : 'EXPENSE'),
+    type: 'REGULAR',
+    category: (transaction.category.toUpperCase() === 'RESTAURANT' ? 'FOOD' : 
+              transaction.category.toUpperCase() === 'UTILITIES' ? 'BILLS' :
+              transaction.category.toUpperCase() === 'SHOPPING MALL' ? 'SHOPPING' :
+              transaction.category.toUpperCase() === 'SALARY DEPOSIT' ? 'SAVINGS' :
+              transaction.category === 'TRANSPORT' ? 'TRANSPORT' :
+              transaction.category === 'ENTERTAINMENT' ? 'ENTERTAINMENT' : 'MISCELLANEOUS') as ITransaction['category'],
+    amount: Number(String(transaction.amount).replace(/[^0-9.-]+/g, '')),
+    currency: 'INR',
+    date: transaction.date || new Date().toISOString(),
+    description: transaction.description || "Unknown",
+    tags: transaction.tags || [],
+    status: (transaction.status?.toUpperCase() === 'PENDING' ? 'PENDING' : transaction.status?.toUpperCase() === 'FAILED' ? 'FAILED' : 'COMPLETED') as 'COMPLETED' | 'PENDING' | 'FAILED',
+    account_id: transaction.account_id || accounts[0]?._id || '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
+  
+  setSelectedTransaction(formattedTransaction);
+  setIsEditing(true);
+  setIsTransactionInputModalOpen(true);
+};
 
   // Handle saving the transaction from modal
   const handleSaveTransaction = async (transactionData: ITransaction) => {
@@ -304,49 +258,36 @@ const TransactionBody = function () {
     }
 
     const isIncome = transactionData.transaction_type === 'INCOME';
-    const amountPrefix = isIncome ? '+' : '-';
-    const amountStr = `${amountPrefix}$${Math.abs(Number(transactionData.amount)).toFixed(2)}`;
+    // const amountPrefix = isIncome ? '+' : '-';
+    // const amountStr = `${amountPrefix}$${Math.abs(Number(transactionData.amount)).toFixed(2)}`;
     
-    const newTransaction: Transaction = {
-      id: isEditing ? Number(transactionData._id) : transactions.length + 1,
+    const newTransaction: ITransaction = {
+      _id: isEditing ? String(transactionData._id) : String(transactions.length + 1),
+      user_id: 'user123',
+      transaction_type: isIncome ? 'INCOME' : 'EXPENSE',
+      type: 'REGULAR',
       category: transactionData.category,
-      merchant: transactionData.description || "Unknown",
-      date: "Today",
-      amount: amountStr,
-      amountColor: isIncome ? 'text-emerald-500' : 'text-red-500',
-      icon: getIconForCategory(transactionData.category),
-      status: transactionData.status as string,
-      tags: transactionData.tags
+      amount: Number(transactionData.amount),
+      currency: 'INR',
+      date: new Date().toISOString(),
+      description: transactionData.description || "Unknown",
+      tags: transactionData.tags || [],
+      status: transactionData.status || 'COMPLETED',
+      account_id: transactionData?.account_id || accounts[0]?._id || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     
     if (isEditing) {
       // Update existing transaction
       setTransactions(transactions.map(t => 
-        t.id === newTransaction.id ? newTransaction : t
+        t._id === newTransaction._id ? newTransaction : t
       ));
     } else {
       const response = await addTransaction(transactionData);
       console.log(`Response`, response.data);
       // Add new transaction
       setTransactions([newTransaction, ...transactions]);
-    }
-  };
-
-  // Utility function to get icon based on category
-  const getIconForCategory = (category: string): IconPath => {
-    const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('restaurant') || lowerCategory.includes('food')) {
-      return '/restaurant_icon.svg';
-    } else if (lowerCategory.includes('shopping')) {
-      return '/shopping_bag_icon.svg';
-    } else if (lowerCategory.includes('bank') || lowerCategory.includes('salary')) {
-      return '/bank_icon.svg';
-    } else if (lowerCategory.includes('transport')) {
-      return '/transport_icon.svg';
-    } else if (lowerCategory.includes('utilities')) {
-      return '/utilities_icon.svg';
-    } else {
-      return '/entertainment_icon.svg';
     }
   };
 
@@ -377,15 +318,15 @@ const TransactionBody = function () {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Income</p>
-                    <p className="text-lg font-semibold text-emerald-500">₹ {currentMonthTotalIncome.toFixed(2)}</p>
+                    <p className="text-lg font-semibold text-emerald-500">₹ {currentMonthTotalIncome ? currentMonthTotalIncome.toFixed(2) : 0}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Expenses</p>
-                    <p className="text-lg font-semibold text-red-500">₹ -{currentMonthTotalExpense.toFixed(2)}</p>
+                    <p className="text-lg font-semibold text-red-500">₹ -{currentMonthTotalExpense ? currentMonthTotalExpense.toFixed(2) : 0}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Net Balance</p>
-                    <p className="text-lg font-semibold text-[#004a7c]">₹ {totalBalance.toFixed(2)}</p>
+                    <p className="text-lg font-semibold text-[#004a7c]">₹ {totalBalance ? totalBalance.toFixed(2) : 0}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Savings Rate</p>
@@ -418,25 +359,6 @@ const TransactionBody = function () {
                 </div>
               </CardContent>
             </Card>
-            
-            {/* <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium text-gray-600">Upcoming Bills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {upcomingBills.map((bill, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm font-medium">{bill.name}</p>
-                        <p className="text-xs text-gray-500">Due {bill.dueDate}</p>
-                      </div>
-                      <p className="text-sm font-semibold">{bill.amount}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card> */}
           </div>
         </section>
 
@@ -518,18 +440,6 @@ const TransactionBody = function () {
                         <SelectItem value="entertainment">Entertainment</SelectItem>
                       </SelectContent>
                     </Select>
-
-                    <Select value={statusFilter} onValueChange={handleStatusChange}>
-                      <SelectTrigger className="w-full md:w-48 h-10">
-                        <SelectValue placeholder="All Statuses" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        <SelectItem value="all-statuses">All Statuses</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 )}
               </CardContent>
@@ -553,9 +463,11 @@ const TransactionBody = function () {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
-                      <TableHead className="font-medium">Merchant & Category</TableHead>
                       <TableHead className="font-medium">Date</TableHead>
-                      <TableHead className="font-medium">Status</TableHead>
+                      <TableHead className="font-medium">Description</TableHead>
+                      <TableHead className="font-medium">Transaction Type</TableHead>
+                      <TableHead className="font-medium">Credit</TableHead>
+                      <TableHead className="font-medium">Debit</TableHead>
                       <TableHead className="font-medium">Tags</TableHead>
                       <TableHead className="font-medium text-right">Amount</TableHead>
                     </TableRow>
@@ -563,23 +475,26 @@ const TransactionBody = function () {
                   <TableBody>
                     {currentTransactions.map((transaction) => (
                       <TableRow
-                        key={transaction.id}
+                        key={transaction._id}
                         className="cursor-pointer hover:bg-gray-50 transition-colors duration-150"
                         onClick={() => handleEditTransaction(transaction)}
                       >
+                        <TableCell>
+                          <p className="text-sm">{new Date(transaction.date).toLocaleDateString('en-IN', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}</p>
+                        </TableCell>
                         <TableCell className="py-4">
                           <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                              <Image
-                                alt={transaction.category}
-                                src={transaction.icon}
-                                width={14}
-                                height={16}
-                              />
-                            </div>
                             <div>
                               <p className="text-base font-medium">
-                                {transaction.merchant}
+                                {
+                                  transaction.description ? (transaction.description.length > 30 ?
+                                  transaction.description.substring(0, 30) + '...' :
+                                  transaction.description) : 'No Description'
+                                }
                               </p>
                               <p className="text-sm text-gray-500">
                                 {transaction.category}
@@ -588,32 +503,43 @@ const TransactionBody = function () {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <p className="text-sm">{transaction.date}</p>
-                        </TableCell>
-                        <TableCell>
-                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                            transaction.status === 'Completed' 
-                              ? 'bg-green-100 text-green-800' 
-                              : transaction.status === 'Pending'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                          }`}>
-                            {transaction.status}
-                          </div>
-                        </TableCell>
-                        <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {transaction.tags?.map((tag, i) => (
-                              <div key={i} className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
-                                <Tag className="w-3 h-3 mr-1" /> {tag}
-                              </div>
-                            ))}
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              transaction.transaction_type === 'INCOME' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {transaction.transaction_type}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell
-                          className={`text-right font-medium ${transaction.amountColor}`}
+                          className="text-right font-medium text-emerald-500"
                         >
-                          {transaction.amount}
+                          {transaction.transaction_type === 'INCOME' ? `₹ ${transaction.credit_amount?.toFixed(2) || transaction.amount.toFixed(2)}` : '-'}
+                        </TableCell>
+                        <TableCell
+                          className="text-right font-medium text-red-500"
+                        >
+                          {transaction.transaction_type === 'EXPENSE' ? `₹ ${transaction.debit_amount?.toFixed(2) || transaction.amount.toFixed(2)}` : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {transaction.tags && transaction.tags.length > 0 ? transaction.tags.map((tag, i) => (
+                              <div key={i} className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                                <Tag className="w-3 h-3 mr-1" /> {tag}
+                              </div>
+                            )) : (
+                              <span className="text-xs text-gray-500">No tags</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell
+                          className={`text-right font-medium ${
+                            transaction.transaction_type === 'INCOME' ? 'text-emerald-500' : 'text-red-500'
+                          }`}
+                        >
+                          {transaction.transaction_type === 'INCOME' ? 
+                            `+₹ ${transaction.amount.toFixed(2)}` : 
+                            `-₹ ${transaction.amount.toFixed(2)}`}
                         </TableCell>
                       </TableRow>
                     ))}

@@ -76,7 +76,7 @@ export const toggleUserTwoFactorAuthentication = async function (): Promise<ITog
             return response.data; // Return the response data if successful
         } else {
             // Throw an error if the response indicates failure
-            throw new Error(response.data?.message || `Failed to toggle 2FA.`);
+            throw new Error(response.data?.message || `Failed to toggle Two Factor Authentication.`);
         }
     } catch (error) {
         // Re-throw the error for upstream handling

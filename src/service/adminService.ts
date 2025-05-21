@@ -4,7 +4,7 @@ import axiosInstance from './axiosInstance';
 // Get all users
 export const getAllUsers = async function (): Promise<IAdminUserDetails> {
     try {
-        const response = await axiosInstance.get<IAdminUserDetails>('/api/v1/admin/all-users');
+        const response = await axiosInstance.get<IAdminUserDetails>('/api/v1/admin/users');
         if (response.data && response.data.success) {
             return response.data;
         } else {
@@ -18,7 +18,7 @@ export const getAllUsers = async function (): Promise<IAdminUserDetails> {
 // Block/Unblock User 
 export const toggleUserStats = async function (userId: string, status: boolean) {
     try {
-        const response = await axiosInstance.post(`/api/v1/admin/toggle-user-status`, { userId, status });
+        const response = await axiosInstance.post(`/api/v1/admin/users/status`, { userId, status });
         if (response.status !== 200) throw new Error(`Failed toggle user status.`);
     } catch (error) {
         throw error;
@@ -28,7 +28,7 @@ export const toggleUserStats = async function (userId: string, status: boolean) 
 // get New Registration Count 
 export const getNewRegistrationCount = async function (): Promise<INewRegistrationCount> {
     try {
-        const response = await axiosInstance.get<INewRegistrationCount>(`/api/v1/admin/new-registration-count`);
+        const response = await axiosInstance.get<INewRegistrationCount>(`/api/v1/admin/analytics/registrations`);
         if (response.data && response.data.success) {
             return response.data;
         } else {
@@ -56,7 +56,7 @@ export const getSystemHealthStatus = async function (): Promise<ISystemHealthSta
 // get System Metrics 
 export const getSystemMetrics = async function (): Promise<ISystemMetrics> {
     try {
-        const response = await axiosInstance.get<ISystemMetrics>(`/api/v1/admin/system-metrics`);
+        const response = await axiosInstance.get<ISystemMetrics>(`/api/v1/admin/metrics`);
         if (response.data && response.data.success) {
             return response.data;
         } else {

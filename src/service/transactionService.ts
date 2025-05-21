@@ -5,7 +5,7 @@ import axiosInstance from './axiosInstance';
 export const addTransaction = async function (formData: ITransaction | ITransaction[]): Promise<ITransactionDetails> {
     try {
         // Send a POST request to add a transaction
-        const response = await axiosInstance.post<ITransactionDetails>('/api/v1/transaction/create', formData);
+        const response = await axiosInstance.post<ITransactionDetails>('/api/v1/transaction', formData);
     
         // Validate the response 
         if (response.data && response.data.success) {
@@ -35,7 +35,7 @@ export const addTransaction = async function (formData: ITransaction | ITransact
 export const getTotalMonthlyIncome = async function (): Promise<ITotalMonthlyIncome> {
     try {
         // Send a GET request to fetch the monthly income totals from the backend API
-        const response = await axiosInstance.get<ITotalMonthlyIncome>('/api/v1/transaction/monthly-total-income');
+        const response = await axiosInstance.get<ITotalMonthlyIncome>('/api/v1/transaction/summary/monthly/income');
 
         // Validate the response structure and success flag
         if (response.data && response.data.success) {
@@ -66,7 +66,7 @@ export const getTotalMonthlyIncome = async function (): Promise<ITotalMonthlyInc
 export const getTotalMonthlyExpense = async function (): Promise<ITotalMonthlyExpense> {
     try {
         // Send a GET request to fetch the monthly expense totals from the backend API
-        const response = await axiosInstance.get<ITotalMonthlyExpense>('/api/v1/transaction/monthly-total-expense');
+        const response = await axiosInstance.get<ITotalMonthlyExpense>('/api/v1/transaction/summary/monthly/expense');
 
         // Validate the response structure and success flag
         if (response.data && response.data.success) {
@@ -101,7 +101,7 @@ export const getTotalMonthlyExpense = async function (): Promise<ITotalMonthlyEx
 export const getCategoryWiseExpenses = async function (): Promise<ICategoryWiseExpenses> {
     try {
         // Send a GET request to fetch the category-wise expense data from the backend API
-        const response = await axiosInstance.get<ICategoryWiseExpenses>('/api/v1/transaction/category-wise-expense');
+        const response = await axiosInstance.get<ICategoryWiseExpenses>('/api/v1/transaction/summary/category');
 
         // Validate the response structure and success flag
         if (response.data && response.data.success) {
@@ -132,7 +132,7 @@ export const getCategoryWiseExpenses = async function (): Promise<ICategoryWiseE
 export const getAllTransactions = async function (): Promise<IAllTransactions> {
     try {
         // Send a GET request to fetch the monthly expense totals from the backend API
-        const response = await axiosInstance.get<IAllTransactions>('/api/v1/transaction/all');
+        const response = await axiosInstance.get<IAllTransactions>('/api/v1/transaction');
 
         // Validate the response structure and success flag
         if (response.data && response.data.success) {
@@ -166,7 +166,7 @@ export const getAllTransactions = async function (): Promise<IAllTransactions> {
 export const extractStatementData = async function (file: FormData): Promise<IParsedTransactions> {
     try {
         // Send a POST request to extract the data from the backend API
-        const response = await axiosInstance.post<IParsedTransactions>('/api/v1/transaction/statement-data', file,{
+        const response = await axiosInstance.post<IParsedTransactions>('/api/v1/transaction/statement', file,{
             headers: {
                 'Content-Type': 'multipart/form-data',
             }

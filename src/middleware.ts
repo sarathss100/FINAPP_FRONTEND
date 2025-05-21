@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import apiClient from './lib/apiClient';
 import IVerifyTokenResponse from './types/IVerifyTokenResponse';
+import { verifyToken } from './service/authenticationService';
 
 // Constants
 const PUBLIC_ROUTES = [
@@ -88,13 +88,9 @@ export async function middleware(request: NextRequest) {
     try {
         // Verify token with the backend
         if (isAuthenticated && accessToken) {
-            const response = await apiClient.post('api/v1/auth/verify-token', { accessToken }, {
-                headers: {
-                    Cookie: `{"accessToken":"${accessToken}"}`
-                }
-            });
+            const response = await verifyToken(accessToken);
 
-            const data = response.data as IVerifyTokenResponse;
+            const data = response as IVerifyTokenResponse;
 
             // Handle blocked user
             if (!data.data.status) {

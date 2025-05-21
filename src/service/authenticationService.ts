@@ -1,6 +1,7 @@
 import ISigninResponse from '@/types/ISigninResponse';
 import axiosInstance from './axiosInstance';
 import ISignupRequest from '@/types/ISignupRequest';
+import IVerifyTokenResponse from '@/types/IVerifyTokenResponse';
 
 // Create an Account
 export const signUp = async function (formData: ISignupRequest | null): Promise<ISigninResponse> {
@@ -35,12 +36,27 @@ export const signIn = async function (data: { phone_number: string, password: st
 // Verify the Account Exists
 export const verifyPhoneNumber = async function (phoneNumber: string): Promise<boolean> {
     try {
-        const response = await axiosInstance.post(`api/v1/auth/verify-phonenumber`, { phoneNumber });
+        const response = await axiosInstance.post(`api/v1/auth/verifications/phonenumber`, { phoneNumber });
         return response.status === 200 ? true : false;
     } catch (error) {
         throw error;
     }
 }
+
+// Verify the Account Exists
+export const verifyToken = async function (token: string): Promise<IVerifyTokenResponse> {
+    try {
+        const response = await axiosInstance.post<IVerifyTokenResponse>(`api/v1/auth/verifications/token`, { token }, {
+            headers: {
+                Cookie: `{"accessToken":"${token}"}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 
 // Signout User
 export const signout = async function (): Promise<number> {
@@ -55,7 +71,7 @@ export const signout = async function (): Promise<number> {
 // Reset the Password
 export const resetPassword = async function (phone_number: string, password: string): Promise<boolean> {
     try {
-        const response = await axiosInstance.post('api/v1/auth/change-password', { phone_number, password });
+        const response = await axiosInstance.post('api/v1/auth/password', { phone_number, password });
         return response.status === 200  ? true : false;
     } catch (error) {
         throw error;

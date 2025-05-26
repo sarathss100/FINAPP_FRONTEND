@@ -1,19 +1,31 @@
-import { FileTextIcon, PlusIcon } from "lucide-react";
+"use client"
 import React from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import UserHeader from '../base/Header';
-import PageTitle from '../base/PageTitle';
 import Image from 'next/image';
+import { PlusCircleIcon } from 'lucide-react';
+import InvestmentInputModal from './InvestmentInputModal';
+// import { IInvestments } from '@/types/IInvestments';
 
 const InvestmentManagementBody = function () {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+  // const handleSaveInvestment = (investmentData: IInvestments) => {
+  //   // Handle saving investment data
+  //   console.log(investmentData);
+  //   handleCloseModal();
+  // };
+
   // Investment categories data
   const investmentCategories = [
     {
       id: 1,
       name: "Direct Stocks",
       icon: "/investment_icon.svg",
-      amount: "₹8,45,000",
+      amount: "₹ 8,45,000",
       details: "15 Stocks",
       returns: "+18.5%",
     },
@@ -21,7 +33,7 @@ const InvestmentManagementBody = function () {
       id: 2,
       name: "Mutual Funds",
       icon: "/mutualfund_icon.svg",
-      amount: "₹5,20,000",
+      amount: "₹ 5,20,000",
       details: "8 Funds",
       returns: "+12.3%",
     },
@@ -29,7 +41,7 @@ const InvestmentManagementBody = function () {
       id: 3,
       name: "Business",
       icon: "/business_icon.svg",
-      amount: "₹3,50,000",
+      amount: "₹ 3,50,000",
       details: "2 Ventures",
       returns: "+25.4%",
     },
@@ -37,7 +49,7 @@ const InvestmentManagementBody = function () {
       id: 4,
       name: "Fixed Deposits",
       icon: "/fixeddeposit_icon.svg",
-      amount: "₹2,15,000",
+      amount: "₹ 2,15,000",
       details: "3 FDs",
       returns: "6.5% p.a",
     },
@@ -45,7 +57,7 @@ const InvestmentManagementBody = function () {
       id: 5,
       name: "EPFO",
       icon: "/piggy_darkblue_icon.svg",
-      amount: "₹2,80,000",
+      amount: "₹ 2,80,000",
       details: "Monthly",
       returns: "+8.1%",
     },
@@ -53,7 +65,7 @@ const InvestmentManagementBody = function () {
       id: 6,
       name: "Gold",
       icon: "/gold_icon.svg",
-      amount: "₹1,85,000",
+      amount: "₹ 1,85,000",
       details: "250 grams",
       returns: "+15.2%",
     },
@@ -61,7 +73,7 @@ const InvestmentManagementBody = function () {
       id: 7,
       name: "Property",
       icon: "/property_icon.svg",
-      amount: "₹95,00,000",
+      amount: "₹ 95,00,000",
       details: "2 Properties",
       returns: "+45.8% (5 years)",
     },
@@ -73,14 +85,14 @@ const InvestmentManagementBody = function () {
       id: 1,
       name: "Govt bonds",
       icon: "/wallet_darkblue_icon.svg",
-      amount: "$10,000.00",
+      amount: "₹ 10,000.00",
       type: "Savings",
     },
     {
       id: 2,
       name: "Liquid",
       icon: "/piggy_darkblue_icon.svg",
-      amount: "$5,000.00",
+      amount: "₹ 5,000.00",
       type: "Goals",
     },
   ];
@@ -89,39 +101,30 @@ const InvestmentManagementBody = function () {
     <div className="p-8 max-w-[1187px] mx-auto">
       {/* Header with search and profile */}
       <UserHeader />
-
-      {/* Page title */}
-      <PageTitle title={`Investments Management`} tag={`Overview for your investments`} />
-
-      {/* Title Section */}
-      <section className="mb-8">
+            
         <div className="flex justify-between items-center">
           <div></div>
           <div className="flex gap-4">
-            <Button className="bg-[#00a9e0] text-white font-['Poppins',Helvetica] font-normal">
-              <PlusIcon className="mr-2 h-3.5 w-3.5" />
-              Add Investment
-            </Button>
             <Button
-              variant="outline"
-              className="border-[#004a7c] text-[#004a7c] font-['Poppins',Helvetica] font-normal"
+              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 flex items-center gap-2 h-[42px] px-5 rounded-full transition-all duration-300 transform hover:scale-105"
+              onClick={handleOpenModal}
             >
-              <FileTextIcon className="mr-2 h-4 w-4" />
-              Import/Export
+              <PlusCircleIcon className="w-4 h-4" />
+              Add Investment
             </Button>
           </div>
         </div>
-      </section>
+
 
       {/* Summary Cards */}
-      <section className="grid grid-cols-2 gap-6 mb-8">
+      <section className="grid grid-cols-2 gap-6 mb-8 mt-8">
         <Card className="bg-[#004a7c] text-white border-none rounded-xl">
           <CardContent className="p-6">
             <h2 className="font-['Poppins',Helvetica] font-normal text-lg mb-4">
               Total Investment Value
             </h2>
             <p className="font-['Poppins',Helvetica] font-normal text-3xl mb-4">
-              ₹24,56,789
+              ₹ 24,56,789
             </p>
             <div className="flex items-center">
               <Image src="/growth_blue_icon.svg" alt="Trend" className="mr-2" width={16} height={16} />
@@ -138,7 +141,7 @@ const InvestmentManagementBody = function () {
               Total Returns
             </h2>
             <p className="font-['Poppins',Helvetica] font-normal text-3xl mb-4">
-              ₹3,45,678
+              ₹ 3,45,678
             </p>
             <div className="flex items-center">
               <Image src="/growthchart_white_icon.svg" alt="Trend" className="mr-2" width={16} height={16} />
@@ -228,10 +231,6 @@ const InvestmentManagementBody = function () {
             <CardTitle className="font-['Poppins',Helvetica] font-normal text-xl text-[#004a7c]">
               Parked Fund
             </CardTitle>
-            <Button className="text-[#00a9e0] p-0 h-auto">
-              <PlusIcon className="h-3.5 w-3.5 mr-1" />
-              Add Cash Account
-            </Button>
           </CardHeader>
           <CardContent className="p-6 pt-4 space-y-4">
             {parkedFunds.map((fund) => (
@@ -256,14 +255,19 @@ const InvestmentManagementBody = function () {
                     </p>
                   </div>
                 </div>
-                <span className="font-['Poppins',Helvetica] font-normal text-base text-black">
-                  {fund.amount}
-                </span>
+      
               </div>
             ))}
           </CardContent>
         </Card>
       </section>
+
+      {/* Investment Input Modal */}
+      <InvestmentInputModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        // onSaveInvestment={handleSaveInvestment}
+      />
     </div>
   );
 };

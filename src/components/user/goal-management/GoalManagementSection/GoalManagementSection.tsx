@@ -1,5 +1,5 @@
 "use client";
-import { PlusIcon, MoreVertical, TrendingUp, Clock, Wallet, Calendar } from "lucide-react";
+import { MoreVertical, TrendingUp, Clock, Wallet, Calendar, PlusCircleIcon } from "lucide-react";
 import React, { useCallback, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
@@ -44,10 +44,10 @@ export const GoalManagementSection = function () {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Financial Goals Dashboard</h1>
           <Button
-            className="bg-[#00a9e0] text-white hover:bg-[#0090c0] transition-colors duration-200 shadow-md"
+            className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 flex items-center gap-2 h-[42px] px-5 rounded-full transition-all duration-300 transform hover:scale-105"
             onClick={handleGoalInput}
           >
-            <PlusIcon className="w-4 h-4 mr-2" />
+            <PlusCircleIcon className="w-4 h-4" />
             Add Goal
           </Button>
         </div>

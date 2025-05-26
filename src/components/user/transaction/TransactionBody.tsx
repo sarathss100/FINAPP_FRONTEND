@@ -1,5 +1,5 @@
 "use client";
-import { Plus, Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft, UploadIcon } from "lucide-react";
+import { Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft, UploadIcon, PlusCircleIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
@@ -324,7 +324,7 @@ const handleEditTransaction = (transaction: ITransaction) => {
             <div className="flex justify-end items-center">
               <div className="flex gap-3 mr-3">
                 <Button
-                  className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
+                  className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 flex items-center gap-2 h-[42px] px-5 rounded-full transition-all duration-300 transform hover:scale-105"
                   onClick={() => setIsImportModalOpen(true)}
                 >
                   <UploadIcon className="w-4 h-4 mr-2" />
@@ -333,10 +333,10 @@ const handleEditTransaction = (transaction: ITransaction) => {
               </div>
               <div className="flex gap-3">
                 <Button
-                  className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 shadow-md"
+                  className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 flex items-center gap-2 h-[42px] px-5 rounded-full transition-all duration-300 transform hover:scale-105"
                   onClick={handleAddTransaction}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <PlusCircleIcon className="w-4 h-4" />
                   Add Transaction
                 </Button>
               </div>

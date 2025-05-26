@@ -33,7 +33,7 @@ const TransactionPreview: React.FC<TransactionPreviewProps> = ({ transactions })
               className="grid grid-cols-12 p-3 text-sm border-t border-gray-200 hover:bg-gray-50 transition-colors"
             >
               <div className="col-span-2 text-gray-600">
-                {transaction.date ? (transaction.date instanceof Date ? new Date(transaction.date).toISOString() : new Date(transaction.date).toISOString()) : 'N/A'}
+                {transaction.date ? (transaction.date instanceof Date ? new Date(transaction.date).toDateString() : new Date(transaction.date).toDateString()) : 'N/A'}
               </div>
               <div className="col-span-4 font-medium truncate">{transaction.description}</div>
               <div className="col-span-1 text-xs">

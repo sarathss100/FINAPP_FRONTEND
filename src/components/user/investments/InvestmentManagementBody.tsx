@@ -6,18 +6,27 @@ import UserHeader from '../base/Header';
 import Image from 'next/image';
 import { PlusCircleIcon } from 'lucide-react';
 import InvestmentInputModal from './InvestmentInputModal';
-// import { IInvestments } from '@/types/IInvestments';
+import { createInvestment } from '@/service/investmentService';
+import { toast } from 'react-toastify';
+import { Investments } from '@/types/IInvestments';
 
 const InvestmentManagementBody = function () {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
-  // const handleSaveInvestment = (investmentData: IInvestments) => {
-  //   // Handle saving investment data
-  //   console.log(investmentData);
-  //   handleCloseModal();
-  // };
+  const handleSaveInvestment = async (investmentData: Investments) => {
+    try {
+      const response = await createInvestment(investmentData);
+      if (response.success) {
+        // Handle saving investment data
+        console.log(investmentData);
+        handleCloseModal();
+        toast.success(`Investment Added Successfully!`);
+      }
+    } catch (error) {
+      console.error((error as Error).message || `Failed to add investments`);
+    }
+  };
 
   // Investment categories data
   const investmentCategories = [
@@ -266,7 +275,7 @@ const InvestmentManagementBody = function () {
       <InvestmentInputModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        // onSaveInvestment={handleSaveInvestment}
+        onSaveInvestment={handleSaveInvestment}
       />
     </div>
   );

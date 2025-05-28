@@ -10,16 +10,17 @@ export enum InvestmentType {
     EPFO = 'EPFO',
     GOLD = 'GOLD',
     PARKING_FUND = 'PARKING_FUND',
-    OTHER  = 'OTHER',
 }
 
 // Base Interface 
-interface IBaseInvestment {
+export interface IBaseInvestment {
+    userId: string;
     name: string;
-    icon?: string;
+    accountId: string;
+    icon: string;
     amount: number;
-    currency?: string;
-    notes?: string;
+    currency: string;
+    notes: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -31,6 +32,7 @@ export interface IInvestmentDocument {
 
 // Type-Specific Interfaces 
 export interface IStock extends IBaseInvestment {
+    type: InvestmentType.STOCK;
     symbol: string;
     exchange?: string;
     purchaseDate: Date;
@@ -46,6 +48,7 @@ export interface IStockDocument extends IInvestmentDocument {
 }
 
 export interface IMutualFund extends IBaseInvestment {
+    type: InvestmentType.MUTUAL_FUND,
     fundHouse: string;
     folioNumber: string;
     schemeCode: string;
@@ -61,6 +64,7 @@ export interface IMutualFundDocument extends IInvestmentDocument {
 }
 
 export interface IBond extends IBaseInvestment {
+    type: InvestmentType.BOND;
     issuer: string;
     bondType: string;
     faceValue: number;
@@ -76,6 +80,7 @@ export interface IBondDocument extends IInvestmentDocument {
 }
 
 export interface IProperty extends IBaseInvestment {
+    type: InvestmentType.PROPERTY;
     address: string;
     propertyType: string;
     purchaseDate: Date;
@@ -90,6 +95,7 @@ export interface IPropertyDocument extends IInvestmentDocument {
 }
 
 export interface IBusiness extends IBaseInvestment {
+    type: InvestmentType.BUSINESS;
     businessName: string;
     ownershipPercentage: number;
     investmentDate: Date;
@@ -104,6 +110,7 @@ export interface IBusinessDocument extends IInvestmentDocument {
 }
 
 export interface IFixedDeposit extends IBaseInvestment {
+    type: InvestmentType.FIXED_DEPOSIT;
     bank: string;
     account_number: string;
     maturity_date: Date;
@@ -117,6 +124,7 @@ export interface IFixedDepositDocument extends IInvestmentDocument {
 }
 
 export interface IEPFO extends IBaseInvestment {
+    type: InvestmentType.EPFO;
     account_number: string;
     epf_number: string;
     employer_contribution: number;
@@ -131,6 +139,7 @@ export interface IEPFODocument extends IInvestmentDocument {
 }
 
 export interface IGold extends IBaseInvestment {
+    type: InvestmentType.GOLD;
     goldForm: string;
     goldType: string;
     weight: number;
@@ -145,6 +154,7 @@ export interface IGoldDocument extends IInvestmentDocument {
 }
 
 export interface IParkingFund extends IBaseInvestment {
+    type: InvestmentType.PARKING_FUND;
     fundType: string;
     linkedAccountId: string;
 }
@@ -154,15 +164,8 @@ export interface IParkingFundDocument extends IInvestmentDocument {
     details: IParkingFund;
 }
 
-export interface IOtherInvestmentDocument extends IInvestmentDocument {
-    type: InvestmentType.OTHER;
-    details: IBaseInvestment & {
-        notes?: string;
-    }
-}
-
 // Union Type for Details
-export type InvestmentDetails =
+export type Investments =
     | IStock
     | IMutualFund
     | IBond
@@ -183,14 +186,7 @@ export type InvestmentDocument =
     | IEPFODocument
     | IGoldDocument
     | IParkingFundDocument
-    | IOtherInvestmentDocument;
 
-// Base Investment Document 
-export interface IInvestments {
-    userId: string;
-    type: InvestmentType;
-    details: InvestmentDetails;
-}
 
 export interface IStock {
     '1. symbol': string;
@@ -222,5 +218,13 @@ export interface IMutualFundSearchResult {
     message: string,
     data: {
         mutualFunds: IMutualFundDTO[];
+    }
+}
+
+export interface IInvestmentDetails {
+    success: boolean,
+    message: string,
+    data: {
+        investment: Investments;
     }
 }

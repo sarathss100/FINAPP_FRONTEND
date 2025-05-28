@@ -25,7 +25,6 @@ const AccountsBody = function () {
   const [isInputModalOpen, setIsInputModalOpen] = useState(false);
   const [accountToEdit, setAccountToEdit] = useState<IAccount | undefined>(undefined);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
-  
   const totalBalance = useAccountsStore((state) => state.totalBalance);
   const totalBankBalance = useAccountsStore((state) => state.totalBankBalance);
   const totalDebt = useAccountsStore((state) => state.totalDebt);

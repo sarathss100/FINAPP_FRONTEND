@@ -1,5 +1,5 @@
 "use client";
-import { Search, Filter, Calendar, ChevronRight, Tag, ChevronLeft, UploadIcon, PlusCircleIcon } from "lucide-react";
+import { Search, Calendar, ChevronRight, Tag, ChevronLeft, UploadIcon, PlusCircleIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
@@ -72,6 +72,7 @@ const TransactionBody = function () {
   const [categoryFilter, setCategoryFilter] = useState('all-categories');
   const [dateFilter, setDateFilter] = useState('last-30-days');
   const [currentPage, setCurrentPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const itemsPerPage = 5;
@@ -358,14 +359,14 @@ const handleEditTransaction = (transaction: ITransaction) => {
                   </div>
 
                   <div className="flex gap-3">
-                    <Button
+                    {/* <Button
                       variant="outline"
                       className="h-10"
                       onClick={() => setShowFilters(!showFilters)}
                     >
                       <Filter className="w-4 h-4 mr-2" />
                       {showFilters ? "Hide Filters" : "Filters"}
-                    </Button>
+                    </Button> */}
                     
                     <Select value={dateFilter} onValueChange={handleDateChange}>
                       <SelectTrigger className="w-full md:w-40 h-10">

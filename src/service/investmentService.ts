@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IMutualFundSearchResult, IStockDetails } from '@/types/IInvestments';
+import { IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails } from '@/types/IInvestments';
 
 // Searches for stocks based on a keyword by sending a GET request to the backend API
 export const searchStocksFromApi = async function (keyword: string): Promise<IStockDetails> {
@@ -41,6 +41,32 @@ export const searchMutualFundFromApi = async function (keyword: string): Promise
         }
     } catch (error) {
         // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+/**
+ * Creates a new investment by sending the provided investment data to the backend API.
+ *
+ * @param {IInvestments} formData - The investment data to be sent to the server for creation.
+ * @returns {Promise<IInvestmentDetails>} - A promise resolving to the response data containing created investment details.
+ * @throws {Error} - Throws an error if the request fails or the response indicates failure.
+ */
+export const createInvestment = async function (formData: Investments): Promise<IInvestmentDetails> {
+    try {
+        // Send a POST request to create a new investment
+        const response = await axiosInstance.post<IInvestmentDetails>(`/api/v1/investment`, formData);
+    
+        // Check if the response contains a success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return investment details if creation was successful
+        } else {
+            // Throw an error if the backend returned a failure message
+            throw new Error(response.data?.message || 'Failed to create investment.');
+        }
+    } catch (error) {
+        // Log the error if needed, and re-throw it for upstream handling
+        console.error('Error creating investment:', error);
         throw error;
     }
 };

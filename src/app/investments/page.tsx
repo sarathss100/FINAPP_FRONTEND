@@ -1,5 +1,5 @@
 import { UserSideBar } from '@/components/user/base/UserSideBar';
-import InvestmentManagementBody from '@/components/user/investments/InvestmentManagementBody';
+// import InvestmentManagementBody from '@/components/user/investments/InvestmentManagementBody';
 
 const Investments = function () {
     return (
@@ -10,7 +10,7 @@ const Investments = function () {
                 style={{ maxHeight: "100vh" }}
             >
                 <div className='p-6'>
-                  <InvestmentManagementBody />
+                  {/* <InvestmentManagementBody /> */}
                 </div>
             </main>
         </div>

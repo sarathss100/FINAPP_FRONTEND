@@ -24,7 +24,7 @@ const INVESTMENT_TYPES = [
 ];
 
 const GOLD_FORMS = ['Jewelry', 'Coins', 'Bars', 'ETF'];
-const GOLD_TYPES = ['24K', '22K', '18K', '14K'];
+const GOLD_TYPES = ['22K'];
 const PROPERTY_TYPES = ['Residential', 'Commercial', 'Agricultural', 'Industrial'];
 const BOND_TYPES = ['Government', 'Corporate', 'Municipal', 'Treasury'];
 
@@ -155,8 +155,6 @@ export default function InvestmentInputModal({
       case InvestmentType.FIXED_DEPOSIT:
         return {
           ...base,
-          bank: initialData.details.bank || '',
-          account_number: initialData.details.account_number || '',
           maturity_date: initialData.details.maturity_date
             ? new Date(initialData.details.maturity_date).toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0],
@@ -192,7 +190,6 @@ export default function InvestmentInputModal({
         return {
           ...base,
           fundType: initialData.details.fundType || '',
-          linkedAccountId: initialData.details.linkedAccountId || '',
         };
   
       default:
@@ -481,8 +478,6 @@ export default function InvestmentInputModal({
         case InvestmentType.FIXED_DEPOSIT:
           return {
             ...baseState,
-            bank: '',
-            account_number: '',
             maturity_date: new Date().toISOString().split('T')[0],
             interest_rate: '',
             maturity_amount: '',
@@ -711,12 +706,10 @@ export default function InvestmentInputModal({
             type: formData.type,
             name: formData.name,
             amount: Number(formData.amount),
-            accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
             createdAt: new Date(),
             updatedAt: new Date(),
-            bank: formData.bank,
           } as IFixedDeposit;
         } else {
           throw new Error("Invalid form data for fixed deposit investment");
@@ -784,7 +777,6 @@ export default function InvestmentInputModal({
             createdAt: new Date(),
             updatedAt: new Date(),
             fundType: formData.fundType,
-            linkedAccountId: formData.linkedAccountId,
           } as IParkingFund;
         } else {
           throw new Error("Invalid form data for parking fund investment");
@@ -1359,36 +1351,6 @@ export default function InvestmentInputModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bank
-                </label>
-                <input
-                  type="text"
-                  name="bank"
-                  value={'bank' in formData ? formData.bank : ''}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Bank name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Account Number
-                </label>
-                <input
-                  type="text"
-                  name="account_number"
-                  value={'account_number' in formData ? formData.account_number : ''}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Account number"
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Interest Rate (%)
                 </label>
                 <input
@@ -1609,19 +1571,6 @@ export default function InvestmentInputModal({
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Linked Account ID
-                </label>
-                <input
-                  type="text"
-                  name="linkedAccountId"
-                  value={'linkedAccountId' in formData ? formData.linkedAccountId : ''}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Linked account ID"
-                />
-              </div>
             </div>
           </div>
         );
@@ -1761,8 +1710,6 @@ export default function InvestmentInputModal({
         {accounts.map((account) => (
           <option key={account._id} value={account._id}>
             {account.account_name} - {account.account_type} 
-            {account.current_balance && ` (₹${account.current_balance.toString()})`}
-            {account.portfolio_value && ` (₹${account.portfolio_value.toString()})`}
           </option>
         ))}
       </select>

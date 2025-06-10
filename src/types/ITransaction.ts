@@ -92,7 +92,7 @@ export interface ITotalMonthlyIncome {
 export interface ITotalMonthlyExpense {
     success: boolean,
     message: string,
-    data: { totalMonthlyExpense: number };
+    data: { totalMonthlyExpense: { currentMonthExpenseTotal: number, previousMonthExpenseTotal: number } };
 }
 
 export interface ICategoryWiseExpenses {
@@ -119,6 +119,12 @@ export interface IAllIncomeTransactions {
     data: { transactions: { category: string, total: number }[] },
 }
 
+export interface IAllExpenseTransactions {
+    success: boolean,
+    message: string,
+    data: { transactions: { category: string, total: number }[] },
+}
+
 export interface IParsedTransaction {
     date: Date | null;
     description: string;
@@ -137,6 +143,12 @@ export interface IParsedTransactions {
 }
 
 export interface IMonthlyIncomeTrends {
+    success: boolean,
+    message: string,
+    data: { transactions: { month: string, amount: number }[] },
+}
+
+export interface IMonthlyExpenseTrends {
     success: boolean,
     message: string,
     data: { transactions: { month: string, amount: number }[] },

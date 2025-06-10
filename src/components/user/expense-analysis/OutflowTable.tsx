@@ -5,120 +5,120 @@ import { useTransactionStore } from '@/stores/store';
 
 const OutflowTableComponent = () => {
   const {
-    inflowTable,
-    inflowFilters,
-    isLoadingInflowTable,
-    fetchTableInflow,
-    setInflowPage,
-    setInflowLimit,
-    setInflowTimeRange,
-    setInflowCategory,
-    setInflowSearchText,
-    clearInflowFilters,
+    OutflowTable,
+    OutflowFilters,
+    isLoadingOutflowTable,
+    fetchTableOutflow,
+    setOutflowPage,
+    setOutflowLimit,
+    setOutflowTimeRange,
+    setOutflowCategory,
+    setOutflowSearchText,
+    clearOutflowFilters,
   } = useTransactionStore();
 
-  const [searchInput, setSearchInput] = useState(inflowFilters.searchText);
+  const [searchInput, setSearchInput] = useState(OutflowFilters.searchText);
 
   // Get unique categories from actual transaction data
   const availableCategories = useMemo(() => {
-    if (!inflowTable?.data?.length) return [];
+    if (!OutflowTable?.data?.length) return [];
     
-    const categories = [...new Set(inflowTable.data.map(transaction => transaction.category))];
+    const categories = [...new Set(OutflowTable.data.map(transaction => transaction.category))];
     return categories.filter(Boolean).sort();
-  }, [inflowTable?.data]);
+  }, [OutflowTable?.data]);
 
   // Fetch initial data on mount
   useEffect(() => {
-    fetchTableInflow();
+    fetchTableOutflow();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Always fetch on mount
 
   // Handle filter changes (separate from initial load)
   useEffect(() => {
     // Only fetch if we have meaningful filter changes and not initial load
-    if (inflowFilters.searchText || 
-        inflowFilters.category || 
-        inflowFilters.timeRange !== 'year' || 
-        inflowFilters.page !== 1 || 
-        inflowFilters.limit !== 10) {
-      fetchTableInflow();
+    if (OutflowFilters.searchText || 
+        OutflowFilters.category || 
+        OutflowFilters.timeRange !== 'year' || 
+        OutflowFilters.page !== 1 || 
+        OutflowFilters.limit !== 10) {
+      fetchTableOutflow();
     }
   }, [
-    inflowFilters.searchText,
-    inflowFilters.category, 
-    inflowFilters.timeRange,
-    inflowFilters.page,
-    inflowFilters.limit,
-    fetchTableInflow
+    OutflowFilters.searchText,
+    OutflowFilters.category, 
+    OutflowFilters.timeRange,
+    OutflowFilters.page,
+    OutflowFilters.limit,
+    fetchTableOutflow
   ]);
 
   // Debounced search with cleanup
   useEffect(() => {
     const delayedSearch = setTimeout(() => {
-      if (searchInput !== inflowFilters.searchText) {
-        setInflowSearchText(searchInput);
+      if (searchInput !== OutflowFilters.searchText) {
+        setOutflowSearchText(searchInput);
       }
     }, 500);
 
     return () => clearTimeout(delayedSearch);
-  }, [searchInput, setInflowSearchText, inflowFilters.searchText]);
+  }, [searchInput, setOutflowSearchText, OutflowFilters.searchText]);
 
   // Memoized event handlers to prevent re-renders
   const handlePageClick = useCallback((pageNumber: number) => {
-    if (pageNumber !== inflowFilters.page && pageNumber >= 1 && pageNumber <= inflowTable.totalPages) {
-      setInflowPage(pageNumber);
+    if (pageNumber !== OutflowFilters.page && pageNumber >= 1 && pageNumber <= OutflowTable.totalPages) {
+      setOutflowPage(pageNumber);
     }
-  }, [inflowFilters.page, inflowTable.totalPages, setInflowPage]);
+  }, [OutflowFilters.page, OutflowTable.totalPages, setOutflowPage]);
 
   const handlePreviousPage = useCallback(() => {
-    if (inflowFilters.page > 1) {
-      setInflowPage(inflowFilters.page - 1);
+    if (OutflowFilters.page > 1) {
+      setOutflowPage(OutflowFilters.page - 1);
     }
-  }, [inflowFilters.page, setInflowPage]);
+  }, [OutflowFilters.page, setOutflowPage]);
 
   const handleNextPage = useCallback(() => {
-    if (inflowFilters.page < inflowTable.totalPages) {
-      setInflowPage(inflowFilters.page + 1);
+    if (OutflowFilters.page < OutflowTable.totalPages) {
+      setOutflowPage(OutflowFilters.page + 1);
     }
-  }, [inflowFilters.page, inflowTable.totalPages, setInflowPage]);
+  }, [OutflowFilters.page, OutflowTable.totalPages, setOutflowPage]);
 
   const handleLimitChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLimit = Number(e.target.value);
-    if (newLimit !== inflowFilters.limit) {
-      setInflowLimit(newLimit);
+    if (newLimit !== OutflowFilters.limit) {
+      setOutflowLimit(newLimit);
       // Reset to page 1 when changing limit
-      if (inflowFilters.page !== 1) {
-        setInflowPage(1);
+      if (OutflowFilters.page !== 1) {
+        setOutflowPage(1);
       }
     }
-  }, [inflowFilters.limit, inflowFilters.page, setInflowLimit, setInflowPage]);
+  }, [OutflowFilters.limit, OutflowFilters.page, setOutflowLimit, setOutflowPage]);
 
   const handleTimeRangeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTimeRange = e.target.value;
-    if (newTimeRange !== inflowFilters.timeRange) {
-      setInflowTimeRange(newTimeRange);
+    if (newTimeRange !== OutflowFilters.timeRange) {
+      setOutflowTimeRange(newTimeRange);
       // Reset to page 1 when changing time range
-      if (inflowFilters.page !== 1) {
-        setInflowPage(1);
+      if (OutflowFilters.page !== 1) {
+        setOutflowPage(1);
       }
     }
-  }, [inflowFilters.timeRange, inflowFilters.page, setInflowTimeRange, setInflowPage]);
+  }, [OutflowFilters.timeRange, OutflowFilters.page, setOutflowTimeRange, setOutflowPage]);
 
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCategory = e.target.value;
-    if (newCategory !== inflowFilters.category) {
-      setInflowCategory(newCategory);
+    if (newCategory !== OutflowFilters.category) {
+      setOutflowCategory(newCategory);
       // Reset to page 1 when changing category
-      if (inflowFilters.page !== 1) {
-        setInflowPage(1);
+      if (OutflowFilters.page !== 1) {
+        setOutflowPage(1);
       }
     }
-  }, [inflowFilters.category, inflowFilters.page, setInflowCategory, setInflowPage]);
+  }, [OutflowFilters.category, OutflowFilters.page, setOutflowCategory, setOutflowPage]);
 
   const handleClearFilters = useCallback(() => {
     setSearchInput('');
-    clearInflowFilters();
-  }, [clearInflowFilters]);
+    clearOutflowFilters();
+  }, [clearOutflowFilters]);
 
   // Memoized utility functions
   const formatCurrency = useCallback((amount: number) => {
@@ -151,11 +151,11 @@ const OutflowTableComponent = () => {
 
   // Memoized pagination calculation
   const paginationPages = useMemo(() => {
-    if (!inflowTable.totalPages || inflowTable.totalPages <= 1) return [];
+    if (!OutflowTable.totalPages || OutflowTable.totalPages <= 1) return [];
     
     const pages = [];
-    const currentPage = inflowFilters.page;
-    const totalPages = inflowTable.totalPages;
+    const currentPage = OutflowFilters.page;
+    const totalPages = OutflowTable.totalPages;
     
     // Always show first page
     pages.push(1);
@@ -187,10 +187,10 @@ const OutflowTableComponent = () => {
     }
     
     return pages;
-  }, [inflowFilters.page, inflowTable.totalPages]);
+  }, [OutflowFilters.page, OutflowTable.totalPages]);
 
   // Initial loading state with skeleton
-  if (isLoadingInflowTable && !inflowTable?.data?.length) {
+  if (isLoadingOutflowTable && !OutflowTable?.data?.length) {
     return (
       <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
         {/* Search and Filters Skeleton */}
@@ -247,7 +247,7 @@ const OutflowTableComponent = () => {
         </div>
         
         <select
-          value={inflowFilters.timeRange}
+          value={OutflowFilters.timeRange}
           onChange={handleTimeRangeChange}
           className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
@@ -257,7 +257,7 @@ const OutflowTableComponent = () => {
         </select>
 
         <select
-          value={inflowFilters.category}
+          value={OutflowFilters.category}
           onChange={handleCategoryChange}
           className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
@@ -270,7 +270,7 @@ const OutflowTableComponent = () => {
         </select>
 
         <select
-          value={inflowFilters.limit}
+          value={OutflowFilters.limit}
           onChange={handleLimitChange}
           className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
@@ -291,13 +291,13 @@ const OutflowTableComponent = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Recent Inflow Transactions</h2>
         <div className="text-sm text-gray-500">
-          Showing {inflowTable?.data?.length || 0} of {inflowTable?.total || 0} transactions
+          Showing {OutflowTable?.data?.length || 0} of {OutflowTable?.total || 0} transactions
         </div>
       </div>
       
       {/* Transaction List with Loading Overlay */}
       <div className="relative">
-        {isLoadingInflowTable && (
+        {isLoadingOutflowTable && (
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -307,8 +307,8 @@ const OutflowTableComponent = () => {
         )}
         
         <div className="space-y-3">
-          {inflowTable?.data?.length > 0 ? (
-            inflowTable.data.map((transaction) => (
+          {OutflowTable?.data?.length > 0 ? (
+            OutflowTable.data.map((transaction) => (
               <div key={transaction._id} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -345,13 +345,13 @@ const OutflowTableComponent = () => {
       </div>
 
       {/* Pagination Controls */}
-      {inflowTable.totalPages > 1 && (
+      {OutflowTable.totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
           <button
             onClick={handlePreviousPage}
-            disabled={inflowFilters.page === 1}
+            disabled={OutflowFilters.page === 1}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              inflowFilters.page === 1
+              OutflowFilters.page === 1
                 ? 'text-gray-400 cursor-not-allowed'
                 : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
             }`}
@@ -369,7 +369,7 @@ const OutflowTableComponent = () => {
                   <button
                     onClick={() => handlePageClick(typeof page === 'string' ? parseInt(page) : page)}
                     className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                      inflowFilters.page === page
+                      OutflowFilters.page === page
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
@@ -383,9 +383,9 @@ const OutflowTableComponent = () => {
 
           <button
             onClick={handleNextPage}
-            disabled={inflowFilters.page === inflowTable.totalPages}
+            disabled={OutflowFilters.page === OutflowTable.totalPages}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-              inflowFilters.page === inflowTable.totalPages
+              OutflowFilters.page === OutflowTable.totalPages
                 ? 'text-gray-400 cursor-not-allowed'
                 : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
             }`}

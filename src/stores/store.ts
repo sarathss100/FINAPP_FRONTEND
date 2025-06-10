@@ -7,7 +7,7 @@ import { IGoal } from '@/types/IGoal';
 import { getUserProfilePictureUrl } from '@/service/userService';
 import { getTotalBalance, getTotalBankBalance, getTotalDebt, getTotalInvestment, getUserAccounts } from '@/service/accountService';
 import { IAccount } from '@/types/IAccounts';
-import { fetchInflowTable, getAllIncomeTransactions, getAllTransactions, getCategoryWiseExpenses, getMonthlyIncomeTrends, getTotalMonthlyExpense, getTotalMonthlyIncome } from '@/service/transactionService';
+import { fetchInflowTable, fetchOutflowTable, getAllExpenseTransactions, getAllIncomeTransactions, getAllTransactions, getCategoryWiseExpenses, getMonthlyExpenseTrends, getMonthlyIncomeTrends, getTotalMonthlyExpense, getTotalMonthlyIncome } from '@/service/transactionService';
 import { ITransaction } from '@/types/ITransaction';
 import { getAllInsurances, getInsuranceWithClosestNextPaymentDate, totalAnnualInsurancePremiumApi, totalInsuranceCoverageApi } from '@/service/insuranceService';
 import { Insurance } from '@/types/IInsurance';
@@ -401,11 +401,15 @@ interface TransactionState {
     currentMonthTotalIncome: number; // Current Month Total Income
     previousMonthTotalIncome: number; // Previous Month Total Income
     currentMonthTotalExpense: number; // Current Month Total Expense
+    previousMonthTotalExpense: number; // Previous Month Total Expense
     categoryWiseMonthlyExpense: { category: string, value: number }[]; // Current Month Category Wise expense
     allTransactions: ITransaction[]; // All Transactions 
     monthlyIncomeTrends: { month: string, amount: number }[];
+    monthlyExpenseTrends: { month: string, amount: number }[];
     allIncomeTransactions: { category: string, total: number }[]; // All Income Transactions
+    allExpenseTransactions: { category: string, total: number }[]; // All Expense Transactions
     inflowTable: { data: ITransaction[], total: number, currentPage: number, totalPages: number }; // All Transactions to show in table 
+    OutflowTable: { data: ITransaction[], total: number, currentPage: number, totalPages: number }; // All Transactions to show in table 
     
     // New filter states
     inflowFilters: {
@@ -416,14 +420,27 @@ interface TransactionState {
         searchText: string;
     };
     isLoadingInflowTable: boolean;
+
+    // New filter states
+    OutflowFilters: {
+        page: number;
+        limit: number;
+        timeRange: string;
+        category: string;
+        searchText: string;
+    };
+    isLoadingOutflowTable: boolean;
     
     fetchMonthlyTotalIncome: () => Promise<void>; // Function to fetch Monthly Total Income
     fetchMonthlyTotalExpense: () => Promise<void>; // Function to fetch Monthly Total Expense 
     fetchCategoryWiseExpenses: () => Promise<void>; // Function to fetch Category Wise Monthly Expenses 
     fetchAllTransactions: () => Promise<void>; // Function to fetch all transactions 
     fetchMonthlyIncomeTrends: () => Promise<void>; // Function to fetch Monthly Income Trends
+    fetchMonthlyExpenseTrends: () => Promise<void>; // Function to fetch Monthly Expense Trends
     fetchAllIncomeTransactions: () => Promise<void>; // Function to fetch all income transactions 
+    fetchAllExpenseTransactions: () => Promise<void>; // Function to fetch all expense transactions 
     fetchTableInflow: () => Promise<void>; // Function to fetch Table Inflow
+    fetchTableOutflow: () => Promise<void>; // Function to fetch Table Outflow
     
     // New filter actions
     setInflowPage: (page: number) => void;
@@ -434,6 +451,16 @@ interface TransactionState {
     clearInflowFilters: () => void;
     goToNextInflowPage: () => void;
     goToPrevInflowPage: () => void;
+
+    // New filter actions
+    setOutflowPage: (page: number) => void;
+    setOutflowLimit: (limit: number) => void;
+    setOutflowTimeRange: (timeRange: string) => void;
+    setOutflowCategory: (category: string) => void;
+    setOutflowSearchText: (searchText: string) => void;
+    clearOutflowFilters: () => void;
+    goToNextOutflowPage: () => void;
+    goToPrevOutflowPage: () => void;
     
     reset: () => void;
 }
@@ -444,11 +471,15 @@ export const useTransactionStore = create<TransactionState>()(
             currentMonthTotalIncome: 0,
             previousMonthTotalIncome: 0,
             currentMonthTotalExpense: 0,
+            previousMonthTotalExpense: 0,
             categoryWiseMonthlyExpense: [],
             allTransactions: [],
             monthlyIncomeTrends: [],
+            monthlyExpenseTrends: [],
             allIncomeTransactions: [],
-            inflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
+            allExpenseTransactions: [],
+            inflowTable: { data: [], total: 0, currentPage: 1, totalPages: 1 },
+            OutflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
             
             // New filter states
             inflowFilters: {
@@ -460,17 +491,31 @@ export const useTransactionStore = create<TransactionState>()(
             },
             isLoadingInflowTable: false,
 
+            // New filter states
+            OutflowFilters: {
+                page: 1,
+                limit: 10,
+                timeRange: 'year',
+                category: '',
+                searchText: '',
+            },
+            isLoadingOutflowTable: false,
+
             // Reset function
             reset: () => 
                 set({
                     currentMonthTotalIncome: 0,
                     previousMonthTotalIncome: 0,
                     currentMonthTotalExpense: 0,
+                    previousMonthTotalExpense: 0,
                     categoryWiseMonthlyExpense: [],
                     allTransactions: [],
                     monthlyIncomeTrends: [],
+                    monthlyExpenseTrends: [],
                     allIncomeTransactions: [],
-                    inflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
+                    allExpenseTransactions: [],
+                    inflowTable: { data: [], total: 0, currentPage: 1, totalPages: 1 },
+                    OutflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
                     inflowFilters: {
                         page: 1,
                         limit: 10,
@@ -479,6 +524,15 @@ export const useTransactionStore = create<TransactionState>()(
                         searchText: '',
                     },
                     isLoadingInflowTable: false,
+                    
+                    OutflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        searchText: '',
+                    },
+                    isLoadingOutflowTable: false,
                 }),
             
             // fetch Total Balance 
@@ -500,10 +554,12 @@ export const useTransactionStore = create<TransactionState>()(
                 try {
                     const response = await getTotalMonthlyExpense();
                     const data = await response.data;
-                    set({ currentMonthTotalExpense: data.totalMonthlyExpense });
+                    set({ currentMonthTotalExpense: data.totalMonthlyExpense.currentMonthExpenseTotal });
+                    set({ previousMonthTotalExpense: data.totalMonthlyExpense.previousMonthExpenseTotal });
                 } catch (error) {
                     console.error(`Failed to get total Monthly Expense`, error);
                     set({ currentMonthTotalExpense: 0 });
+                    set({ previousMonthTotalExpense: 0 });
                 }
             },
 
@@ -536,11 +592,22 @@ export const useTransactionStore = create<TransactionState>()(
                 try {
                     const response = await getMonthlyIncomeTrends();
                     const data = await response.data;
-                    console.log(`Successfully get data from backend:`, data.transactions);
                     set({ monthlyIncomeTrends: data.transactions });
                 } catch (error) {
                     console.error(`Failed to get Monthly Trends`, error);
                     set({ monthlyIncomeTrends: [] });
+                }
+            },
+
+            // fetch Monthly Expense Trends 
+            fetchMonthlyExpenseTrends: async () => {
+                try {
+                    const response = await getMonthlyExpenseTrends();
+                    const data = await response.data;
+                    set({ monthlyExpenseTrends: data.transactions });
+                } catch (error) {
+                    console.error(`Failed to get Monthly Trends`, error);
+                    set({ monthlyExpenseTrends: [] });
                 }
             },
 
@@ -553,6 +620,18 @@ export const useTransactionStore = create<TransactionState>()(
                 } catch (error) {
                     console.error(`Failed to get total transaction`, error);
                     set({ allIncomeTransactions: [] });
+                } 
+            },
+
+            // fetch All Expense Transactions 
+            fetchAllExpenseTransactions: async () => {
+                try {
+                    const response = await getAllExpenseTransactions();
+                    const data = await response.data;
+                    set({ allExpenseTransactions: data.transactions });
+                } catch (error) {
+                    console.error(`Failed to get total transaction`, error);
+                    set({ allExpenseTransactions: [] });
                 } 
             },
 
@@ -647,6 +726,100 @@ export const useTransactionStore = create<TransactionState>()(
                 const { inflowFilters } = get();
                 if (inflowFilters.page > 1) {
                     get().setInflowPage(inflowFilters.page - 1);
+                }
+            },
+
+            // Updated fetch All Outflow Table with filters
+            fetchTableOutflow: async () => {
+                try {
+                    set({ isLoadingOutflowTable: true });
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                    const { OutflowFilters } = get();
+                    
+                    const response = await fetchOutflowTable(
+                        OutflowFilters.page,
+                        OutflowFilters.limit,
+                        OutflowFilters.timeRange,
+                        OutflowFilters.category || undefined,
+                        OutflowFilters.searchText || undefined
+                    );
+                    
+                    const data = response.data;
+                    set({ OutflowTable: data.transactions });
+                } catch (error) {
+                    console.error(`Failed to get Outflow table`, error);
+                    set({ OutflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1} });
+                } finally {
+                    set({ isLoadingOutflowTable: false });
+                }
+            },
+
+            // New filter actions
+            setOutflowPage: (page: number) => {
+                set(state => ({
+                    OutflowFilters: { ...state.OutflowFilters, page }
+                }));
+                // Auto-fetch when page changes
+                setTimeout(() => get().fetchTableOutflow(), 0);
+            },
+
+            setOutflowLimit: (limit: number) => {
+                set(state => ({
+                    OutflowFilters: { ...state.OutflowFilters, limit, page: 1 } // Reset to page 1 when limit changes
+                }));
+                // Auto-fetch when limit changes
+                setTimeout(() => get().fetchTableOutflow(), 0);
+            },
+
+            setOutflowTimeRange: (timeRange: string) => {
+                set(state => ({
+                    OutflowFilters: { ...state.OutflowFilters, timeRange, page: 1 } // Reset to page 1 when filter changes
+                }));
+                // Auto-fetch when timeRange changes
+                setTimeout(() => get().fetchTableOutflow(), 0);
+            },
+
+            setOutflowCategory: (category: string) => {
+                set(state => ({
+                    OutflowFilters: { ...state.OutflowFilters, category, page: 1 } // Reset to page 1 when filter changes
+                }));
+                // Auto-fetch when category changes
+                setTimeout(() => get().fetchTableOutflow(), 0);
+            },
+
+            setOutflowSearchText: (searchText: string) => {
+                set(state => ({
+                    OutflowFilters: { ...state.OutflowFilters, searchText, page: 1 } // Reset to page 1 when search changes
+                }));
+                // Auto-fetch when search changes (you might want to debounce this)
+                setTimeout(() => get().fetchTableOutflow(), 0);
+            },
+
+            clearOutflowFilters: () => {
+                set({
+                    OutflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        searchText: '',
+                    }
+                });
+                // Auto-fetch when filters are cleared
+                setTimeout(() => get().fetchTableOutflow(), 0);
+            },
+
+            goToNextOutflowPage: () => {
+                const { OutflowTable, OutflowFilters } = get();
+                if (OutflowFilters.page < OutflowTable.totalPages) {
+                    get().setOutflowPage(OutflowFilters.page + 1);
+                }
+            },
+
+            goToPrevOutflowPage: () => {
+                const { OutflowFilters } = get();
+                if (OutflowFilters.page > 1) {
+                    get().setOutflowPage(OutflowFilters.page - 1);
                 }
             },
         }),

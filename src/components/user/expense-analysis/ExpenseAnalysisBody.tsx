@@ -7,17 +7,17 @@ import { useTransactionStore } from '@/stores/store';
 import OutflowTableComponent from './OutflowTable';
 
 const ExpenseAnalysisBody = () => {
-  const [incomePercentage, setIncomePercentage] = useState(0);
-  const [aveageDailyIncome, setAverageDailyIncome] = useState(0);
-  const [aveageWeeklyIncome, setAverageWeeklyIncome] = useState(0);
+  const [expensePercentage, setExpensePercentage] = useState(0);
+  const [aveageDailyExpense, setAverageDailyExpense] = useState(0);
+  const [aveageWeeklyExpense, setAverageWeeklyExpense] = useState(0);
   const [maxMonthlyIncome, setMaxMonthlyIncome] = useState(0);
-  const currentMonthTotalIncome = useTransactionStore((state) => state.currentMonthTotalIncome);
-  const previousMonthTotalIncome = useTransactionStore((state) => state.previousMonthTotalIncome);
-  const monthlyIncomeTrends = useTransactionStore((state) => state.monthlyIncomeTrends);
-  const transactionsByCategory = useTransactionStore((state) => state.allIncomeTransactions);
+  const currentMonthTotalExpense = useTransactionStore((state) => state.previousMonthTotalExpense);
+  const previousMonthTotalExpense = useTransactionStore((state) => state.previousMonthTotalExpense);
+  const monthlyExpenseTrends = useTransactionStore((state) => state.monthlyExpenseTrends);
+  const transactionsByCategory = useTransactionStore((state) => state.allExpenseTransactions);
   const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchMonthlyIncomeTrends = useTransactionStore((state) => state.fetchMonthlyIncomeTrends);
-  const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
+  const fetchMonthlyExpenseTrends = useTransactionStore((state) => state.fetchMonthlyExpenseTrends);
+  const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
 
   const getDaysInMonth = function (date: Date): number {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -25,38 +25,37 @@ const ExpenseAnalysisBody = () => {
 
   // Fixed percentage calculation
   const calculatePercentage = useCallback(function () {
-    if (previousMonthTotalIncome === 0) {
-      setIncomePercentage(currentMonthTotalIncome > 0 ? 100 : 0);
+    if (previousMonthTotalExpense === 0) {
+      setExpensePercentage(currentMonthTotalExpense > 0 ? 100 : 0);
     } else {
-      const percentage = ((currentMonthTotalIncome - previousMonthTotalIncome) / previousMonthTotalIncome) * 100;
-      setIncomePercentage(isNaN(percentage) ? 0 : percentage);
+      const percentage = ((currentMonthTotalExpense - previousMonthTotalExpense) / previousMonthTotalExpense) * 100;
+      setExpensePercentage(isNaN(percentage) ? 0 : percentage);
     }
-  }, [currentMonthTotalIncome, previousMonthTotalIncome]);
+  }, [currentMonthTotalExpense, previousMonthTotalExpense]);
 
   const calculateAverage = useCallback(function () {
     const daysInMonth = getDaysInMonth(new Date());
-    const dailyAverage = currentMonthTotalIncome / daysInMonth;
+    const dailyAverage = currentMonthTotalExpense / daysInMonth;
     const weeklyAverage = dailyAverage * 7;
-    setAverageDailyIncome(isNaN(dailyAverage) ? 0 : dailyAverage);
-    setAverageWeeklyIncome(isNaN(weeklyAverage) ? 0 : weeklyAverage);
-  }, [currentMonthTotalIncome]);
+    setAverageDailyExpense(isNaN(dailyAverage) ? 0 : dailyAverage);
+    setAverageWeeklyExpense(isNaN(weeklyAverage) ? 0 : weeklyAverage);
+  }, [currentMonthTotalExpense]);
 
   const calcMaxMonthlyIncome = useCallback(function () {
-    if (monthlyIncomeTrends && monthlyIncomeTrends.length > 0) {
-      const maxIncome = Math.max(...monthlyIncomeTrends.map(m => m.amount || 0));
+    if (monthlyExpenseTrends && monthlyExpenseTrends.length > 0) {
+      const maxIncome = Math.max(...monthlyExpenseTrends.map(m => m.amount || 0));
       setMaxMonthlyIncome(isNaN(maxIncome) ? 0 : maxIncome);
     } else {
       setMaxMonthlyIncome(0);
     }
-  }, [monthlyIncomeTrends]);
+  }, [monthlyExpenseTrends]);
   
   // Separated the store fetching from calculations to prevent loops
   useEffect(() => {
     fetchMonthlyTotalIncome();
-    fetchMonthlyIncomeTrends();
-    fetchAllIncomeTransactons();
-    // fetchDataForInflowTable();
-  }, [fetchMonthlyTotalIncome, fetchMonthlyIncomeTrends, fetchAllIncomeTransactons]);
+    fetchMonthlyExpenseTrends();
+    fetchAllExpenseTransactons();
+  }, [fetchMonthlyTotalIncome, fetchMonthlyExpenseTrends, fetchAllExpenseTransactons]);
 
   // Separate effect for calculations that depend on the fetched data
   useEffect(() => {
@@ -148,7 +147,7 @@ const ExpenseAnalysisBody = () => {
         <UserHeader />
 
         {/* Page title */}
-        <PageTitle title={`Inflow Analysis`} tag={`Track and analyze your inflow streams`} />
+        <PageTitle title={`Outflow Analysis`} tag={`Track and analyze your Outflow streams`} />
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -157,21 +156,21 @@ const ExpenseAnalysisBody = () => {
               <div className="p-3 bg-blue-100 rounded-xl">
                 <IndianRupee className="w-6 h-6 text-blue-600" />
               </div>
-              <div className={`flex items-center ${incomePercentage > 0 ? 'text-green-500' : incomePercentage < 0 ? 'text-red-500' : 'text-gray-500'}`}>
-                {incomePercentage > 0 ? (
+              <div className={`flex items-center ${expensePercentage > 0 ? 'text-green-500' : expensePercentage < 0 ? 'text-red-500' : 'text-gray-500'}`}>
+                {expensePercentage > 0 ? (
                     <TrendingUp className="w-4 h-4 mr-1" />
-                  ): incomePercentage < 0 ? (
+                  ): expensePercentage < 0 ? (
                     <TrendingDown className="w-4 h-4 mr-1" /> 
                   ) : null
                 }
                 <span className="text-sm font-medium">
-                  {incomePercentage > 0 ? '+' : incomePercentage < 0 ? '-' : ''}
-                  {Math.abs(incomePercentage).toFixed(2)}%
+                  {expensePercentage > 0 ? '+' : expensePercentage < 0 ? '-' : ''}
+                  {Math.abs(expensePercentage).toFixed(2)}%
                 </span>
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(currentMonthTotalIncome || 0)}</h3>
-            <p className="text-gray-600 text-sm">Total Monthly Inflow</p>
+            <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(currentMonthTotalExpense || 0)}</h3>
+            <p className="text-gray-600 text-sm">Total Monthly Outflow</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-100">
@@ -180,8 +179,8 @@ const ExpenseAnalysisBody = () => {
                 <BarChart3 className="w-6 h-6 text-green-600" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(aveageDailyIncome)}</h3>
-            <p className="text-gray-600 text-sm">Average Daily Inflow</p>
+            <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(aveageDailyExpense)}</h3>
+            <p className="text-gray-600 text-sm">Average Daily Outflow</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-100">
@@ -190,8 +189,8 @@ const ExpenseAnalysisBody = () => {
                 <Calendar className="w-6 h-6 text-purple-600" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(aveageWeeklyIncome)}</h3>
-            <p className="text-gray-600 text-sm">Average Weekly Inflow</p>
+            <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(aveageWeeklyExpense)}</h3>
+            <p className="text-gray-600 text-sm">Average Weekly Outflow</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-100">
@@ -201,7 +200,7 @@ const ExpenseAnalysisBody = () => {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900">{incomeSourcesData.length}</h3>
-            <p className="text-gray-600 text-sm">Active Inflow Sources</p>
+            <p className="text-gray-600 text-sm">Active Outflow Sources</p>
           </div>
         </div>
 
@@ -211,7 +210,7 @@ const ExpenseAnalysisBody = () => {
           <div className="lg:col-span-2 space-y-8">
             {/* Income Sources Distribution */}
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Inflow Sources Distribution Annually</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Outflow Sources Distribution Annually</h2>
               <div className="space-y-4">
                 {incomeSourcesData.map((source, index) => (
                   <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
@@ -240,9 +239,9 @@ const ExpenseAnalysisBody = () => {
 
             {/* Monthly Trends */}
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Inflow Trends</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Outflow Trends</h2>
               <div className="h-64 flex items-end justify-between gap-4">
-                {monthlyIncomeTrends && monthlyIncomeTrends.length > 0 ? monthlyIncomeTrends.map((month, index) => (
+                {monthlyExpenseTrends && monthlyExpenseTrends.length > 0 ? monthlyExpenseTrends.map((month, index) => (
                   <div key={index} className="flex-1 flex flex-col items-center">
                     <div className="w-full max-w-12 relative">
                       <div

@@ -1,5 +1,5 @@
 "use client";
-import { SearchIcon, Shield, Database, Key, AlertCircle } from "lucide-react";
+import { Shield, Database, Key, AlertCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import Input from '@/components/base/Input';
@@ -50,16 +50,6 @@ const AdminSystemSettingsBody = function () {
 
   return (
     <div className="flex flex-col w-full max-w-[1184px] mx-auto py-8 gap-8 bg-gray-50">
-      {/* Header with search */}
-      <header className="p-6 flex justify-between items-center bg-white rounded-lg shadow-sm mx-6">
-        <div className="relative w-full max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            className="pl-10 h-[42px] text-base border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            placeholder="Search settings..."
-          />
-        </div>
-      </header>
 
       {/* Main content sections */}
       <div className="w-full space-y-6 px-6">

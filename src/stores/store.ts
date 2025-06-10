@@ -7,7 +7,7 @@ import { IGoal } from '@/types/IGoal';
 import { getUserProfilePictureUrl } from '@/service/userService';
 import { getTotalBalance, getTotalBankBalance, getTotalDebt, getTotalInvestment, getUserAccounts } from '@/service/accountService';
 import { IAccount } from '@/types/IAccounts';
-import { getAllTransactions, getCategoryWiseExpenses, getTotalMonthlyExpense, getTotalMonthlyIncome } from '@/service/transactionService';
+import { fetchInflowTable, getAllIncomeTransactions, getAllTransactions, getCategoryWiseExpenses, getMonthlyIncomeTrends, getTotalMonthlyExpense, getTotalMonthlyIncome } from '@/service/transactionService';
 import { ITransaction } from '@/types/ITransaction';
 import { getAllInsurances, getInsuranceWithClosestNextPaymentDate, totalAnnualInsurancePremiumApi, totalInsuranceCoverageApi } from '@/service/insuranceService';
 import { Insurance } from '@/types/IInsurance';
@@ -403,21 +403,62 @@ interface TransactionState {
     currentMonthTotalExpense: number; // Current Month Total Expense
     categoryWiseMonthlyExpense: { category: string, value: number }[]; // Current Month Category Wise expense
     allTransactions: ITransaction[]; // All Transactions 
+    monthlyIncomeTrends: { month: string, amount: number }[];
+    allIncomeTransactions: { category: string, total: number }[]; // All Income Transactions
+    inflowTable: { data: ITransaction[], total: number, currentPage: number, totalPages: number }; // All Transactions to show in table 
+    
+    // New filter states
+    inflowFilters: {
+        page: number;
+        limit: number;
+        timeRange: string;
+        category: string;
+        searchText: string;
+    };
+    isLoadingInflowTable: boolean;
+    
     fetchMonthlyTotalIncome: () => Promise<void>; // Function to fetch Monthly Total Income
     fetchMonthlyTotalExpense: () => Promise<void>; // Function to fetch Monthly Total Expense 
     fetchCategoryWiseExpenses: () => Promise<void>; // Function to fetch Category Wise Monthly Expenses 
     fetchAllTransactions: () => Promise<void>; // Function to fetch all transactions 
+    fetchMonthlyIncomeTrends: () => Promise<void>; // Function to fetch Monthly Income Trends
+    fetchAllIncomeTransactions: () => Promise<void>; // Function to fetch all income transactions 
+    fetchTableInflow: () => Promise<void>; // Function to fetch Table Inflow
+    
+    // New filter actions
+    setInflowPage: (page: number) => void;
+    setInflowLimit: (limit: number) => void;
+    setInflowTimeRange: (timeRange: string) => void;
+    setInflowCategory: (category: string) => void;
+    setInflowSearchText: (searchText: string) => void;
+    clearInflowFilters: () => void;
+    goToNextInflowPage: () => void;
+    goToPrevInflowPage: () => void;
+    
     reset: () => void;
 }
 
 export const useTransactionStore = create<TransactionState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             currentMonthTotalIncome: 0,
             previousMonthTotalIncome: 0,
             currentMonthTotalExpense: 0,
             categoryWiseMonthlyExpense: [],
             allTransactions: [],
+            monthlyIncomeTrends: [],
+            allIncomeTransactions: [],
+            inflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
+            
+            // New filter states
+            inflowFilters: {
+                page: 1,
+                limit: 10,
+                timeRange: 'year',
+                category: '',
+                searchText: '',
+            },
+            isLoadingInflowTable: false,
 
             // Reset function
             reset: () => 
@@ -427,6 +468,17 @@ export const useTransactionStore = create<TransactionState>()(
                     currentMonthTotalExpense: 0,
                     categoryWiseMonthlyExpense: [],
                     allTransactions: [],
+                    monthlyIncomeTrends: [],
+                    allIncomeTransactions: [],
+                    inflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
+                    inflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        searchText: '',
+                    },
+                    isLoadingInflowTable: false,
                 }),
             
             // fetch Total Balance 
@@ -477,7 +529,126 @@ export const useTransactionStore = create<TransactionState>()(
                     console.error(`Failed to get total Monthly Expense`, error);
                     set({ allTransactions: [] });
                 } 
-            }
+            },
+
+            // fetch Monthly Income Trends 
+            fetchMonthlyIncomeTrends: async () => {
+                try {
+                    const response = await getMonthlyIncomeTrends();
+                    const data = await response.data;
+                    console.log(`Successfully get data from backend:`, data.transactions);
+                    set({ monthlyIncomeTrends: data.transactions });
+                } catch (error) {
+                    console.error(`Failed to get Monthly Trends`, error);
+                    set({ monthlyIncomeTrends: [] });
+                }
+            },
+
+            // fetch All Income Transactions 
+            fetchAllIncomeTransactions: async () => {
+                try {
+                    const response = await getAllIncomeTransactions();
+                    const data = await response.data;
+                    set({ allIncomeTransactions: data.transactions });
+                } catch (error) {
+                    console.error(`Failed to get total transaction`, error);
+                    set({ allIncomeTransactions: [] });
+                } 
+            },
+
+            // Updated fetch All Inflow Table with filters
+            fetchTableInflow: async () => {
+                try {
+                    set({ isLoadingInflowTable: true });
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                    const { inflowFilters } = get();
+                    
+                    const response = await fetchInflowTable(
+                        inflowFilters.page,
+                        inflowFilters.limit,
+                        inflowFilters.timeRange,
+                        inflowFilters.category || undefined,
+                        inflowFilters.searchText || undefined
+                    );
+                    
+                    const data = response.data;
+                    set({ inflowTable: data.transactions });
+                } catch (error) {
+                    console.error(`Failed to get inflow table`, error);
+                    set({ inflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1} });
+                } finally {
+                    set({ isLoadingInflowTable: false });
+                }
+            },
+
+            // New filter actions
+            setInflowPage: (page: number) => {
+                set(state => ({
+                    inflowFilters: { ...state.inflowFilters, page }
+                }));
+                // Auto-fetch when page changes
+                setTimeout(() => get().fetchTableInflow(), 0);
+            },
+
+            setInflowLimit: (limit: number) => {
+                set(state => ({
+                    inflowFilters: { ...state.inflowFilters, limit, page: 1 } // Reset to page 1 when limit changes
+                }));
+                // Auto-fetch when limit changes
+                setTimeout(() => get().fetchTableInflow(), 0);
+            },
+
+            setInflowTimeRange: (timeRange: string) => {
+                set(state => ({
+                    inflowFilters: { ...state.inflowFilters, timeRange, page: 1 } // Reset to page 1 when filter changes
+                }));
+                // Auto-fetch when timeRange changes
+                setTimeout(() => get().fetchTableInflow(), 0);
+            },
+
+            setInflowCategory: (category: string) => {
+                set(state => ({
+                    inflowFilters: { ...state.inflowFilters, category, page: 1 } // Reset to page 1 when filter changes
+                }));
+                // Auto-fetch when category changes
+                setTimeout(() => get().fetchTableInflow(), 0);
+            },
+
+            setInflowSearchText: (searchText: string) => {
+                set(state => ({
+                    inflowFilters: { ...state.inflowFilters, searchText, page: 1 } // Reset to page 1 when search changes
+                }));
+                // Auto-fetch when search changes (you might want to debounce this)
+                setTimeout(() => get().fetchTableInflow(), 0);
+            },
+
+            clearInflowFilters: () => {
+                set({
+                    inflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        searchText: '',
+                    }
+                });
+                // Auto-fetch when filters are cleared
+                setTimeout(() => get().fetchTableInflow(), 0);
+            },
+
+            goToNextInflowPage: () => {
+                const { inflowTable, inflowFilters } = get();
+                if (inflowFilters.page < inflowTable.totalPages) {
+                    get().setInflowPage(inflowFilters.page + 1);
+                }
+            },
+
+            goToPrevInflowPage: () => {
+                const { inflowFilters } = get();
+                if (inflowFilters.page > 1) {
+                    get().setInflowPage(inflowFilters.page - 1);
+                }
+            },
         }),
         {
             name: 'transactions-storage', // Persisted state key

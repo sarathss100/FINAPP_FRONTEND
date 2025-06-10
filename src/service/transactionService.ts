@@ -1,4 +1,4 @@
-import { IAllTransactions, ICategoryWiseExpenses, IParsedTransactions, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
+import { IAllIncomeTransactions, IAllTransactions, ICategoryWiseExpenses, IMonthlyIncomeTrends, InflowTable, IParsedTransactions, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
 import axiosInstance from './axiosInstance';
 
 // Sends a request to add a new transaction for a user via the backend API
@@ -185,3 +185,119 @@ export const extractStatementData = async function (file: FormData): Promise<IPa
     }
 };
 
+/**
+ * Fetches the monthly income trends summary from the backend API.
+ *
+ * This function sends a GET request to retrieve a precomputed summary
+ * of income grouped by month. It returns structured data conforming
+ * to the IMonthlyIncomeTrends interface.
+ *
+ * @returns {Promise<IMonthlyIncomeTrends>}
+ *   A promise resolving to an object containing the monthly income trends.
+ *
+ * @throws {Error}
+ *   If the request fails or if the server responds with a non-success status,
+ *   including validation or parsing errors on the backend side.
+ */
+export const getMonthlyIncomeTrends = async function (): Promise<IMonthlyIncomeTrends> {
+    try {
+        // Send a GET request to fetch the monthly income trends from the backend API
+        const response = await axiosInstance.get<IMonthlyIncomeTrends>('/api/v1/transaction/summary/income-by-month');
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the parsed data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch monthly income trends');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling without modifying it
+        throw error;
+    }
+};
+
+/**
+ * Fetches all income transactions for the authenticated user.
+ *
+ * Makes an API request to retrieve the list of income transactions
+ * for the currently authenticated user (based on session or token).
+ *
+ * @returns {Promise<IAllIncomeTransactions>} A promise resolving to an object containing:
+ *   - `transactions`: Array of income transaction objects
+ *   - Additional metadata or flags as defined in the `IAllInomeTransactions` interface
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const getAllIncomeTransactions = async function (): Promise<IAllIncomeTransactions> {
+    try {
+        // Send a GET request to fetch income transactions from the backend API
+        const response = await axiosInstance.get<IAllIncomeTransactions>('/api/v1/transaction/income/transactions');
+
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the transaction data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch income transactions.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling
+        throw error;
+    }
+};
+
+/**
+ * Fetches income transaction data for the inflow table view.
+ *
+ * Makes an API request to retrieve structured income transaction data
+ * used specifically for displaying the inflow table to the authenticated user.
+ * Supports pagination and optional filtering via query parameters.
+ *
+ * @param {number} [page=1] - The page number to fetch (for pagination).
+ * @param {number} [limit=5] - The number of items per page.
+ * @param {string} [timeRange='year'] - Time range filter (e.g., 'year', 'month', 'week').
+ * @param {string} [category] - Optional category to filter income transactions.
+ * @param {string} [searchText] - Optional text to search within transaction fields.
+ *
+ * @returns {Promise<InflowTable>} A promise resolving to an object containing:
+ *   - `transactions`: Array of income transaction objects
+ *   - Additional metadata or UI-specific fields as defined in the `InflowTable` interface
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const fetchInflowTable = async function (
+    page: number = 1,
+    limit: number,
+    timeRange: string = 'year',
+    category?: string,
+    searchText?: string
+  ): Promise<InflowTable> {
+    try {
+      // Construct query parameters dynamically, omitting undefined/null values
+      const params = new URLSearchParams();
+  
+      params.append('page', page.toString());
+      params.append('timeRange', timeRange);
+  
+        if (limit) params.append('limit', limit.toString());
+      if (category) params.append('category', category);
+      if (searchText) params.append('searchText', searchText);
+  
+      // Send a GET request to fetch income transactions from the backend API
+      const response = await axiosInstance.get<InflowTable>(
+        `/api/v1/transaction/income/summary?${params.toString()}`
+      );
+  
+      // Validate the response structure and success flag
+      if (response.data && response.data.success) {
+        return response.data; // Return the transaction data if successful
+      } else {
+        // Throw an error if the response indicates failure
+        throw new Error(response.data?.message || 'Failed to fetch income transactions.');
+      }
+    } catch (error) {
+      // Re-throw the error for upstream handling
+      throw error;
+    }
+}

@@ -215,8 +215,6 @@ const handleEditTransaction = (transaction: ITransaction) => {
     }
 
     const isIncome = transactionData.transaction_type === 'INCOME';
-    // const amountPrefix = isIncome ? '+' : '-';
-    // const amountStr = `${amountPrefix}$${Math.abs(Number(transactionData.amount)).toFixed(2)}`;
     
     const newTransaction: ITransaction = {
       _id: isEditing ? String(transactionData._id) : String(transactions.length + 1),
@@ -359,15 +357,6 @@ const handleEditTransaction = (transaction: ITransaction) => {
                   </div>
 
                   <div className="flex gap-3">
-                    {/* <Button
-                      variant="outline"
-                      className="h-10"
-                      onClick={() => setShowFilters(!showFilters)}
-                    >
-                      <Filter className="w-4 h-4 mr-2" />
-                      {showFilters ? "Hide Filters" : "Filters"}
-                    </Button> */}
-                    
                     <Select value={dateFilter} onValueChange={handleDateChange}>
                       <SelectTrigger className="w-full md:w-40 h-10">
                         <Calendar className="w-4 h-4 mr-2 text-gray-400" />

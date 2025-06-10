@@ -2,13 +2,11 @@
 import {
   AlertTriangleIcon,
   CheckCircle,
-  SearchIcon,
   ServerIcon,
   UsersIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
-import Input from '@/components/base/Input';
 import { toast } from 'react-toastify';
 import { getAllUsers, getNewRegistrationCount, getSystemHealthStatus, getSystemMetrics } from '@/service/adminService';
 import { IHealthStatus, SystemMetrics } from '@/types/IAdminUserDetails';
@@ -82,16 +80,6 @@ const AdminSystemOverviewBody = function () {
 
   return (
     <main className="w-full max-w-[1184px] mx-auto font-sans">
-      <header className="p-8 flex justify-between items-center">
-        <div className="relative w-[373px]">
-          <SearchIcon className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-          <Input
-            className="pl-10 h-[42px] text-base"
-            placeholder="Search..."
-          />
-        </div>
-      </header>
-
       <section className="px-8">
         <div className="mb-14">
           <h1 className="font-bold text-2xl text-[#004a7c] leading-normal">

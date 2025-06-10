@@ -107,6 +107,18 @@ export interface IAllTransactions {
     data: { allTransactions: ITransaction[] },
 }
 
+export interface InflowTable {
+    success: boolean,
+    message: string,
+    data: { transactions: { data: ITransaction[], total: number, currentPage: number, totalPages: number } },
+}
+
+export interface IAllIncomeTransactions {
+    success: boolean,
+    message: string,
+    data: { transactions: { category: string, total: number }[] },
+}
+
 export interface IParsedTransaction {
     date: Date | null;
     description: string;
@@ -122,4 +134,10 @@ export interface IParsedTransactions {
     success: boolean,
     message: string,
     data: { extractedStatementData: IParsedTransaction[] },
+}
+
+export interface IMonthlyIncomeTrends {
+    success: boolean,
+    message: string,
+    data: { transactions: { month: string, amount: number }[] },
 }

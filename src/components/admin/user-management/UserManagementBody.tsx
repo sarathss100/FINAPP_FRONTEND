@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent } from '@/components/base/Card';
 import Input from '@/components/base/Input';
-import { Select, SelectTrigger, SelectValue } from '@/components/base/select';
+// import { Select, SelectTrigger, SelectValue } from '@/components/base/select';
 import {
   Table,
   TableBody,
@@ -337,7 +337,7 @@ export const UserManagementBody = () => {
               <SearchIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
             </div>
 
-            <div className="flex gap-3 flex-wrap md:flex-nowrap">
+            {/* <div className="flex gap-3 flex-wrap md:flex-nowrap">
               <Select 
                 value={filterGroup}
                 onValueChange={(value) => {
@@ -373,7 +373,7 @@ export const UserManagementBody = () => {
               >
                 Reset Filters
               </Button>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>

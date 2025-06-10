@@ -8,9 +8,8 @@ import {
   PiggyBankIcon,
   LineChartIcon,
   ShieldIcon,
-  ReceiptIcon,
   BellIcon,
-  FileTextIcon,
+  // FileTextIcon,
   SettingsIcon,
   LogOutIcon
 } from "lucide-react";
@@ -45,7 +44,7 @@ export const UserSideBar = () => {
   const navItems = [
     {
       icon: <LayoutDashboardIcon className="h-4 w-4" />,
-      label: "Dashboard",
+      label: "Overview",
       route: "/dashboard"
     },
     {
@@ -57,12 +56,12 @@ export const UserSideBar = () => {
     }, 
     {
       icon: <BarChart3Icon className="h-4 w-4" />,
-      label: "Income Analysis",
+      label: "Inflow Analysis",
       route: "/income-analysis"
     },
     {
       icon: <TrendingDownIcon className="h-4 w-4" />,
-      label: "Expense Analysis",
+      label: "Outflow Analysis",
       route: "/expense-analysis"
     }, 
     {
@@ -91,20 +90,15 @@ export const UserSideBar = () => {
       route: "/insurances"
     },
     {
-      icon: <ReceiptIcon className="h-4 w-4" />,
-      label: "Tax Overview",
-      route: "/tax-overview"
-    },
-    {
       icon: <BellIcon className="h-4 w-4" />,
       label: "Notifications",
       route: "/notifications"
     }, 
-    {
-      icon: <FileTextIcon className="h-4 w-4" />,
-      label: "Custom Reports",
-      route: "/custom-reports"
-    },
+    // {
+    //   icon: <FileTextIcon className="h-4 w-4" />,
+    //   label: "Custom Reports",
+    //   route: "/custom-reports"
+    // },
     {
       icon: <SettingsIcon className="h-4 w-4" />,
       label: "Profile & Settings",

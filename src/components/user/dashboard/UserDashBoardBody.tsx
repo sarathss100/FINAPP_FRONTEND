@@ -11,7 +11,7 @@ const UserDashBoardBody = function () {
       <UserHeader />
 
       {/* Page title */}
-      <PageTitle title={`Dashboard`} tag={`Overview of your financials`} />
+      <PageTitle title={`Overview`} tag={`Overview of your financials`} />
 
       <main className="flex flex-col gap-4">
         <DashboardSection />

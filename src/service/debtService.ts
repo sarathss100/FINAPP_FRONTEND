@@ -1,4 +1,4 @@
-import { IDebt, IDebtDetails, ILongestTenureDetails, ITotalDebtDetails, ITotalMonthlyPaymentDetails, ITotalOutstandingAmountDetails } from '@/types/IDebt';
+import { IDebt, IDebtCategoryDetails, IDebtDetails, ILongestTenureDetails, IRepaymentSimulationDetails, ITotalDebtDetails, ITotalMonthlyPaymentDetails, ITotalOutstandingAmountDetails } from '@/types/IDebt';
 import axiosInstance from './axiosInstance';
 
 /**
@@ -122,6 +122,85 @@ export const getLongestTenure = async function (): Promise<ILongestTenureDetails
         } else {
             // Throw an error if the response indicates failure
             throw new Error(response.data?.message || 'Failed to fetch longest tenure data.');
+        }
+    } catch (error) {
+        // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+/**
+ * Fetches all active "Good Debts" for the authenticated user.
+ * Sends a GET request to the backend API endpoint to retrieve debts categorized as 'Good Debt'.
+ *
+ * @returns {Promise<IDebtCategoryDetails>} A promise resolving to an object containing
+ *                                          categorized debt details for "Good Debts".
+ * @throws {Error} Throws an error if the API request fails or returns a non-success response.
+ */
+export const getGoodDebts = async function (): Promise<IDebtCategoryDetails> {
+    try {
+        // Send a GET request to fetch good debts
+        const response = await axiosInstance.get<IDebtCategoryDetails>(`/api/v1/debt?category=good`);
+    
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return categorized debt data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch good debts.');
+        }
+    } catch (error) {
+        // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+/**
+ * Fetches all active "Bad Debts" for the authenticated user.
+ * Sends a GET request to the backend API endpoint to retrieve debts categorized as 'Bad Debt'.
+ *
+ * @returns {Promise<IDebtCategoryDetails>} A promise resolving to an object containing
+ *                                          categorized debt details for "Bad Debts".
+ * @throws {Error} Throws an error if the API request fails or returns a non-success response.
+ */
+export const getBadDebts = async function (): Promise<IDebtCategoryDetails> {
+    try {
+        // Send a GET request to fetch bad debts
+        const response = await axiosInstance.get<IDebtCategoryDetails>(`/api/v1/debt?category=bad`);
+    
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return categorized debt data if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch bad debts.');
+        }
+    } catch (error) {
+        // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+/**
+ * Fetches the debt repayment strategy comparison result for the authenticated user.
+ * Sends a GET request to the backend API endpoint to retrieve a simulation of repayment strategies,
+ * such as the Avalanche and Snowball methods, including total months, interest paid, and monthly payments.
+ *
+ * @returns {Promise<IRepaymentSimulationDetails>} A promise resolving to an object containing
+ *                                             detailed repayment simulation results.
+ * @throws {Error} Throws an error if the API request fails or returns a non-success response.
+ */
+export const getRepaymentSimulationResult = async function (): Promise<IRepaymentSimulationDetails> {
+    try {
+        // Send a GET request to fetch repayment simulation result
+        const response = await axiosInstance.get<IRepaymentSimulationDetails>(`/api/v1/debt/simulation?extraAmount=1000`);
+    
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return simulation result if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch repayment simulation result.');
         }
     } catch (error) {
         // Catch and re-throw any error that occurs during the API call

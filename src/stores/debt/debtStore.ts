@@ -1,5 +1,5 @@
-import { getLongestTenure, getTotalDebtExist, getTotalMonthlyPayment, getTotalOutstandingAmount } from '@/service/debtService';
-import { IDebt } from '@/types/IDebt';
+import { getBadDebts, getGoodDebts, getLongestTenure, getRepaymentSimulationResult, getTotalDebtExist, getTotalMonthlyPayment, getTotalOutstandingAmount } from '@/service/debtService';
+import { ComparisonResult, IDebt } from '@/types/IDebt';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -9,11 +9,17 @@ interface IDebtState {
     totalOutstandingDebtAmount: number // Total Outstanding Debt Amount 
     totalMonthlyPayment: number // Total Monthly Payment Amount 
     longestDebtTenure: number // Longest Debt Tenure 
+    goodDebts: IDebt[]; // All Good Debts 
+    badDebts: IDebt[]; // All Bad Debts 
+    repaymentSimulationResult: ComparisonResult // Repayment Simulation Result 
     fetchAllDebts: () => Promise<void>; // Function to fetch All Debts
     fetchTotalDebt: () => Promise<void>; // Function to fetch Total Debt
     fetchTotalOutstandingDebtAmount: () => void; // Function to fetch Total Outstanding Debt Amount 
     fetchTotalMonthlyPayment: () => void; // Function to fetch Total Monthly Payment 
     fetchLongestDebtTenure: () => Promise<void>; // Function to fetch Longest Debt Tenure 
+    fetchGoodDebts: () => Promise<void>; // Function to fetch Good Debts 
+    fetchBadDebts: () => Promise<void>; // Function to fetch Bad Debts
+    fetchRepaymentSimulationResult: () => Promise<void>; // Function to fetch Repayment Simulation Result 
     reset: () => void;
 }
 
@@ -25,6 +31,20 @@ const useDebtStore = create<IDebtState>()(
             totalOutstandingDebtAmount: 0,
             totalMonthlyPayment: 0,
             longestDebtTenure: 0,
+            goodDebts: [],
+            badDebts: [],
+            repaymentSimulationResult: { 
+                snowball: {
+                    totalMonths: 0,
+                    totalInterestPaid: 0,
+                    totalMonthlyPayment: 0,
+                },
+                avalanche: {
+                    totalMonths: 0,
+                    totalInterestPaid: 0,
+                    totalMonthlyPayment: 0,
+                }
+            },
 
             // Reset function
             reset: () => 
@@ -34,6 +54,20 @@ const useDebtStore = create<IDebtState>()(
                     totalOutstandingDebtAmount: 0,
                     totalMonthlyPayment: 0,
                     longestDebtTenure: 0,
+                    goodDebts: [],
+                    badDebts: [],
+                    repaymentSimulationResult: { 
+                        snowball: {
+                            totalMonths: 0,
+                            totalInterestPaid: 0,
+                            totalMonthlyPayment: 0,
+                        },
+                        avalanche: {
+                            totalMonths: 0,
+                            totalInterestPaid: 0,
+                            totalMonthlyPayment: 0,
+                        }
+                    }
                 }),
 
             // Fetches all debt records for the authenticated user
@@ -93,6 +127,53 @@ const useDebtStore = create<IDebtState>()(
                 } catch (error) {
                     console.error('Failed to fetch Longest Debt Tenure', error);
                     set({ longestDebtTenure: 0 });
+                }
+            },
+
+            // Fetch Good Debts  
+            fetchGoodDebts: async () => {
+                try {
+                    const response = await getGoodDebts();
+                    const data = await response.data;
+                    set({ goodDebts: data.debtDetails });
+                } catch (error) {
+                    console.error('Failed to fetch Good Debts', error);
+                    set({ goodDebts: [] });
+                }
+            },
+
+            // Fetch Bad Debts  
+            fetchBadDebts: async () => {
+                try {
+                    const response = await getBadDebts();
+                    const data = await response.data;
+                    set({ badDebts: data.debtDetails });
+                } catch (error) {
+                    console.error('Failed to fetch Bad Debts', error);
+                    set({ badDebts: [] });
+                }
+            },
+
+            // Fetch Repayment Simulation Result   
+            fetchRepaymentSimulationResult: async () => {
+                try {
+                    const response = await getRepaymentSimulationResult();
+                    const data = await response.data;
+                    set({ repaymentSimulationResult: data.repaymentComparisonResult });
+                } catch (error) {
+                    console.error('Failed to fetch Bad Debts', error);
+                    set({ repaymentSimulationResult: { 
+                        snowball: {
+                            totalMonths: 0,
+                            totalInterestPaid: 0,
+                            totalMonthlyPayment: 0,
+                        },
+                        avalanche: {
+                            totalMonths: 0,
+                            totalInterestPaid: 0,
+                            totalMonthlyPayment: 0,
+                        }
+                    } });
                 }
             },
 

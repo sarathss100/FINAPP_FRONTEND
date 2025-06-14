@@ -1,19 +1,9 @@
 "use client";
 import { createDebt } from '@/service/debtService';
 import useDebtStore from '@/stores/debt/debtStore';
-import { PlusCircle, TrendingUp, Calendar, DollarSign, BarChart3, XIcon } from "lucide-react";
+import { PlusCircle, TrendingUp, Calendar, BarChart3, XIcon, IndianRupee } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from 'react-toastify';
-
-const goodDebts = [
-  { name: "Mortgage Loan", interest: "3.5% Interest", amount: "$32,000" },
-  { name: "Student Loan", interest: "4.2% Interest", amount: "$8,500" },
-];
-
-const badDebts = [
-  { name: "Credit Card A", interest: "19.99% Interest", amount: "$3,200" },
-  { name: "Personal Loan", interest: "12.5% Interest", amount: "$1,580" },
-];
 
 const debtList = [
   {
@@ -33,35 +23,6 @@ const debtList = [
     monthlyPayment: "$200",
     status: "On Track",
     statusColor: "bg-emerald-100 text-emerald-800",
-  },
-];
-
-const approachResults = [
-  {
-    title: "High Interest Rate Approach",
-    description:
-      "Focus on paying off debts with the highest interest rates first while making minimum payments on others.",
-    barColor: "bg-gradient-to-r from-blue-500 to-blue-600",
-    barWidths: [95, 75, 60, 45, 30],
-    results: {
-      time: "32 months",
-      interest: "Interest Saved: $4,280",
-      payment: "$1,250",
-    },
-    recommended: true,
-  },
-  {
-    title: "Snowball Effect Approach",
-    description:
-      "Start with the smallest debt first while making minimum payments on larger ones. Use the momentum to tackle bigger debts.",
-    barColor: "bg-gradient-to-r from-slate-600 to-slate-700",
-    barWidths: [30, 45, 60, 75, 95],
-    results: {
-      time: "36 months",
-      interest: "Interest Paid: $5,120",
-      payment: "$1,250",
-    },
-    recommended: false,
   },
 ];
 
@@ -199,17 +160,26 @@ const DebtManagementSection = function () {
   const totalOutstandingDebtAmount = useDebtStore((state) => state.totalOutstandingDebtAmount);
   const totalMonthlyPayment = useDebtStore((state) => state.totalMonthlyPayment);
   const longestDebtTenure = useDebtStore((state) => state.longestDebtTenure);
+  const goodDebts = useDebtStore((state) => state.goodDebts);
+  const badDebts = useDebtStore((state) => state.badDebts);
+  const repaymentSimulationResult = useDebtStore((state) => state.repaymentSimulationResult);
   const fetchTotalDebt = useDebtStore((state) => state.fetchTotalDebt);
   const fetchTotalOutstandingDebtAmount = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
   const fetchTotalMonthlyPayment = useDebtStore((state) => state.fetchTotalMonthlyPayment);
   const fetchLongestDebtTenure = useDebtStore((state) => state.fetchLongestDebtTenure);
+  const fetchGoodDebts = useDebtStore((state) => state.fetchGoodDebts);
+  const fetchBadDebts = useDebtStore((state) => state.fetchBadDebts);
+  const fetchRepaymentSimulationResult = useDebtStore((state) => state.fetchRepaymentSimulationResult);
 
   const handleStore = useCallback(function () {
     fetchTotalDebt()
     fetchTotalOutstandingDebtAmount();
     fetchTotalMonthlyPayment();
     fetchLongestDebtTenure();
-  }, [fetchTotalOutstandingDebtAmount, fetchTotalMonthlyPayment, fetchTotalDebt, fetchLongestDebtTenure]);
+    fetchGoodDebts();
+    fetchBadDebts();
+    fetchRepaymentSimulationResult();
+  }, [fetchTotalOutstandingDebtAmount, fetchTotalMonthlyPayment, fetchTotalDebt, fetchLongestDebtTenure, fetchGoodDebts, fetchBadDebts, fetchRepaymentSimulationResult]);
 
   useEffect(() => {
     handleStore();
@@ -266,6 +236,7 @@ const DebtManagementSection = function () {
       // Here you would call your API to add the debt
       const response = await createDebt(refinedData);
       if (response.success) {
+        handleStore();
         toast.success(response.message || 'Debt added successfully!');
       }
       // Reset form and close modal
@@ -390,14 +361,14 @@ const DebtManagementSection = function () {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-base font-semibold text-slate-800">
-                            {debt.name}
+                            {debt.debtName}
                           </p>
                           <p className="text-sm text-emerald-700 font-medium">
-                            {debt.interest}
+                            {debt.interestRate} % Interest
                           </p>
                         </div>
                         <div className="text-xl font-bold text-slate-800">
-                          {debt.amount}
+                          ₹ {debt.initialAmount}
                         </div>
                       </div>
                     </div>
@@ -426,14 +397,14 @@ const DebtManagementSection = function () {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-base font-semibold text-slate-800">
-                            {debt.name}
+                            {debt.debtName}
                           </p>
                           <p className="text-sm text-red-700 font-medium">
-                            {debt.interest}
+                            {debt.interestRate} % Interest
                           </p>
                         </div>
                         <div className="text-xl font-bold text-slate-800">
-                          {debt.amount}
+                          ₹ {debt.initialAmount}
                         </div>
                       </div>
                     </div>
@@ -493,22 +464,20 @@ const DebtManagementSection = function () {
 
           {/* Debt Repayment Approaches */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {approachResults.map((approach, index) => (
-              <Card key={index}>
+            <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{approach.title}</CardTitle>
-  
+                    <CardTitle className="text-lg">High Interest Rate Approach</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   {/* Visualization */}
                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 mb-6 border">
                     <div className="flex flex-col space-y-3">
-                      {approach.barWidths.map((width, i) => (
+                      {[95, 75, 60, 45, 30].map((width, i) => (
                         <div
                           key={i}
-                          className={`h-4 rounded-full ${approach.barColor} shadow-sm transition-all duration-700 ease-out hover:scale-105`}
+                          className={`h-4 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm transition-all duration-700 ease-out hover:scale-105`}
                           style={{ 
                             width: `${width}%`,
                             animation: `slideIn 0.8s ease-out ${i * 0.1}s both`
@@ -520,7 +489,7 @@ const DebtManagementSection = function () {
 
                   {/* Description */}
                   <p className="text-gray-700 mb-6 leading-relaxed">
-                    {approach.description}
+                    Focus on paying off debts with the highest interest rates first while making minimum payments on others. (Calculation based on if you keep up the same emi payment + 1000 extra
                   </p>
 
                   {/* Results */}
@@ -535,15 +504,15 @@ const DebtManagementSection = function () {
                           <Calendar className="w-4 h-4 text-blue-600" />
                         </div>
                         <span className="text-slate-800 font-medium">
-                          Total Time: <span className="font-bold">{approach.results.time}</span>
+                        Total Time: <span className="font-bold">{repaymentSimulationResult.avalanche.totalMonths} months</span>
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="p-2 bg-green-100 rounded-lg">
-                          <DollarSign className="w-4 h-4 text-green-600" />
+                          <IndianRupee className="w-4 h-4 text-green-600" />
                         </div>
                         <span className="text-slate-800 font-medium">
-                          {approach.results.interest}
+                          Interest Paid: {repaymentSimulationResult.avalanche.totalMonthlyPayment}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
@@ -551,14 +520,77 @@ const DebtManagementSection = function () {
                           <BarChart3 className="w-4 h-4 text-purple-600" />
                         </div>
                         <span className="text-slate-800 font-medium">
-                          Monthly Payment: <span className="font-bold">{approach.results.payment}</span>
+                          Monthly Payment: <span className="font-bold">{repaymentSimulationResult.avalanche.totalMonthlyPayment}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+            </Card>
+            
+            <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Snowball Effect Approach</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Visualization */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 mb-6 border">
+                    <div className="flex flex-col space-y-3">
+                      {[30, 45, 60, 75, 95].map((width, i) => (
+                        <div
+                          key={i}
+                          className={`h-4 rounded-full bg-gradient-to-r from-slate-600 to-slate-700 shadow-sm transition-all duration-700 ease-out hover:scale-105`}
+                          style={{ 
+                            width: `${width}%`,
+                            animation: `slideIn 0.8s ease-out ${i * 0.1}s both`
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                  Start with the smallest debt first while making minimum payments on larger ones. Use the momentum to tackle bigger debts. (Calculation based on if you keep up the same emi payment + 1000 extra)
+                  </p>
+
+                  {/* Results */}
+                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-5 border">
+                    <p className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                      Projected Results:
+                    </p>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Calendar className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <span className="text-slate-800 font-medium">
+                        Total Time: <span className="font-bold">{repaymentSimulationResult.snowball.totalMonths} months</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <IndianRupee className="w-4 h-4 text-green-600" />
+                        </div>
+                        <span className="text-slate-800 font-medium">
+                          Interest Paid: {repaymentSimulationResult.snowball.totalMonthlyPayment}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <BarChart3 className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <span className="text-slate-800 font-medium">
+                          Monthly Payment: <span className="font-bold">{repaymentSimulationResult.snowball.totalMonthlyPayment}</span>
                         </span>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
           </div>
         </div>
       </div>

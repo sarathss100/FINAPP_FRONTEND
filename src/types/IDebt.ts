@@ -61,3 +61,30 @@ export interface ILongestTenureDetails {
         maxTenure: number;
     }
 }
+
+export interface IDebtCategoryDetails {
+    success: boolean,
+    message: string,
+    data: {
+        debtDetails: IDebt[];
+    }
+}
+
+export interface SimulationResult {
+    totalMonths: number;
+    totalInterestPaid: number;
+    totalMonthlyPayment: number;
+}
+  
+export interface ComparisonResult {
+    snowball: SimulationResult;
+    avalanche: SimulationResult;
+}
+
+export interface IRepaymentSimulationDetails {
+    success: boolean,
+    message: string,
+    data: {
+        repaymentComparisonResult: ComparisonResult;
+    }
+}

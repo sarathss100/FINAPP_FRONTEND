@@ -71,8 +71,7 @@ const InsuranceManagementBody = function () {
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [showAddPolicyModal, setShowAddPolicyModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isClient, setIsClient] = useState(false); // Add client-side check
-  
+  const [isClient, setIsClient] = useState(false);
   const [formData, setFormData] = useState({
     type: '',
     coverage: '',

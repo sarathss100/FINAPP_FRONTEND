@@ -11,6 +11,7 @@ import { fetchInflowTable, fetchOutflowTable, getAllExpenseTransactions, getAllI
 import { ITransaction } from '@/types/ITransaction';
 import { getAllInsurances, getInsuranceWithClosestNextPaymentDate, totalAnnualInsurancePremiumApi, totalInsuranceCoverageApi } from '@/service/insuranceService';
 import { Insurance } from '@/types/IInsurance';
+import useDebtStore from './debt/debtStore';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -55,6 +56,12 @@ export const useUserStore = create<IUserState>()(
                 // Reset the transaction store
                 useTransactionStore.getState().reset();
 
+                // Reset the insurance store 
+                useInsuranceStore.getState().reset();
+
+                // Reset the debt store 
+                useDebtStore.getState().reset();
+
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');
@@ -73,6 +80,11 @@ export const useUserStore = create<IUserState>()(
                 // Clear the persisted useraccount storage 
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('accounts-storage');
+                }
+
+                // Clear the persisted insurance storage 
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('insurances-storage');
                 }
             }
         }),

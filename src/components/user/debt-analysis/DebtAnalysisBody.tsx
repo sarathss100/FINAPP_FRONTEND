@@ -1,7 +1,6 @@
 import React from "react";
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
-import RecommendationsSection from './sections/RecommendationsSection/RecommendationsSection';
 import DebtManagementSection from './sections/DebtManagementSection/DebtManagementSection';
 
 const DebtAnalysisBody = function () {
@@ -20,12 +19,6 @@ const DebtAnalysisBody = function () {
           style={{ top: "4%", left: "0%", height: "83%", width: "100%" }}
         >
           <DebtManagementSection />
-        </div>
-        <div
-          className="relative"
-          style={{ top: "85%", left: "4%", height: "12%", width: "94%" }}
-        >
-          <RecommendationsSection />
         </div>
       </main>
     </div>

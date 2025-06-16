@@ -1,4 +1,4 @@
-import { IDebt, IDebtCategoryDetails, IDebtDetails, ILongestTenureDetails, IRepaymentSimulationDetails, ITotalDebtDetails, ITotalMonthlyPaymentDetails, ITotalOutstandingAmountDetails } from '@/types/IDebt';
+import { IAllDebtDetails, IDebt, IDebtCategoryDetails, IDebtDetails, ILongestTenureDetails, IMarkAsPaidDebtDetails, IRemoveDebtDetails, IRepaymentSimulationDetails, ITotalDebtDetails, ITotalMonthlyPaymentDetails, ITotalOutstandingAmountDetails } from '@/types/IDebt';
 import axiosInstance from './axiosInstance';
 
 /**
@@ -201,6 +201,87 @@ export const getRepaymentSimulationResult = async function (): Promise<IRepaymen
         } else {
             // Throw an error if the response indicates failure
             throw new Error(response.data?.message || 'Failed to fetch repayment simulation result.');
+        }
+    } catch (error) {
+        // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+/**
+ * Fetches all debt details for the authenticated user.
+ * Sends a GET request to the backend API endpoint to retrieve detailed information about each debt,
+ * including balance, interest rate, minimum payment, and potentially other metadata.
+ *
+ * @returns {Promise<IAllDebtDetails>} A promise resolving to an object containing detailed debt information.
+ * @throws {Error} Throws an error if the API request fails or returns a non-success response.
+ */
+export const getAllDebts = async function (): Promise<IAllDebtDetails> {
+    try {
+        // Send a GET request to fetch all debt details
+        const response = await axiosInstance.get<IAllDebtDetails>(`/api/v1/debt/all`);
+    
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return debt details if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to fetch debt details.');
+        }
+    } catch (error) {
+        // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+/**
+ * Removes a specific debt record by its unique identifier.
+ * Sends a DELETE request to the backend API endpoint to soft-delete or permanently remove
+ * the specified debt associated with the authenticated user.
+ *
+ * @param {string} debtId - The unique identifier of the debt to be removed.
+ * @returns {Promise<IRemoveDebtDetails>} A promise resolving to an object containing the result of the removal operation.
+ * @throws {Error} Throws an error if the API request fails or returns a non-success response.
+ */
+export const removeDebt = async function (debtId: string): Promise<IRemoveDebtDetails> {
+    try {
+        // Send a DELETE request to remove the specified debt
+        const response = await axiosInstance.delete<IRemoveDebtDetails>(`/api/v1/debt/${debtId}`);
+    
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return result if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to remove the debt.');
+        }
+    } catch (error) {
+        // Catch and re-throw any error that occurs during the API call
+        throw error;
+    }
+};
+
+
+/**
+ * Marks a specific debt as paid by updating its due date and status on the server.
+ * Sends a PATCH request to the backend API endpoint to update the specified debt,
+ * typically by moving its 'nextDueDate' to the next billing cycle and resetting the 'isExpired' flag.
+ *
+ * @param {string} debtId - The unique identifier of the debt to be marked as paid.
+ * @returns {Promise<IMarkAsPaidDebtDetails>} A promise resolving to an object containing the result of the update operation.
+ * @throws {Error} Throws an error if the API request fails or returns a non-success response.
+ */
+export const markAsPaid = async function (debtId: string): Promise<IMarkAsPaidDebtDetails> {
+    try {
+        // Send a PATCH request to mark the debt as paid
+        const response = await axiosInstance.patch<IMarkAsPaidDebtDetails>(`/api/v1/debt/${debtId}`);
+    
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return result if successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to mark the debt as paid.');
         }
     } catch (error) {
         // Catch and re-throw any error that occurs during the API call

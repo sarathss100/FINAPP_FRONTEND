@@ -1,4 +1,4 @@
-import { getBadDebts, getGoodDebts, getLongestTenure, getRepaymentSimulationResult, getTotalDebtExist, getTotalMonthlyPayment, getTotalOutstandingAmount } from '@/service/debtService';
+import { getAllDebts, getBadDebts, getGoodDebts, getLongestTenure, getRepaymentSimulationResult, getTotalDebtExist, getTotalMonthlyPayment, getTotalOutstandingAmount } from '@/service/debtService';
 import { ComparisonResult, IDebt } from '@/types/IDebt';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -73,9 +73,9 @@ const useDebtStore = create<IDebtState>()(
             // Fetches all debt records for the authenticated user
             fetchAllDebts: async () => {
                 try {
-                    // const response = await getAllDebts;
-                    // const data = await response.data;
-                    // set({ allDebts: data.insuranceDetails });
+                    const response = await getAllDebts();
+                    const data = await response.data;
+                    set({ allDebts: data.debtDetails });
                 } catch (error) {
                     console.error('Failed to fetch all debt records', error);
                     set({ allDebts: [] });

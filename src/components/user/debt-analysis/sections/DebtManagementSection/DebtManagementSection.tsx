@@ -1,30 +1,9 @@
 "use client";
-import { createDebt } from '@/service/debtService';
+import { createDebt, markAsPaid, removeDebt } from '@/service/debtService';
 import useDebtStore from '@/stores/debt/debtStore';
-import { PlusCircle, TrendingUp, Calendar, BarChart3, XIcon, IndianRupee } from "lucide-react";
+import { PlusCircle, TrendingUp, Calendar, BarChart3, XIcon, IndianRupee, CheckCircle, Trash2 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from 'react-toastify';
-
-const debtList = [
-  {
-    type: "Credit Card A",
-    amount: "$3,200",
-    interestRate: "19.99%",
-    interestColor: "text-red-500",
-    monthlyPayment: "$300",
-    status: "In Progress",
-    statusColor: "bg-amber-100 text-amber-800",
-  },
-  {
-    type: "Personal Loan",
-    amount: "$1,580",
-    interestRate: "12.5%",
-    interestColor: "text-orange-500",
-    monthlyPayment: "$200",
-    status: "On Track",
-    statusColor: "bg-emerald-100 text-emerald-800",
-  },
-];
 
 // Common debt types for dropdown
 const debtTypes = [
@@ -57,18 +36,6 @@ const interestTypes = [
   'Diminishing',
 ];
 
-// const ProgressBar = ({ value, max, className }: { value: number; max: number; className?: string }) => {
-//   const percentage = (value / max) * 100;
-//   return (
-//     <div className={`w-full bg-gray-200 rounded-full h-3 overflow-hidden ${className}`}>
-//       <div 
-//         className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 ease-out"
-//         style={{ width: `${percentage}%` }}
-//       />
-//     </div>
-//   );
-// };
-
 const Card = ({ children, className = "", hover = true }: { children: React.ReactNode, className?: string, hover?: boolean }) => (
   <div className={`bg-white rounded-xl border border-gray-100 ${hover ? 'hover:shadow-xl hover:-translate-y-1' : 'shadow-lg'} transition-all duration-300 ${className}`}>
     {children}
@@ -93,12 +60,6 @@ const CardTitle = ({ children, className = "" }: { children: React.ReactNode, cl
   </h3>
 );
 
-const Badge = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${className}`}>
-    {children}
-  </span>
-);
-
 const Button = ({ children, className = "", onClick, type = "button", disabled = false }: { 
   children: React.ReactNode, 
   className?: string, 
@@ -117,45 +78,8 @@ const Button = ({ children, className = "", onClick, type = "button", disabled =
   </button>
 );
 
-const Table = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className="overflow-hidden rounded-lg border border-gray-200">
-    <table className={`w-full ${className}`}>
-      {children}
-    </table>
-  </div>
-);
-
-const TableHeader = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <thead className={`bg-gradient-to-r from-gray-50 to-gray-100 ${className}`}>
-    {children}
-  </thead>
-);
-
-const TableBody = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <tbody className={`divide-y divide-gray-200 ${className}`}>
-    {children}
-  </tbody>
-);
-
-const TableRow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <tr className={`hover:bg-gray-50 transition-colors duration-150 ${className}`}>
-    {children}
-  </tr>
-);
-
-const TableHead = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <th className={`px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider ${className}`}>
-    {children}
-  </th>
-);
-
-const TableCell = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <td className={`px-6 py-4 whitespace-nowrap text-sm ${className}`}>
-    {children}
-  </td>
-);
-
 const DebtManagementSection = function () {
+  const allDebts = useDebtStore((state) => state.allDebts);
   const totalDebt = useDebtStore((state) => state.totalDebt);
   const totalOutstandingDebtAmount = useDebtStore((state) => state.totalOutstandingDebtAmount);
   const totalMonthlyPayment = useDebtStore((state) => state.totalMonthlyPayment);
@@ -170,6 +94,7 @@ const DebtManagementSection = function () {
   const fetchGoodDebts = useDebtStore((state) => state.fetchGoodDebts);
   const fetchBadDebts = useDebtStore((state) => state.fetchBadDebts);
   const fetchRepaymentSimulationResult = useDebtStore((state) => state.fetchRepaymentSimulationResult);
+  const fetchAllDebts = useDebtStore((state) => state.fetchAllDebts);
 
   const handleStore = useCallback(function () {
     fetchTotalDebt()
@@ -179,13 +104,82 @@ const DebtManagementSection = function () {
     fetchGoodDebts();
     fetchBadDebts();
     fetchRepaymentSimulationResult();
-  }, [fetchTotalOutstandingDebtAmount, fetchTotalMonthlyPayment, fetchTotalDebt, fetchLongestDebtTenure, fetchGoodDebts, fetchBadDebts, fetchRepaymentSimulationResult]);
+    fetchAllDebts();
+  }, [fetchTotalOutstandingDebtAmount, fetchTotalMonthlyPayment, fetchTotalDebt, fetchLongestDebtTenure, fetchGoodDebts, fetchBadDebts, fetchRepaymentSimulationResult, fetchAllDebts]);
 
   useEffect(() => {
     handleStore();
   }, [handleStore]);
 
+  // Helper function to get interest rate color
+  const getInterestRateColor = (rate: number) => {
+    if (rate <= 8) return "text-green-600";
+    if (rate <= 12) return "text-orange-500";
+    return "text-red-500";
+  };
+
+  // Helper function to get status badge styling
+  const getStatusBadgeStyle = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return "bg-blue-100 text-blue-800 border border-blue-200";
+      case 'completed':
+        return "bg-green-100 text-green-800 border border-green-200";
+      case 'overdue':
+        return "bg-red-100 text-red-800 border border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border border-gray-200";
+    }
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (amount: number, currency = 'INR') => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  // Helper function to format monthly payment
+  const formatMonthlyPayment = (amount: number, currency = 'INR') => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const handleMarkAsPaid = async (debtId: string) => {
+    try {
+      const response = await markAsPaid(debtId);
+      if (response.success) {
+        toast.success(response.message || 'Updated Successfully');
+        setDeleteConfirmationId(null);
+        handleStore();
+      }
+    } catch (error) {
+      toast.error((error as Error).message || 'Failed to Mark As Paid!');
+    }
+  };
+
+  const handleDeleteDebt = async (debtId: string) => {
+    try {
+      const response = await removeDebt(debtId);
+      if (response.success) {
+        toast.success(response.message || 'Successfully Removed Debt');
+        setDeleteConfirmationId(null);
+        handleStore();
+      }
+    } catch (error) {
+      toast.error((error as Error).message || 'Failed to Delele the Debt!');
+    }
+  };
+
   const [showAddDebtModal, setShowAddDebtModal] = useState(false);
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     debtName: '',
@@ -415,52 +409,103 @@ const DebtManagementSection = function () {
           </div>
 
           {/* Debt List Table */}
-          <Card className="mb-10">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BarChart3 className="w-5 h-5 text-blue-600" />
-                </div>
-                <CardTitle>Debt List by Interest Rate</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Debt Type</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Interest Rate</TableHead>
-                    <TableHead>Monthly Payment</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {debtList.map((debt, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-semibold text-slate-800">
-                        {debt.type}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {debt.amount}
-                      </TableCell>
-                      <TableCell className={`font-bold ${debt.interestColor}`}>
-                        {debt.interestRate}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {debt.monthlyPayment}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${debt.statusColor} font-semibold`}>
-                          {debt.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <div className="mb-10 bg-white rounded-lg shadow-sm border border-gray-200">
+      {/* Card Header */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Debt List by Interest Rate
+          </h2>
+        </div>
+      </div>
+
+      {/* Table Content */}
+      <div className="p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  Debt Type
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  Amount
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  Interest Rate
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  Monthly Payment
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  Status
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {allDebts
+                .sort((a, b) => b.interestRate - a.interestRate) // Sort by interest rate (highest first)
+                .map((debt) => (
+                <tr key={debt._id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-4 px-4 font-semibold text-slate-800">
+                    {debt.debtName}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-slate-800">
+                    {formatCurrency(debt.currentBalance || debt.initialAmount, debt.currency)}
+                  </td>
+                  <td className={`py-4 px-4 font-bold ${getInterestRateColor(debt.interestRate)}`}>
+                    {debt.interestRate}%
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-slate-800">
+                    {formatMonthlyPayment(debt.monthlyPayment || 0, debt.currency)}
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeStyle(debt.status || '')}`}>
+                      {debt.status}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2">
+                      {/* Mark as Paid Button - Only show if debt is active */}
+                      {debt.isExpired === true && (
+                        <button
+                          onClick={() => handleMarkAsPaid(debt._id || '')}
+                          className="inline-flex items-center gap-1 bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 text-xs border border-green-300 rounded-md transition-colors"
+                        >
+                          <CheckCircle className="w-3 h-3" />
+                          Mark as Paid
+                        </button>
+                      )}
+                      
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => setDeleteConfirmationId(debt._id || '')}
+                        className="inline-flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 text-xs border border-red-300 rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {allDebts.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No debts found. Add a debt to get started.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
 
           {/* Debt Repayment Approaches */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -819,6 +864,45 @@ const DebtManagementSection = function () {
           }
         }
       `}</style>
+
+      {/* Delete confirmation overlay */}
+      {deleteConfirmationId && (
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-8 max-w-md w-full mx-4">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+            </div>
+
+            <div className="text-center mb-8">
+              <h3 className="text-xl font-semibold text-black mb-3">
+                Delete Debt
+              </h3>
+              <p className="text-black leading-relaxed">
+                Are you sure you want to delete this Debt? This action cannot be undone and all associated data will be permanently removed.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Button 
+                onClick={() => deleteConfirmationId && handleDeleteDebt(deleteConfirmationId)}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] focus:ring-2 focus:ring-red-300 focus:ring-offset-2 shadow-lg hover:shadow-xl order-1 sm:order-2"
+              >
+                Delete Debt
+              </Button>
+              <Button 
+                onClick={() => setDeleteConfirmationId(null)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] focus:ring-2 focus:ring-green-300 focus:ring-offset-2 order-2 sm:order-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

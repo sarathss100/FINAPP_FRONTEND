@@ -20,6 +20,7 @@ export interface IDebt {
     notes: string;
     isDeleted?: boolean;
     isGoodDebt?: boolean;
+    isExpired?: boolean;
 }
 
 export interface IDebtDetails {
@@ -27,6 +28,14 @@ export interface IDebtDetails {
     message: string,
     data: {
         debt: IDebt;
+    }
+}
+
+export interface IAllDebtDetails {
+    success: boolean,
+    message: string,
+    data: {
+        debtDetails: IDebt[];
     }
 }
 
@@ -86,5 +95,21 @@ export interface IRepaymentSimulationDetails {
     message: string,
     data: {
         repaymentComparisonResult: ComparisonResult;
+    }
+}
+
+export interface IRemoveDebtDetails {
+    success: boolean,
+    message: string,
+    data: {
+        isDeleted: boolean;
+    }
+}
+
+export interface IMarkAsPaidDebtDetails {
+    success: boolean,
+    message: string,
+    data: {
+        isUpdated: boolean;
     }
 }

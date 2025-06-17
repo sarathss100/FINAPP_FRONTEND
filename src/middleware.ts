@@ -26,7 +26,7 @@ const isPublicRoute = (pathname: string) => PUBLIC_ROUTES.includes(pathname);
 const isAdminRoute = (pathname: string) => ADMIN_ROUTES.includes(pathname);
 
 const redirectToDashboard = (userRole: string, requestUrl: string) => {
-    const redirectPath = userRole === 'admin' ? '/admin/dashboard' : '/dashboard';
+    const redirectPath = userRole === 'admin' ? '/admin/user-management' : '/dashboard';
     return NextResponse.redirect(new URL(redirectPath, requestUrl));
 };
 
@@ -105,7 +105,7 @@ export async function middleware(request: NextRequest) {
                     // If the token is valid, allow access to the protected route
                     return NextResponse.next({ request: { headers: request.headers }});
                 } else {
-                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+                    return NextResponse.redirect(new URL('/admin/user-management', request.url));
                 }
             } 
 

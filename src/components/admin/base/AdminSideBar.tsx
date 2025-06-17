@@ -2,7 +2,7 @@
 import {
   // BarChartIcon,
   FileTextIcon,
-  LayoutDashboardIcon,
+  // LayoutDashboardIcon,
   MonitorIcon,
   SettingsIcon,
   UsersIcon,
@@ -36,11 +36,11 @@ export const AdminSideBar = () => {
 
   // Navigation items data for easy mapping
   const navItems = [
-    {
-      icon: <LayoutDashboardIcon className="h-4 w-4" />,
-      label: "Dashboard",
-      route: "/admin/dashboard"
-    },
+    // {
+    //   icon: <LayoutDashboardIcon className="h-4 w-4" />,
+    //   label: "Dashboard",
+    //   route: "/admin/dashboard"
+    // },
     {
       icon: <UsersIcon className="h-4 w-4" />,
       label: "User Management",

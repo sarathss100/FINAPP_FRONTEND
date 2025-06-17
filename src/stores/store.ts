@@ -12,6 +12,7 @@ import { ITransaction } from '@/types/ITransaction';
 import { getAllInsurances, getInsuranceWithClosestNextPaymentDate, totalAnnualInsurancePremiumApi, totalInsuranceCoverageApi } from '@/service/insuranceService';
 import { Insurance } from '@/types/IInsurance';
 import useDebtStore from './debt/debtStore';
+import useFaqStore from './faqs/faqStore';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -62,6 +63,9 @@ export const useUserStore = create<IUserState>()(
                 // Reset the debt store 
                 useDebtStore.getState().reset();
 
+                // Reset the faq store 
+                useFaqStore.getState().reset();
+
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');
@@ -85,6 +89,11 @@ export const useUserStore = create<IUserState>()(
                 // Clear the persisted insurance storage 
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('insurances-storage');
+                }
+
+                // Clear the persisted faqs storage 
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('faqs-storage');
                 }
             }
         }),

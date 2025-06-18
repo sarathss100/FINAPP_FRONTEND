@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Search, IndianRupee } from 'lucide-react';
-
-import { useTransactionStore } from '@/stores/store';
+import useTransactionStore from '@/stores/transaction/transactionStore';
 
 const OutflowTableComponent = () => {
   const {

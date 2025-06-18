@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { TrendingUp, Calendar, PieChart, BarChart3, IndianRupee, TrendingDown } from 'lucide-react';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
-import { useTransactionStore } from '@/stores/store';
+import useTransactionStore from '@/stores/transaction/transactionStore';
 import InflowTableComponent from './InflowTable';
 
 const IncomeAnalysisDashboard = () => {

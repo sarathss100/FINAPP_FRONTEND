@@ -6,9 +6,9 @@ const Header = function ({ isSignupPage }: { isSignupPage: boolean }) {
 
     // Navigation links data
     const navLinks = [
-        { name: "Features", href: '#' },
+        // { name: "Features", href: '#' },
         { name: "Dashboard", href: "/dashboard" },
-        { name: "Pricing", href: "#" },
+        // { name: "Pricing", href: "#" },
         { name: "Contact", href: "/contact" },
     ];
 

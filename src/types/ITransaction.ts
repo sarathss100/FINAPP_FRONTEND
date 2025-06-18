@@ -113,6 +113,12 @@ export interface InflowTable {
     data: { transactions: { data: ITransaction[], total: number, currentPage: number, totalPages: number } },
 }
 
+export interface CommonflowTable {
+    success: boolean,
+    message: string,
+    data: { transactions: { data: ITransaction[], total: number, currentPage: number, totalPages: number } },
+}
+
 export interface IAllIncomeTransactions {
     success: boolean,
     message: string,

@@ -1,4 +1,4 @@
-import { IAllExpenseTransactions, IAllIncomeTransactions, IAllTransactions, ICategoryWiseExpenses, IMonthlyExpenseTrends, IMonthlyIncomeTrends, InflowTable, IParsedTransactions, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
+import { CommonflowTable, IAllExpenseTransactions, IAllIncomeTransactions, IAllTransactions, ICategoryWiseExpenses, IMonthlyExpenseTrends, IMonthlyIncomeTrends, InflowTable, IParsedTransactions, ITotalMonthlyExpense, ITotalMonthlyIncome, ITransaction, ITransactionDetails } from '@/types/ITransaction';
 import axiosInstance from './axiosInstance';
 
 // Sends a request to add a new transaction for a user via the backend API
@@ -417,4 +417,61 @@ export const fetchOutflowTable = async function (
       // Re-throw the error for upstream handling
       throw error;
     }
-  }
+}
+  
+/**
+ * Fetches expense transaction data for the outflow table view.
+ *
+ * Makes an API request to retrieve structured expense transaction data
+ * used specifically for displaying the outflow table to the authenticated user.
+ * Supports pagination and optional filtering via query parameters.
+ *
+ * @param {number} [page=1] - The page number to fetch (for pagination).
+ * @param {number} [limit=5] - The number of items per page.
+ * @param {string} [timeRange='year'] - Time range filter (e.g., 'year', 'month', 'week').
+ * @param {string} [category] - Optional category to filter expense transactions.
+ * @param {string} [searchText] - Optional text to search within transaction fields.
+ *
+ * @returns {Promise<InflowTable>} A promise resolving to an object containing:
+ *   - `transactions`: Array of expense transaction objects
+ *   - Additional metadata or UI-specific fields as defined in the `InflowTable` interface
+ *
+ * @throws {Error} If the API request fails or returns a non-success response.
+ */
+export const fetchCommonflowTable = async function (
+    page: number = 1,
+    limit: number = 5,
+    timeRange: string = 'year',
+    category?: string,
+    transactionType?: string,
+    searchText?: string
+): Promise<CommonflowTable> {
+    try {
+      // Construct query parameters dynamically, omitting undefined/null values
+      const params = new URLSearchParams();
+  
+      params.append('page', page.toString());
+      params.append('timeRange', timeRange);
+  
+      if (limit) params.append('limit', limit.toString());
+      if (category) params.append('category', category);
+      if (transactionType) params.append('transactionType', transactionType);
+      if (searchText) params.append('searchText', searchText);
+  
+      // Send a GET request to fetch expense transactions from the backend API
+      const response = await axiosInstance.get<CommonflowTable>(
+        `/api/v1/transaction/all?${params.toString()}`
+      );
+  
+      // Validate the response structure and success flag
+      if (response.data && response.data.success) {
+        return response.data; // Return the transaction data if successful
+      } else {
+        // Throw an error if the response indicates failure
+        throw new Error(response.data?.message || 'Failed to fetch expense transactions.');
+      }
+    } catch (error) {
+      // Re-throw the error for upstream handling
+      throw error;
+    }
+}

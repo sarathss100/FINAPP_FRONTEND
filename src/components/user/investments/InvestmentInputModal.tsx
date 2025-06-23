@@ -62,7 +62,9 @@ export default function InvestmentInputModal({
         type: InvestmentType.STOCK,
         name: '',
         accountId: '',
-        amount: '',
+        initialAmount: '',
+        currentValue: '',
+        totalProfitOrLoss: '',
         currency: 'INR',
         notes: '',
         purchaseDate: new Date().toISOString().split('T')[0],
@@ -77,7 +79,9 @@ export default function InvestmentInputModal({
       name: initialData.details.name || '',
       accountId: initialData.details.accountId || '',
       icon: initialData.details.icon || '',
-      amount: initialData.details.amount.toString(),
+      initialAmount: initialData.details.initialAmount.toString(),
+      currentValue: initialData?.details?.currentValue?.toString() || '',
+      totalProfitOrLoss: initialData.details.totalProfitOrLoss?.toString() || '',
       currency: initialData.details.currency || 'INR',
       notes: initialData.details.notes || '',
       createdAt: initialData.details.createdAt.toISOString().split('T')[0],
@@ -155,22 +159,22 @@ export default function InvestmentInputModal({
       case InvestmentType.FIXED_DEPOSIT:
         return {
           ...base,
-          maturity_date: initialData.details.maturity_date
-            ? new Date(initialData.details.maturity_date).toISOString().split('T')[0]
+          maturityDate: initialData.details.maturityDate
+            ? new Date(initialData.details.maturityDate).toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0],
-          interest_rate: initialData.details.interest_rate?.toString() || '',
-          maturity_amount: initialData.details.maturity_amount?.toString() || '',
+          interestRate: initialData.details.interestRate?.toString() || '',
+          maturityAmount: initialData.details.maturityAmount?.toString() || '',
         };
   
       case InvestmentType.EPFO:
         return {
           ...base,
-          account_number: initialData.details.account_number || '',
-          epf_number: initialData.details.epf_number || '',
-          employer_contribution: initialData.details.employer_contribution?.toString() || '',
-          employee_contribution: initialData.details.employee_contribution?.toString() || '',
-          interest_rate: initialData.details.interest_rate?.toString() || '',
-          maturity_amount: initialData.details.maturity_amount?.toString() || '',
+          accountNumber: initialData.details.accountNumber || '',
+          epfNumber: initialData.details.epfNumber || '',
+          employerContribution: initialData.details.employerContribution?.toString() || '',
+          employeeContribution: initialData.details.employeeContribution?.toString() || '',
+          interestRate: initialData.details.interestRate?.toString() || '',
+          maturityAmount: initialData.details.maturityAmount?.toString() || '',
         };
   
       case InvestmentType.GOLD:
@@ -297,27 +301,26 @@ export default function InvestmentInputModal({
     loadAccounts();
   }, [loadAccounts]);
 
-    const searchStocks = useCallback(async (query: string): Promise<SearchResult[]> => {
-        try {
-            const stockData = await searchStocksFromApi(query);
-            const searchResults: SearchResult[] = stockData.data.stocks.map((stock: IStock) => ({
-                symbol: stock['1. symbol'],
-                name: stock['2. name'],
-                exchange: stock['4. region'],
-                category: stock['3. type']
-            }));
-
-            return searchResults;
-        } catch (error) {
-            toast.error((error as Error).message || `Failed To Fetch Stock Details`);
-            return [];
-        }
-    }, []);
+  const searchStocks = useCallback(async (query: string): Promise<SearchResult[]> => {
+      try {
+          const stockData = await searchStocksFromApi(query);
+          const searchResults: SearchResult[] = stockData.data.stocks.map((stock: IStock) => ({
+              symbol: stock['1. symbol'],
+              name: stock['2. name'],
+              exchange: stock['4. region'],
+              category: stock['3. type']
+          }));
+          return searchResults;
+      } catch (error) {
+          toast.error((error as Error).message || `Failed To Fetch Stock Details`);
+          return [];
+      }
+  }, []);
 
   const searchMutualFunds = useCallback(async (query: string): Promise<SearchResult[]> => {
     try {
       const mfData = await searchMutualFundFromApi(query);
-      const searchResults: SearchResult[] = mfData.data.mutualFunds.map((mf: { scheme_name: string, scheme_code: string, net_asset_value: number, date: string }) => ({
+      const searchResults: SearchResult[] = mfData.data.mutualFunds.map((mf) => ({
         name: mf.scheme_name,
         schemeCode: mf.scheme_code,
         fundHouse: mf.scheme_name.split(' ')[0],
@@ -393,13 +396,13 @@ export default function InvestmentInputModal({
       };
   }, [stockSearchQuery, mfSearchQuery, formData.type, debouncedSearch]);
     
-    useEffect(() => {
-        return () => {
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
-            }
-        }
-    }, []);
+  useEffect(() => {
+      return () => {
+          if (searchTimeoutRef.current) {
+              clearTimeout(searchTimeoutRef.current);
+          }
+      }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -411,14 +414,16 @@ export default function InvestmentInputModal({
           const baseState = {
             type: type as InvestmentType,
             name: prev.name || '',
-            amount: prev.amount || '',
+            accountId: prev.accountId || '',
+            icon: prev.icon || '',
+            initialAmount: prev.initialAmount || '',
+            currentValue: prev.currentValue || '',
+            totalProfitOrLoss: prev.totalProfitOrLoss || '',
             currency: prev.currency || 'INR',
             notes: prev.notes || '',
             purchaseDate: new Date().toISOString().split('T')[0],
-            icon: '',
             createdAt: new Date().toISOString().split('T')[0],
             updatedAt: new Date().toISOString().split('T')[0],
-            accountId: '',
           };
 
       switch (type as InvestmentType) {
@@ -478,19 +483,19 @@ export default function InvestmentInputModal({
         case InvestmentType.FIXED_DEPOSIT:
           return {
             ...baseState,
-            maturity_date: new Date().toISOString().split('T')[0],
-            interest_rate: '',
-            maturity_amount: '',
+            maturityDate: new Date().toISOString().split('T')[0],
+            interestRate: '',
+            maturityAmount: '',
           };
         case InvestmentType.EPFO:
           return {
             ...baseState,
-            account_number: '',
-            epf_number: '',
-            employer_contribution: '',
-            employee_contribution: '',
-            interest_rate: '',
-            maturity_amount: '',
+            accountNumber: '',
+            epfNumber: '',
+            employerContribution: '',
+            employeeContribution: '',
+            interestRate: '',
+            maturityAmount: '',
           };
         case InvestmentType.GOLD:
           return {
@@ -557,7 +562,7 @@ export default function InvestmentInputModal({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.name || !formData.amount) {
+    if (!formData.name || !formData.initialAmount) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -573,7 +578,7 @@ export default function InvestmentInputModal({
             name: String(formData?.name || ''),
             accountId: String(formData?.accountId || ''),
             icon: String(formData?.icon || ''),
-            amount: Number(formData?.amount || 0),
+            initialAmount: Number(formData?.initialAmount || 0),
             currency: String(formData?.currency || 'INR'),
             notes: String(formData?.notes || ''),
             createdAt: new Date(),
@@ -606,7 +611,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
@@ -631,7 +636,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name || '',
-            amount: Number(formData.amount || 0),
+            initialAmount: Number(formData.initialAmount || 0),
             accountId: formData.accountId || '',
             currency: formData.currency || 'INR',
             notes: formData.notes || '',
@@ -657,7 +662,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
@@ -681,7 +686,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
@@ -705,7 +710,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             currency: formData.currency,
             notes: formData.notes,
             createdAt: new Date(),
@@ -722,18 +727,18 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
             createdAt: new Date(),
             updatedAt: new Date(),
-            account_number: formData.account_number,
-            epf_number: formData.epf_number,
-            employer_contribution: Number(formData.employer_contribution),
-            employee_contribution: Number(formData.employee_contribution),
-            interest_rate: Number(formData.interest_rate),
-            maturity_amount: formData.maturity_amount ? Number(formData.maturity_amount) : undefined,
+            accountNumber: formData.type === InvestmentType.EPFO && 'accountNumber' in formData ? formData.accountNumber : '',
+            epfNumber: formData.type === InvestmentType.EPFO && 'epfNumber' in formData ? formData.epfNumber : '',
+            employerContribution: formData.type === InvestmentType.EPFO && 'employerContribution' in formData ? Number(formData.employerContribution) : 0,
+            employeeContribution: formData.type === InvestmentType.EPFO && 'employeeContribution' in formData ? Number(formData.employeeContribution) : 0,
+            interestRate: formData.type === InvestmentType.EPFO && 'interestRate' in formData ? Number(formData.interestRate) : undefined,
+            maturityAmount: formData.type === InvestmentType.EPFO && 'maturityAmount' in formData ? Number(formData.maturityAmount) : undefined,
           } as IEPFO;
         } else {
           throw new Error("Invalid form data for EPFO investment");
@@ -746,7 +751,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
@@ -770,7 +775,7 @@ export default function InvestmentInputModal({
             userId: 'user123',
             type: formData.type,
             name: formData.name,
-            amount: Number(formData.amount),
+            initialAmount: Number(formData.initialAmount),
             accountId: formData.accountId,
             currency: formData.currency,
             notes: formData.notes,
@@ -788,17 +793,19 @@ export default function InvestmentInputModal({
           type: 'FIXED_DEPOSIT',
           name: '',
           accountId: '',
-          amount: 0,
+          initialAmount: 0,
+          currentValue: 0,
+          totalProfitOrLoss: 0,
           currency: 'INR',
           notes: 'formData.notes',
           createdAt: new Date(),
           updatedAt: new Date(),
-          icon: '',  // Add missing required property
+          icon: '',  
           bank: '',
-          account_number: '',
-          deposit_number: '',
-          maturity_date: new Date(),
-          interest_rate: 0,
+          accountNumber: '',
+          depositNumber: '',
+          maturityDate: new Date(),
+          interestRate: 0,
         } as IFixedDeposit;
         break;
     }
@@ -931,7 +938,7 @@ export default function InvestmentInputModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stock Symbol*
+                  Stock Symbol
                 </label>
                 <input
                   type="text"
@@ -1355,8 +1362,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="number"
-                  name="interest_rate"
-                  value={'interest_rate' in formData ? formData.interest_rate : ''}
+                  name="interestRate"
+                  value={'interestRate' in formData ? formData.interestRate : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Interest rate"
@@ -1384,8 +1391,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="number"
-                  name="maturity_amount"
-                  value={'maturity_amount' in formData ? formData.maturity_amount : ''}
+                  name="maturityAmount"
+                  value={'maturityAmount' in formData ? formData.maturityAmount : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Expected maturity amount"
@@ -1405,8 +1412,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="text"
-                  name="account_number"
-                  value={'account_number' in formData ? formData.account_number : ''}
+                  name="accountNumber"
+                  value={'accountNumber' in formData ? formData.accountNumber : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="EPFO account number"
@@ -1419,8 +1426,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="text"
-                  name="epf_number"
-                  value={'epf_number' in formData ? formData.epf_number : ''}
+                  name="epfNumber"
+                  value={'epfNumber' in formData ? formData.epfNumber : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="EPF number"
@@ -1435,8 +1442,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="number"
-                  name="employer_contribution"
-                  value={'employer_contribution' in formData ? formData.employer_contribution : ''}
+                  name="employerContribution"
+                  value={'employerContribution' in formData ? formData.employerContribution : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Employer contribution"
@@ -1449,8 +1456,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="number"
-                  name="employee_contribution"
-                  value={'employee_contribution' in formData ? formData.employee_contribution : ''}
+                  name="employeeContribution"
+                  value={'employeeContribution' in formData ? formData.employeeContribution : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Employee contribution"
@@ -1463,8 +1470,8 @@ export default function InvestmentInputModal({
                 </label>
                 <input
                   type="number"
-                  name="interest_rate"
-                  value={'interest_rate' in formData ? formData.interest_rate : ''}
+                  name="interestRate"
+                  value={'interestRate' in formData ? formData.interestRate : ''}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Interest rate"
@@ -1689,238 +1696,238 @@ export default function InvestmentInputModal({
                 </div>
 
                 {/* Related Account */}
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Related Account*
-  </label>
-  <div className="space-y-2">
-    {/* Account Selection Dropdown */}
-    <div className="relative">
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <Wallet className="h-4 w-4 text-gray-500" />
-      </div>
-      <select
-        name="accountId"
-        value={formData?.accountId || ''}
-        onChange={handleInputChange}
-        className="pl-9 w-full rounded-md border border-gray-300 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        required
-      >
-        <option value="">Select an account</option>
-        {accounts.map((account) => (
-          <option key={account._id} value={account._id}>
-            {account.account_name} - {account.account_type} 
-          </option>
-        ))}
-      </select>
-    </div>
-    
-    {/* Add New Account Button */}
-    {accounts.length === 0 ? (
-      <div className="text-center py-2">
-        <p className="text-sm text-gray-500 mb-2">No accounts found</p>
-        <button
-          type="button"
-          onClick={() => setShowAddAccount(true)}
-          className="inline-flex items-center px-3 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Create New Account
-        </button>
-      </div>
-    ) : (
-      <button
-        type="button"
-        onClick={() => setShowAddAccount(true)}
-        className="inline-flex items-center px-2 py-1 text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-md transition-colors"
-      >
-        <Plus className="h-3 w-3 mr-1" />
-        Add New Account
-      </button>
-    )}
-  </div>
-</div>
-
-{/* Quick Add Account Modal/Section */}
-{showAddAccount && (
-  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-    <div className="flex justify-between items-center mb-3">
-      <h4 className="text-sm font-medium text-blue-900">Quick Add Account</h4>
-      <button
-        type="button"
-        onClick={() => setShowAddAccount(false)}
-        className="text-blue-600 hover:text-blue-800"
-      >
-        <X className="h-4 w-4" />
-      </button>
-    </div>
-    
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div>
-        <label className="block text-xs font-medium text-blue-800 mb-1">
-          Account Name*
-        </label>
-        <input
-          type="text"
-          value={newAccount.account_name}
-          onChange={(e) => setNewAccount({...newAccount, account_name: e.target.value})}
-          className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="e.g., HDFC Savings"
-        />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Related Account*
+                  </label>
+                  <div className="space-y-2">
+                    {/* Account Selection Dropdown */}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Wallet className="h-4 w-4 text-gray-500" />
                       </div>
-                      <div>
-        <label className="block text-xs font-medium text-blue-800 mb-1">
-          Account Number
-        </label>
-        <input
-          type="text"
-          value={newAccount.account_number}
-          onChange={(e) => setNewAccount({...newAccount, account_number: e.target.value})}
-          className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="e.g., HDFC Savings"
-        />
-      </div>
-      
-      <div>
-        <label className="block text-xs font-medium text-blue-800 mb-1">
-          Account Type*
-        </label>
-        <select
-          value={newAccount.account_type}
-          onChange={(e) => setNewAccount({...newAccount, account_type: e.target.value as "Bank" | "Debt" | "Investment" | "Cash"})}
-          className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Select type</option>
-          <option value="Bank">Bank</option>
-          <option value="Investment">Investment</option>
-          <option value="Cash">Cash</option>
-          <option value="Debt">Debt</option>
-        </select>
-      </div>
-      
-      {/* Conditional fields based on account type */}
-      {newAccount.account_type === 'Bank' && (
-        <div>
-          <label className="block text-xs font-medium text-blue-800 mb-1">
-            Bank Subtype
-          </label>
-          <select
-            value={newAccount.account_subtype || ''}
-            onChange={(e) => setNewAccount({...newAccount, account_subtype: e.target.value as "Current" | "Savings" | "FD" | "RD"})}
-            className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      <select
+                        name="accountId"
+                        value={formData?.accountId || ''}
+                        onChange={handleInputChange}
+                        className="pl-9 w-full rounded-md border border-gray-300 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="">Select an account</option>
+                        {accounts.map((account) => (
+                          <option key={account._id} value={account._id}>
+                            {account.account_name} - {account.account_type} 
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                      
+                    {/* Add New Account Button */}
+                    {accounts.length === 0 ? (
+                      <div className="text-center py-2">
+                        <p className="text-sm text-gray-500 mb-2">No accounts found</p>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddAccount(true)}
+                          className="inline-flex items-center px-3 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Create New Account
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowAddAccount(true)}
+                        className="inline-flex items-center px-2 py-1 text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-md transition-colors"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add New Account
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+    {/* Quick Add Account Modal/Section */}
+    {showAddAccount && (
+      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="flex justify-between items-center mb-3">
+          <h4 className="text-sm font-medium text-blue-900">Quick Add Account</h4>
+          <button
+            type="button"
+            onClick={() => setShowAddAccount(false)}
+            className="text-blue-600 hover:text-blue-800"
           >
-            <option value="">Select subtype</option>
-            <option value="Current">Current</option>
-            <option value="Savings">Savings</option>
-            <option value="FD">Fixed Deposit</option>
-            <option value="RD">Recurring Deposit</option>
-          </select>
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      )}
-      
-      {newAccount.account_type === 'Investment' && (
-        <div>
-          <label className="block text-xs font-medium text-blue-800 mb-1">
-            Platform
-          </label>
-          <input
-            type="text"
-            value={newAccount.investment_platform || ''}
-            onChange={(e) => setNewAccount({...newAccount, investment_platform: e.target.value})}
-            className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="e.g., Zerodha, Groww"
-          />
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">
+              Account Name*
+            </label>
+            <input
+              type="text"
+              value={newAccount.account_name}
+              onChange={(e) => setNewAccount({...newAccount, account_name: e.target.value})}
+              className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="e.g., HDFC Savings"
+            />
+                          </div>
+                          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">
+              Account Number
+            </label>
+            <input
+              type="text"
+              value={newAccount.account_number}
+              onChange={(e) => setNewAccount({...newAccount, account_number: e.target.value})}
+              className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="e.g., HDFC Savings"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">
+              Account Type*
+            </label>
+            <select
+              value={newAccount.account_type}
+              onChange={(e) => setNewAccount({...newAccount, account_type: e.target.value as "Bank" | "Debt" | "Investment" | "Cash"})}
+              className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Select type</option>
+              <option value="Bank">Bank</option>
+              <option value="Investment">Investment</option>
+              <option value="Cash">Cash</option>
+              <option value="Debt">Debt</option>
+            </select>
+          </div>
+
+          {/* Conditional fields based on account type */}
+          {newAccount.account_type === 'Bank' && (
+            <div>
+              <label className="block text-xs font-medium text-blue-800 mb-1">
+                Bank Subtype
+              </label>
+              <select
+                value={newAccount.account_subtype || ''}
+                onChange={(e) => setNewAccount({...newAccount, account_subtype: e.target.value as "Current" | "Savings" | "FD" | "RD"})}
+                className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Select subtype</option>
+                <option value="Current">Current</option>
+                <option value="Savings">Savings</option>
+                <option value="FD">Fixed Deposit</option>
+                <option value="RD">Recurring Deposit</option>
+              </select>
+            </div>
+          )}
+
+          {newAccount.account_type === 'Investment' && (
+            <div>
+              <label className="block text-xs font-medium text-blue-800 mb-1">
+                Platform
+              </label>
+              <input
+                type="text"
+                value={newAccount.investment_platform || ''}
+                onChange={(e) => setNewAccount({...newAccount, investment_platform: e.target.value})}
+                className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g., Zerodha, Groww"
+              />
+            </div>
+          )}
+
+          {newAccount.account_type === 'Cash' && (
+            <div>
+              <label className="block text-xs font-medium text-blue-800 mb-1">
+                Location
+              </label>
+              <select
+                value={newAccount.location || ''}
+                onChange={(e) => setNewAccount({...newAccount, location: e.target.value as "Home" | "Safe" | "Wallet" | "Office"})}
+                className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Select location</option>
+                <option value="Home">Home</option>
+                <option value="Safe">Safe</option>
+                <option value="Wallet">Wallet</option>
+                <option value="Office">Office</option>
+              </select>
+            </div>
+          )}
+
+          {newAccount.account_type === 'Debt' && (
+            <div>
+              <label className="block text-xs font-medium text-blue-800 mb-1">
+                Loan Type
+              </label>
+              <select
+                value={newAccount.loan_type || ''}
+                onChange={(e) => setNewAccount({...newAccount, loan_type: e.target.value as "Mortgage" | "Student" | "Personal" | "Auto" | "Credit Card"})}
+                className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Select loan type</option>
+                <option value="Mortgage">Mortgage</option>
+                <option value="Student">Student</option>
+                <option value="Personal">Personal</option>
+                <option value="Auto">Auto</option>
+                <option value="Credit Card">Credit Card</option>
+              </select>
+            </div>
+          )}
         </div>
-      )}
-      
-      {newAccount.account_type === 'Cash' && (
-        <div>
-          <label className="block text-xs font-medium text-blue-800 mb-1">
-            Location
-          </label>
-          <select
-            value={newAccount.location || ''}
-            onChange={(e) => setNewAccount({...newAccount, location: e.target.value as "Home" | "Safe" | "Wallet" | "Office"})}
-            className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        
+        {/* Additional fields row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">
+              {newAccount.account_type === 'Bank' || newAccount.account_type === 'Cash' ? 'Current Balance' : 
+               newAccount.account_type === 'Investment' ? 'Portfolio Value' : 'Outstanding Amount'}
+            </label>
+            <input
+              type="number"
+              value={newAccount.current_balance || newAccount.portfolio_value || 0}
+              onChange={(e) => {
+                const value = parseFloat(e.target.value) || 0;
+                if (newAccount.account_type === 'Investment') {
+                  setNewAccount({...newAccount, portfolio_value: value});
+                } else {
+                  setNewAccount({...newAccount, current_balance: value});
+                }
+              }}
+              className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="0.00"
+            />
+          </div>
+            
+          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">
+              Currency
+            </label>
+            <select
+              value={newAccount.currency}
+              onChange={(e) => setNewAccount({...newAccount, currency: e.target.value})}
+              className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="INR">INR (₹)</option>
+            </select>
+          </div>
+        </div>
+            
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={handleAddAccount}
+            className="w-full text-sm bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded transition-colors"
           >
-            <option value="">Select location</option>
-            <option value="Home">Home</option>
-            <option value="Safe">Safe</option>
-            <option value="Wallet">Wallet</option>
-            <option value="Office">Office</option>
-          </select>
+            Add Account
+          </button>
         </div>
-      )}
-      
-      {newAccount.account_type === 'Debt' && (
-        <div>
-          <label className="block text-xs font-medium text-blue-800 mb-1">
-            Loan Type
-          </label>
-          <select
-            value={newAccount.loan_type || ''}
-            onChange={(e) => setNewAccount({...newAccount, loan_type: e.target.value as "Mortgage" | "Student" | "Personal" | "Auto" | "Credit Card"})}
-            className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="">Select loan type</option>
-            <option value="Mortgage">Mortgage</option>
-            <option value="Student">Student</option>
-            <option value="Personal">Personal</option>
-            <option value="Auto">Auto</option>
-            <option value="Credit Card">Credit Card</option>
-          </select>
-        </div>
-      )}
-    </div>
-    
-    {/* Additional fields row */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-      <div>
-        <label className="block text-xs font-medium text-blue-800 mb-1">
-          {newAccount.account_type === 'Bank' || newAccount.account_type === 'Cash' ? 'Current Balance' : 
-           newAccount.account_type === 'Investment' ? 'Portfolio Value' : 'Outstanding Amount'}
-        </label>
-        <input
-          type="number"
-          value={newAccount.current_balance || newAccount.portfolio_value || 0}
-          onChange={(e) => {
-            const value = parseFloat(e.target.value) || 0;
-            if (newAccount.account_type === 'Investment') {
-              setNewAccount({...newAccount, portfolio_value: value});
-            } else {
-              setNewAccount({...newAccount, current_balance: value});
-            }
-          }}
-          className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="0.00"
-        />
       </div>
-      
-      <div>
-        <label className="block text-xs font-medium text-blue-800 mb-1">
-          Currency
-        </label>
-        <select
-          value={newAccount.currency}
-          onChange={(e) => setNewAccount({...newAccount, currency: e.target.value})}
-          className="w-full text-sm rounded border border-blue-300 py-1.5 px-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="INR">INR (₹)</option>
-        </select>
-      </div>
-    </div>
-    
-    <div className="mt-3">
-      <button
-        type="button"
-        onClick={handleAddAccount}
-        className="w-full text-sm bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded transition-colors"
-      >
-        Add Account
-      </button>
-    </div>
-  </div>
-)}
+    )}
                   
                   {/* Amount */}
                 <div>
@@ -1933,8 +1940,8 @@ export default function InvestmentInputModal({
                     </div>
                     <input
                       type="number"
-                      name="amount"
-                      value={formData.amount}
+                      name="initialAmount"
+                      value={formData.initialAmount}
                       onChange={handleInputChange}
                       className="pl-9 w-full rounded-md border border-gray-300 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="0.00"

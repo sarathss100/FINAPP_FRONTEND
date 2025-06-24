@@ -18,7 +18,9 @@ export interface IBaseInvestment {
     name: string;
     accountId: string;
     icon: string;
-    amount: number;
+    initialAmount: number;
+    currentValue?: number;
+    totalProfitOrLoss?: number;
     currency: string;
     notes: string;
     createdAt: Date;
@@ -112,10 +114,10 @@ export interface IBusinessDocument extends IInvestmentDocument {
 export interface IFixedDeposit extends IBaseInvestment {
     type: InvestmentType.FIXED_DEPOSIT;
     bank: string;
-    account_number: string;
-    maturity_date: Date;
-    interest_rate: number;
-    maturity_amount?: number;
+    accountNumber: string;
+    maturityDate: Date;
+    interestRate: number;
+    maturityAmount?: number;
 }
 
 export interface IFixedDepositDocument extends IInvestmentDocument {
@@ -125,12 +127,12 @@ export interface IFixedDepositDocument extends IInvestmentDocument {
 
 export interface IEPFO extends IBaseInvestment {
     type: InvestmentType.EPFO;
-    account_number: string;
-    epf_number: string;
-    employer_contribution: number;
-    employee_contribution: number;
-    interest_rate: number;
-    maturity_amount?: number;
+    accountNumber: string;
+    epfNumber: string;
+    employerContribution: number;
+    employeeContribution: number;
+    interestRate: number;
+    maturityAmount?: number;
 }
 
 export interface IEPFODocument extends IInvestmentDocument {
@@ -207,6 +209,8 @@ export interface IStockDetails {
 }
 
 export interface IMutualFundDTO {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [x: string]: any;
     scheme_code: string;
     scheme_name: string;
     net_asset_value: number;

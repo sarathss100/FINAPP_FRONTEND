@@ -2,10 +2,13 @@ import IUser from './IUser';
 
 interface IUserState {
     user: IUser | null;
-    profilePictureUrl: string;
+    profilePicture: {
+        image: string,
+        contentType: string,
+        extention: string,
+    };
     login: (userData: IUser) => void;
     fetchProfilePictureUrl: () => void;
-    updateProfilePictureUrl: (url: string) => void;
     logout: () => void;
     reset: () => void;
 }

@@ -1,6 +1,6 @@
 import IUserProfileDetails from '@/types/IUserProfileDetails';
 import axiosInstance from './axiosInstance';
-import IUserProfilePictureUrl from '@/types/IUserProfilePictureUrl';
+import IUserProfilePictureUrl, { IUserProfilePicture } from '@/types/IUserProfilePictureUrl';
 import IToggle2FA from '@/types/IToggle2FA';
 import IDeleteAccount from '@/types/IDeleteAccount';
 
@@ -47,7 +47,7 @@ export const updateUserProfilePicture = async function (formData: FormData): Pro
 };
 
 // Fetches profile picture url for a user from the backend API
-export const getUserProfilePictureUrl = async function (): Promise<IUserProfilePictureUrl> {
+export const getUserProfilePictureId = async function (): Promise<IUserProfilePictureUrl> {
     try {
         // Send a POST request to user profile picture url
         const response = await axiosInstance.get<IUserProfilePictureUrl>('/api/v1/user/me/avatar');
@@ -61,6 +61,25 @@ export const getUserProfilePictureUrl = async function (): Promise<IUserProfileP
         }
     } catch (error) {
         // Re-throw the error for upstream handling
+        throw error;
+    }
+};
+
+// Fetches the user's profile picture information (containing the image URL) from the backend API
+export const getUserProfilePicture = async function (imageId: string): Promise<IUserProfilePicture> {
+    try {
+        // Send a GET request to fetch profile picture metadata by ID
+        const response = await axiosInstance.get<IUserProfilePicture>(`${imageId}`);
+        
+        // Validate the response structure and success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return the profile picture metadata (including URL) on success
+        } else {
+            // Handle explicit error response from API
+            throw new Error(response.data?.message || `Failed to fetch profile picture data`);
+        }
+    } catch (error) {
+        // Propagate network errors or unexpected failures to the caller
         throw error;
     }
 };

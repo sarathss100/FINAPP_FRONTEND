@@ -4,7 +4,7 @@ import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
 import { analyzeGoal, findLongestTimePeriod, getDailyContribution, getMonthlyContribution, getTotalActiveGoalAmount, getUserGoals, goalsByCategory } from '@/service/goalService';
 import { IGoal } from '@/types/IGoal';
-import { getUserProfilePictureUrl } from '@/service/userService';
+import { getUserProfilePicture, getUserProfilePictureId } from '@/service/userService';
 import { getTotalBalance, getTotalBankBalance, getTotalDebt, getTotalInvestment, getUserAccounts } from '@/service/accountService';
 import { IAccount } from '@/types/IAccounts';
 import { getAllInsurances, getInsuranceWithClosestNextPaymentDate, totalAnnualInsurancePremiumApi, totalInsuranceCoverageApi } from '@/service/insuranceService';
@@ -17,30 +17,38 @@ export const useUserStore = create<IUserState>()(
     persist(
         (set) => ({
             user: null,
-            profilePictureUrl: './user.png',
+            profilePicture: {
+                image: '',
+                contentType: '',
+                extention: '',
+            },
             login: (userData: IUser) => set(() => ({ user: { ...userData } })),
             
             // fetchtheProfileUrl
             fetchProfilePictureUrl: async () => {
               try {         
-                const response = await getUserProfilePictureUrl();
+                  const response = await getUserProfilePictureId();
                   const data = await response.data;
-                  set({ profilePictureUrl: data.profilePictureUrl });
+                  const imageData = await getUserProfilePicture(data.profilePictureUrl);
+                  set({ profilePicture: imageData.data });
               } catch (error) {
                   console.error(`Failed to fetch Profile Picture Url:`, error);
-                  set({ profilePictureUrl: './user.png' });
+                  set({ profilePicture: {
+                        image: '',
+                        contentType: '',
+                        extention: '',
+                }});
               }
             }, 
-
-            // updteProfilePictureUrl
-            updateProfilePictureUrl: (url: string) => {
-                set({ profilePictureUrl: url });
-            },
 
             reset: () => {
                 // Clear the user state
                 set(() => ({ user: null }));
-                set(() => ({ profilePictureUrl: '' }));
+                set(() => ({ profilePicture: {
+                    image: '',
+                    contentType: '',
+                    extention: '',
+                }}));
             },
 
             logout: () => {

@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores/store';
 import { useRouter } from 'next/navigation';
 
 const UserHeader = function () {
-  const profilePictureUrl = useUserStore((state) => state.profilePictureUrl);
+  const profilePicture = useUserStore((state) => state.profilePicture);
   const fetchProfilePictureUrl = useUserStore((state) => state.fetchProfilePictureUrl);
   
   const router = useRouter();
@@ -41,7 +41,7 @@ const UserHeader = function () {
         {/* Avatar */}
         <div className="relative cursor-pointer" onClick={handleAvatarClick}>
           <Avatar className="w-8 h-8">
-            <AvatarImage src={profilePictureUrl} alt="User profile" />
+            <AvatarImage src={profilePicture.image ? `data:${profilePicture.contentType};base64,${profilePicture.image}` : '/user.png'} alt="User profile" />
           </Avatar>
         </div>
       </div>

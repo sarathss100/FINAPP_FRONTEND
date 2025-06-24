@@ -1,5 +1,5 @@
 interface IUserImageUrl {
-    profilePictureUrl: string;
+    profilePictureUrl: string,
 }
 
 interface IUserProfilePictureUrl {
@@ -9,3 +9,14 @@ interface IUserProfilePictureUrl {
 }
 
 export default IUserProfilePictureUrl;
+
+
+export interface IUserProfilePicture {
+    success: boolean,
+    message: string,
+    data: {
+        image: string,
+        contentType: string,
+        extention: string,
+    }
+}

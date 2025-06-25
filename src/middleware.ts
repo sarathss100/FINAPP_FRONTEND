@@ -89,7 +89,6 @@ export async function middleware(request: NextRequest) {
         // Verify token with the backend
         if (isAuthenticated && accessToken) {
             const response = await verifyToken(accessToken);
-
             const data = response as IVerifyTokenResponse;
 
             // Handle blocked user

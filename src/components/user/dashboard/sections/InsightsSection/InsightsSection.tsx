@@ -159,8 +159,8 @@ const InsightsSection = function () {
                           className="relative"
                           alt="Icon"
                           src={transaction.icon}
-                          width={14}
-                          height={16}
+                          width={24}
+                          height={24}
                         />
                       </div>
                     </div>

@@ -705,7 +705,7 @@ export default function InvestmentInputModal({
         break;
 
       case InvestmentType.FIXED_DEPOSIT:
-        if (formData.type === InvestmentType.FIXED_DEPOSIT && 'bank' in formData) {
+        if (formData.type === InvestmentType.FIXED_DEPOSIT && 'maturityDate' in formData && 'maturityAmount' in formData) {
           investmentDetails = {
             userId: 'user123',
             type: formData.type,
@@ -715,6 +715,9 @@ export default function InvestmentInputModal({
             notes: formData.notes,
             createdAt: new Date(),
             updatedAt: new Date(),
+            interestRate: Number(formData.interestRate || 0),
+            maturityDate: formData.maturityDate ? new Date(formData.maturityDate) : undefined,
+            maturityAmount: formData.maturityAmount ? Number(formData.maturityAmount) : undefined,
           } as IFixedDeposit;
         } else {
           throw new Error("Invalid form data for fixed deposit investment");
@@ -722,7 +725,7 @@ export default function InvestmentInputModal({
         break;
 
       case InvestmentType.EPFO:
-        if (formData.type === InvestmentType.EPFO && 'epf_number' in formData) {
+        if (formData.type === InvestmentType.EPFO && 'epfNumber' in formData) {
           investmentDetails = {
             userId: 'user123',
             type: formData.type,
@@ -1408,7 +1411,7 @@ export default function InvestmentInputModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Account Number*
+                  Account Number
                 </label>
                 <input
                   type="text"
@@ -1422,7 +1425,7 @@ export default function InvestmentInputModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  EPF Number*
+                  EPF Number
                 </label>
                 <input
                   type="text"
@@ -1438,7 +1441,7 @@ export default function InvestmentInputModal({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employer Contribution*
+                  Employer Contribution
                 </label>
                 <input
                   type="number"
@@ -1452,7 +1455,7 @@ export default function InvestmentInputModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employee Contribution*
+                  Employee Contribution
                 </label>
                 <input
                   type="number"
@@ -1487,7 +1490,7 @@ export default function InvestmentInputModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Business Name*
+                  Business Name
                 </label>
                 <input
                   type="text"
@@ -1501,7 +1504,7 @@ export default function InvestmentInputModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ownership Percentage*
+                  Ownership Percentage
                 </label>
                 <input
                   type="number"
@@ -1518,7 +1521,7 @@ export default function InvestmentInputModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Initial Investment*
+                  Initial Investment
                 </label>
                 <input
                   type="number"
@@ -1682,7 +1685,7 @@ export default function InvestmentInputModal({
                 {/* Investment Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Investment Name*
+                    Investment Name
                   </label>
                   <input
                     type="text"
@@ -1698,7 +1701,7 @@ export default function InvestmentInputModal({
                 {/* Related Account */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Related Account*
+                    Related Account
                   </label>
                   <div className="space-y-2">
                     {/* Account Selection Dropdown */}
@@ -1765,7 +1768,7 @@ export default function InvestmentInputModal({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-medium text-blue-800 mb-1">
-              Account Name*
+              Account Name
             </label>
             <input
               type="text"
@@ -1790,7 +1793,7 @@ export default function InvestmentInputModal({
 
           <div>
             <label className="block text-xs font-medium text-blue-800 mb-1">
-              Account Type*
+              Account Type
             </label>
             <select
               value={newAccount.account_type}

@@ -54,6 +54,8 @@ export const searchMutualFundFromApi = async function (keyword: string): Promise
  */
 export const createInvestment = async function (formData: Investments): Promise<IInvestmentDetails> {
     try {
+
+        console.log(formData);
         // Send a POST request to create a new investment
         const response = await axiosInstance.post<IInvestmentDetails>(`/api/v1/investment`, formData);
     

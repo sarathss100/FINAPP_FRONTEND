@@ -12,6 +12,7 @@ const PUBLIC_ROUTES = [
     '/contact',
     '/charts'
 ];
+
 const ADMIN_ROUTES = [
     '/admin/dashboard',
     '/admin/user-management',

@@ -240,3 +240,11 @@ export interface ITotalInvestedAmount {
         totalInvestedAmount: number;
     }
 }
+
+export interface ITotalCurrentValue {
+    success: boolean,
+    message: string,
+    data: {
+        currentTotalValue: number;
+    }
+}

@@ -13,11 +13,14 @@ import useInvestmentStore from "@/stores/investment/investmentStore";
 
 const InvestmentManagementBody = function () {
   const totalInvestedAmount = useInvestmentStore((state) => state.totalInvestedAmount);
+  const currentValue = useInvestmentStore((state) => state.totalCurrentValue);
   const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
+  const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
 
   const handleStore = useCallback(() => {
     fetchTotalInvestedAmount();
-  }, [fetchTotalInvestedAmount]);
+    fetchCurrentValue();
+  }, [fetchTotalInvestedAmount, fetchCurrentValue]);
 
   useEffect(() => {
     handleStore();
@@ -479,13 +482,10 @@ const InvestmentManagementBody = function () {
             <p className="font-normal text-3xl mb-4">
               ₹ {totalInvestedAmount || 0}
             </p>
-            <div className="flex items-center">
-              <Image src="/growth_blue_icon.svg" alt="Trend" className="mr-2" width={16} height={16} />\
-              <h3 className="font-normal text-lg mb-4">Current Value</h3>
-              <span className="font-normal text-base text-[#00a9e0]">
-                +12.5% this month
-              </span>
-            </div>
+            <h3 className="font-normal text-lg mb-4">Current Valuation</h3>
+            <p className="font-normal text-3xl mb-4">
+              ₹ {currentValue.toFixed(2) || 0}
+            </p>
           </CardContent>
         </Card>
 

@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails, ITotalInvestedAmount } from '@/types/IInvestments';
+import { IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails, ITotalCurrentValue, ITotalInvestedAmount } from '@/types/IInvestments';
 
 // Searches for stocks based on a keyword by sending a GET request to the backend API
 export const searchStocksFromApi = async function (keyword: string): Promise<IStockDetails> {
@@ -94,6 +94,31 @@ export const getTotalInvestedAmount = async function (): Promise<ITotalInvestedA
     } catch (error) {
         // Log the error if needed, and re-throw it for upstream handling
         console.error('Error fetching total invested amount:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetches the current total value of all investments for the authenticated user.
+ *
+ * @returns {Promise<ITotalCurrentValue>} - A promise resolving to the response data containing current investment summary.
+ * @throws {Error} - Throws an error if the request fails or the response indicates failure.
+ */
+export const getTotalCurrentValue = async function (): Promise<ITotalCurrentValue> {
+    try {
+        // Send a GET request to fetch current total value of investments
+        const response = await axiosInstance.get<ITotalCurrentValue>(`/api/v1/investment/summary/current-value`);
+
+        // Check if the response contains a success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return summary if successful
+        } else {
+            // Throw an error if the backend returned a failure message
+            throw new Error(response.data?.message || 'Failed to fetch current total value.');
+        }
+    } catch (error) {
+        // Log the error if needed, and re-throw it for upstream handling
+        console.error('Error fetching current total value:', error);
         throw error;
     }
 };

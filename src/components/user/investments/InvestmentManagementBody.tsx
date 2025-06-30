@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import UserHeader from '../base/Header';
@@ -9,8 +9,20 @@ import InvestmentInputModal from './InvestmentInputModal';
 import { createInvestment } from '@/service/investmentService';
 import { toast } from 'react-toastify';
 import { Investments } from '@/types/IInvestments';
+import useInvestmentStore from "@/stores/investment/investmentStore";
 
 const InvestmentManagementBody = function () {
+  const totalInvestedAmount = useInvestmentStore((state) => state.totalInvestedAmount);
+  const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
+
+  const handleStore = useCallback(() => {
+    fetchTotalInvestedAmount();
+  }, [fetchTotalInvestedAmount]);
+
+  useEffect(() => {
+    handleStore();
+  }, [handleStore]);
+
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [expandedCard, setExpandedCard] = React.useState<number | null>(null);
   
@@ -462,13 +474,14 @@ const InvestmentManagementBody = function () {
         <Card className="bg-[#004a7c] text-white border-none rounded-xl">
           <CardContent className="p-6">
             <h2 className="font-normal text-lg mb-4">
-              Total Investment Value
+              Total Invested Amuount
             </h2>
             <p className="font-normal text-3xl mb-4">
-              ₹ 1,19,95,000
+              ₹ {totalInvestedAmount || 0}
             </p>
             <div className="flex items-center">
-              <Image src="/growth_blue_icon.svg" alt="Trend" className="mr-2" width={16} height={16} />
+              <Image src="/growth_blue_icon.svg" alt="Trend" className="mr-2" width={16} height={16} />\
+              <h3 className="font-normal text-lg mb-4">Current Value</h3>
               <span className="font-normal text-base text-[#00a9e0]">
                 +12.5% this month
               </span>

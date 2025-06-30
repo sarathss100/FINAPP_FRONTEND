@@ -12,6 +12,7 @@ import { Insurance } from '@/types/IInsurance';
 import useDebtStore from './debt/debtStore';
 import useFaqStore from './faqs/faqStore';
 import useTransactionStore from './transaction/transactionStore';
+import useInvestmentStore from './investment/investmentStore';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -73,6 +74,9 @@ export const useUserStore = create<IUserState>()(
                 // Reset the faq store 
                 useFaqStore.getState().reset();
 
+                // Reset the investment store 
+                useInvestmentStore.getState().reset();
+
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');
@@ -101,6 +105,11 @@ export const useUserStore = create<IUserState>()(
                 // Clear the persisted faqs storage 
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('faqs-storage');
+                }
+
+                // Clear the persisted investments storage 
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('investments-storage');
                 }
             }
         }),

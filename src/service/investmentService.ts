@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails } from '@/types/IInvestments';
+import { IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails, ITotalInvestedAmount } from '@/types/IInvestments';
 
 // Searches for stocks based on a keyword by sending a GET request to the backend API
 export const searchStocksFromApi = async function (keyword: string): Promise<IStockDetails> {
@@ -69,6 +69,31 @@ export const createInvestment = async function (formData: Investments): Promise<
     } catch (error) {
         // Log the error if needed, and re-throw it for upstream handling
         console.error('Error creating investment:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetches the total invested amount across all investments for the authenticated user.
+ *
+ * @returns {Promise<ITotalInvestedAmount>} - A promise resolving to the response data containing total investment summary.
+ * @throws {Error} - Throws an error if the request fails or the response indicates failure.
+ */
+export const getTotalInvestedAmount = async function (): Promise<ITotalInvestedAmount> {
+    try {
+        // Send a GET request to fetch total invested amount
+        const response = await axiosInstance.get<ITotalInvestedAmount>(`/api/v1/investment/summary/total-invested`);
+
+        // Check if the response contains a success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return summary if successful
+        } else {
+            // Throw an error if the backend returned a failure message
+            throw new Error(response.data?.message || 'Failed to fetch total invested amount.');
+        }
+    } catch (error) {
+        // Log the error if needed, and re-throw it for upstream handling
+        console.error('Error fetching total invested amount:', error);
         throw error;
     }
 };

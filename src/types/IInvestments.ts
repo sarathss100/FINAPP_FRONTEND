@@ -232,3 +232,11 @@ export interface IInvestmentDetails {
         investment: Investments;
     }
 }
+
+export interface ITotalInvestedAmount {
+    success: boolean,
+    message: string,
+    data: {
+        totalInvestedAmount: number;
+    }
+}

@@ -14,13 +14,16 @@ import useInvestmentStore from "@/stores/investment/investmentStore";
 const InvestmentManagementBody = function () {
   const totalInvestedAmount = useInvestmentStore((state) => state.totalInvestedAmount);
   const currentValue = useInvestmentStore((state) => state.totalCurrentValue);
+  const totalReturns = useInvestmentStore((state) => state.totalCurrentValue);
   const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
   const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
+  const fetchTotalReturns = useInvestmentStore((state) => state.fetchTotalReturns);
 
   const handleStore = useCallback(() => {
     fetchTotalInvestedAmount();
     fetchCurrentValue();
-  }, [fetchTotalInvestedAmount, fetchCurrentValue]);
+    fetchTotalReturns();
+  }, [fetchTotalInvestedAmount, fetchCurrentValue, fetchTotalReturns]);
 
   useEffect(() => {
     handleStore();
@@ -495,12 +498,12 @@ const InvestmentManagementBody = function () {
               Total Returns
             </h2>
             <p className="font-normal text-3xl mb-4">
-              ₹ 24,94,000
+              ₹ {totalReturns.toFixed(2) || 0}
             </p>
             <div className="flex items-center">
               <Image src="/growthchart_white_icon.svg" alt="Trend" className="mr-2" width={16} height={16} />
               <span className="font-normal text-base">
-                +26.3% overall returns
+                {((totalReturns - totalInvestedAmount) * 100 / totalInvestedAmount).toFixed(2)}% overall returns
               </span>
             </div>
           </CardContent>

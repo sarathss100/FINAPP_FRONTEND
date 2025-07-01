@@ -248,3 +248,10 @@ export interface ITotalCurrentValue {
         currentTotalValue: number;
     }
 }
+export interface ITotalReturns {
+    success: boolean,
+    message: string,
+    data: {
+        totalReturns: number;
+    }
+}

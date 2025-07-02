@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails, ITotalCurrentValue, ITotalInvestedAmount, ITotalReturns } from '@/types/IInvestments';
+import { ICategorizedInvestments, IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails, ITotalCurrentValue, ITotalInvestedAmount, ITotalReturns } from '@/types/IInvestments';
 
 // Searches for stocks based on a keyword by sending a GET request to the backend API
 export const searchStocksFromApi = async function (keyword: string): Promise<IStockDetails> {
@@ -144,6 +144,31 @@ export const getTotalReturns = async function (): Promise<ITotalReturns> {
     } catch (error) {
         // Log the error if needed, and re-throw it for upstream handling
         console.error('Error fetching total returns:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetches all investments for the authenticated user, categorized by investment type.
+ *
+ * @returns {Promise<ICategorizedInvestments>} A promise resolving to the response data containing investments grouped by type (e.g., STOCK, MUTUAL_FUND).
+ * @throws {Error} Throws an error if the request fails or the response indicates failure.
+ */
+export const getCategorizedInvestments = async function (): Promise<ICategorizedInvestments> {
+    try {
+        // Send a GET request to fetch categorized investments
+        const response = await axiosInstance.get<ICategorizedInvestments>(`/api/v1/investment/categorized`);
+
+        // Check if the response contains a success flag
+        if (response.data && response.data.success) {
+            return response.data; // Return categorized investments if successful
+        } else {
+            // Throw an error if the backend returned a failure message
+            throw new Error(response.data?.message || 'Failed to fetch categorized investments.');
+        }
+    } catch (error) {
+        // Log the error and re-throw it for upstream handling
+        console.error('Error fetching categorized investments:', error);
         throw error;
     }
 };

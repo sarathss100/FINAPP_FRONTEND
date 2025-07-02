@@ -255,3 +255,11 @@ export interface ITotalReturns {
         totalReturns: number;
     }
 }
+
+export interface ICategorizedInvestments {
+    success: boolean,
+    message: string,
+    data: {
+        investments: Record<InvestmentType, Investments[]>;
+    }
+}

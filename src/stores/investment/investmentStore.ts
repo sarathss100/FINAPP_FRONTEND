@@ -1,4 +1,5 @@
-import { getTotalCurrentValue, getTotalInvestedAmount, getTotalReturns } from '@/service/investmentService';
+import { getCategorizedInvestments, getTotalCurrentValue, getTotalInvestedAmount, getTotalReturns } from '@/service/investmentService';
+import { Investments, InvestmentType } from '@/types/IInvestments';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -6,9 +7,11 @@ interface IInvestmentState {
     totalInvestedAmount: number; // Store the total Invested amount.
     totalCurrentValue: number; // Store the current total value.
     totalReturns: number; // Store the total returns.
+    investments: Record<InvestmentType, Investments[]>; // Store the invesments.
     fetchTotalInvestedAmount: () => Promise<void>; // Function to fetch Total Invested Amount
     fetchCurrentValue: () => Promise<void>; // Function to fetch Total Current Value
     fetchTotalReturns: () => Promise<void>; // Function to fetch total returns
+    fetchInvestments: () => Promise<void>; // Function to fetch investments.
     reset: () => void;
 }
 
@@ -18,6 +21,17 @@ const useInvestmentStore = create<IInvestmentState>()(
             totalInvestedAmount: 0,
             totalCurrentValue: 0,
             totalReturns: 0,
+            investments: {
+                "STOCK": [],
+                "BOND": [],
+                "BUSINESS": [],
+                "EPFO": [],
+                "FIXED_DEPOSIT": [],
+                "GOLD": [],
+                "MUTUAL_FUND": [],
+                "PROPERTY": [],
+                "PARKING_FUND": [],
+            },
 
             // Reset function
             reset: () => 
@@ -25,6 +39,17 @@ const useInvestmentStore = create<IInvestmentState>()(
                     totalInvestedAmount: 0,
                     totalCurrentValue: 0,
                     totalReturns: 0,
+                    investments: {
+                        "STOCK": [],
+                        "BOND": [],
+                        "BUSINESS": [],
+                        "EPFO": [],
+                        "FIXED_DEPOSIT": [],
+                        "GOLD": [],
+                        "MUTUAL_FUND": [],
+                        "PROPERTY": [],
+                        "PARKING_FUND": [],
+                    },
                 }),
 
             // Fetches total invested Amount
@@ -60,6 +85,30 @@ const useInvestmentStore = create<IInvestmentState>()(
                 } catch (error) {
                     console.error('Failed to fetch total returns', error);
                     set({ totalReturns: 0 });
+                }
+            },
+
+            // Fetches total returns
+            fetchInvestments: async () => {
+                try {
+                    const response = await getCategorizedInvestments();
+                    const data = await response.data;
+                    set({ investments: data.investments });
+                } catch (error) {
+                    console.error('Failed to fetch investments', error);
+                    set({ 
+                        investments: {
+                            "STOCK": [],
+                            "BOND": [],
+                            "BUSINESS": [],
+                            "EPFO": [],
+                            "FIXED_DEPOSIT": [],
+                            "GOLD": [],
+                            "MUTUAL_FUND": [],
+                            "PROPERTY": [],
+                            "PARKING_FUND": [],
+                        },
+                    });
                 }
             },
         }),

@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import { ICategorizedInvestments, IInvestmentDetails, IMutualFundSearchResult, Investments, IStockDetails, ITotalCurrentValue, ITotalInvestedAmount, ITotalReturns } from '@/types/IInvestments';
+import { ICategorizedInvestments, IInvestmentDetails, IMutualFundSearchResult, Investments, IRemoveInvestment, IStockDetails, ITotalCurrentValue, ITotalInvestedAmount, ITotalReturns } from '@/types/IInvestments';
 
 // Searches for stocks based on a keyword by sending a GET request to the backend API
 export const searchStocksFromApi = async function (keyword: string): Promise<IStockDetails> {
@@ -173,4 +173,27 @@ export const getCategorizedInvestments = async function (): Promise<ICategorized
     }
 };
 
+/**
+ * Removes an investment of the specified type and ID from the server.
+ *
+ * @param {string} investmentType - The type of investment (e.g., STOCK, MUTUAL_FUND).
+ * @param {string} investmentId - The ID of the investment to remove.
+ * @returns {Promise<IRemoveInvestment>} A promise resolving to the response data confirming deletion.
+ * @throws {Error} Throws an error if the deletion request fails or the response indicates failure.
+ */
+export const removeInvestment = async function (investmentType: string, investmentId: string): Promise<IRemoveInvestment> {
+    try {
+        // Send DELETE request to remove the investment
+        const response = await axiosInstance.post<IRemoveInvestment>(`/api/v1/investment/${investmentType}/${investmentId}`);
+
+        if (response.data && response.data.success) {
+            return response.data; // Return success response
+        } else {
+            throw new Error(response.data?.message || 'Failed to remove investment.');
+        }
+    } catch (error) {
+        console.error('Error removing investment:', error);
+        throw error;
+    }
+};
 

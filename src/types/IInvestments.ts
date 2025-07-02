@@ -14,6 +14,7 @@ export enum InvestmentType {
 
 // Base Interface 
 export interface IBaseInvestment {
+    _id?: string;
     userId: string;
     name: string;
     accountId: string;
@@ -262,4 +263,10 @@ export interface ICategorizedInvestments {
     data: {
         investments: Record<InvestmentType, Investments[]>;
     }
+}
+
+export interface IRemoveInvestment {
+    success: boolean,
+    message: string,
+    data: null,
 }

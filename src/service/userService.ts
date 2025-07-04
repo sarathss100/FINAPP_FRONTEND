@@ -1,4 +1,4 @@
-import IUserProfileDetails from '@/types/IUserProfileDetails';
+import IUserProfileDetails, { IToken } from '@/types/IUserProfileDetails';
 import axiosInstance from './axiosInstance';
 import IUserProfilePictureUrl, { IUserProfilePicture } from '@/types/IUserProfilePictureUrl';
 import IToggle2FA from '@/types/IToggle2FA';
@@ -109,6 +109,26 @@ export const deleteAccount = async function (): Promise<IDeleteAccount> {
     try {
         // The endpoint `/api/v1/user/profile/delete` is responsible for handling account deletion
         const response = await axiosInstance.delete<IDeleteAccount>(`/api/v1/user/me`);
+
+        // Check if the response contains data and if the `success` flag is set to true
+        if (response.data && response.data.success) {
+            // This typically includes confirmation or additional details about the deletion process
+            return response.data;
+        } else {
+            // Use the `message` field from the response if available, or provide a default error message
+            throw new Error(response.data?.message || `Failed to delete Account.`);
+        }
+    } catch (error) {
+        // Re-throw the error to allow upstream error handling (e.g., in the UI layer)
+        throw error;
+    }
+};
+
+// Toggles the Two-Factor Authentication (2FA) status for a user via the backend API
+export const getToken = async function (): Promise<IToken> {
+    try {
+        // The endpoint `/api/v1/user/profile/delete` is responsible for handling account deletion
+        const response = await axiosInstance.get<IToken>(`/api/v1/chat/token`);
 
         // Check if the response contains data and if the `success` flag is set to true
         if (response.data && response.data.success) {

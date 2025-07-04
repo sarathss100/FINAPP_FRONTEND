@@ -23,7 +23,6 @@ const UserHeader = function () {
   }
 
   const handleChatBubbleClick = function () {
-    console.log(`Button Clicked`);
     toggleChat();
   }
   

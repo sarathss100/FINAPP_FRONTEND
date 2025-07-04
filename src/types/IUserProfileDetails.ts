@@ -19,3 +19,10 @@ interface IUserProfileDetails {
 }
 
 export default IUserProfileDetails;
+
+
+export interface IToken {
+    success: boolean,
+    message: string,
+    data: { accessToken: string };
+}

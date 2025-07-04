@@ -5,10 +5,12 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 import { useUserStore } from '@/stores/store';
 import { useRouter } from 'next/navigation';
+import { useChatStore } from '@/stores/chat/chatStore';
 
 const UserHeader = function () {
   const profilePicture = useUserStore((state) => state.profilePicture);
   const fetchProfilePictureUrl = useUserStore((state) => state.fetchProfilePictureUrl);
+  const toggleChat = useChatStore((state) => state.toggleChat);
   
   const router = useRouter();
 
@@ -19,12 +21,17 @@ const UserHeader = function () {
   const handleAvatarClick = function () {
     router.push('/profile-settings');
   }
+
+  const handleChatBubbleClick = function () {
+    console.log(`Button Clicked`);
+    toggleChat();
+  }
   
   return (
     <header className="flex justify-end items-center mb-6">
       <div className="flex items-center gap-4">
         {/* Chat Bubble Icon */}
-        <div className="relative">
+        <div className="relative cursor-pointer hover:opacity-80 transition-opacity" onClick={handleChatBubbleClick}>
           <Image
             src="/chat-bubble.png"
             alt="Chat bubble"

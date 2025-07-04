@@ -2,6 +2,7 @@
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ChatBot from "@/components/user/chatbot/ChatBot";
 
 export default function RootLayout({
   children,
@@ -25,6 +26,7 @@ export default function RootLayout({
           draggable // Allow dragging to dismiss
           pauseOnHover // Pause on hover
         />
+        <ChatBot />
       </body>
     </html>
   );

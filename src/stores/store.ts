@@ -13,6 +13,8 @@ import useDebtStore from './debt/debtStore';
 import useFaqStore from './faqs/faqStore';
 import useTransactionStore from './transaction/transactionStore';
 import useInvestmentStore from './investment/investmentStore';
+import { useNotificationStore } from './notifications/notificationStore';
+import { useChatStore } from './chat/chatStore';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -76,6 +78,11 @@ export const useUserStore = create<IUserState>()(
 
                 // Reset the investment store 
                 useInvestmentStore.getState().reset();
+
+                // Disconnect the socket
+                useNotificationStore.getState().disconnectSocket();
+                useNotificationStore.getState().clearMessages();
+                useChatStore.getState().disconnectSocket();
 
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {

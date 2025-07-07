@@ -25,6 +25,10 @@ const UserHeader = function () {
   const handleChatBubbleClick = function () {
     toggleChat();
   }
+
+  const handleChatIconClick = function () {
+    router.push('/notifications');
+  }
   
   return (
     <header className="flex justify-end items-center mb-6">
@@ -40,7 +44,7 @@ const UserHeader = function () {
         </div>
 
         {/* Notification Bell Icon */}
-        <div className="relative">
+        <div className="relative" onClick={handleChatIconClick}>
           <BellIcon className="h-6 w-6" />
         </div>
 

@@ -41,6 +41,12 @@ export interface ITotalActiveGoalAmount {
     data: { totalActiveGoalAmount: number };
 }
 
+export interface ITotalInitialGoalAmount {
+    success: boolean,
+    message: string,
+    data: { totalInitialGoalAmount: number };
+}
+
 export interface ILongestTimePeriod {
     success: boolean,
     message: string,

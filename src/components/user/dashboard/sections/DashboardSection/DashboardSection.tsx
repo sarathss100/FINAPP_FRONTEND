@@ -1,42 +1,62 @@
+"use client";
 import {
   BarChart3Icon,
   DollarSignIcon,
   TrendingDownIcon,
   TrendingUpIcon,
 } from "lucide-react";
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import { Card, CardContent } from '@/components/base/Card';
+import { useAccountsStore, useGoalStore } from "@/stores/store";
+import useInvestmentStore from "@/stores/investment/investmentStore";
+import useDebtStore from "@/stores/debt/debtStore";
 
 const DashboardSection = function () {
+  const totalBalance = useAccountsStore((state) => state.totalBalance);
+  const totalGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
+  const totalInvestmentValue = useInvestmentStore((state) => state.totalInvestedAmount);
+  const totalDebt = useDebtStore((state) => state.totalOutstandingDebtAmount);
+  const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
+  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
+  const fetchTotalInvestment = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
+  const fetchTotalDebt = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
+
+  const handleStore = useCallback(() => {
+    fetchTotalActiveGoalAmount();
+    fetchTotalBalance();
+    fetchTotalInvestment();
+    fetchTotalDebt();
+  }, [fetchTotalActiveGoalAmount, fetchTotalBalance, fetchTotalInvestment, fetchTotalDebt]);
+
+  useEffect(() => {
+    handleStore();
+  }, [handleStore]);
+
   // Data for dashboard cards
   const dashboardCards = [
     {
       title: "Total Balance",
-      amount: "$24,500",
-      change: "+2.5% from last month",
+      amount: `₹ ${totalBalance.toFixed(2) || 0}`,
       isPositive: true,
       icon: <DollarSignIcon className="h-4 w-4 text-green-500" />,
     },
     {
-      title: "Total Spending",
-      amount: "$8,250",
-      change: "-0.8% from last month",
-      isPositive: false,
-      icon: <TrendingDownIcon className="h-4 w-4 text-red-500" />,
-    },
-    {
-      title: "Total Savings",
-      amount: "$12,750",
-      change: "+5.2% from last month",
+      title: "Goal Quest",
+      amount: `₹ ${totalGoalAmount.toFixed(2) || 0}`,
       isPositive: true,
       icon: <TrendingUpIcon className="h-4 w-4 text-green-500" />,
     },
     {
-      title: "Investments",
-      amount: "$3,500",
-      change: "+1.8% from last month",
+      title: "Total Investments",
+      amount: `₹ ${totalInvestmentValue.toFixed(2) || 0}`,
       isPositive: true,
       icon: <BarChart3Icon className="h-4 w-4 text-blue-500" />,
+    },
+    {
+      title: "Total Debt",
+      amount: `₹ ${totalDebt.toFixed(2) || 0}`,
+      isPositive: false,
+      icon: <TrendingDownIcon className="h-4 w-4 text-red-500" />,
     },
   ];
 
@@ -60,14 +80,6 @@ const DashboardSection = function () {
             <div className="mb-4">
               <div className="font-['Poppins',Helvetica] font-normal text-black text-2xl leading-[normal]">
                 {card.amount}
-              </div>
-            </div>
-
-            <div>
-              <div
-                className={`font-['Poppins',Helvetica] font-normal text-sm leading-[normal] ${card.isPositive ? "text-emerald-500" : "text-red-500"}`}
-              >
-                {card.change}
               </div>
             </div>
           </CardContent>

@@ -1,215 +1,375 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import Image from 'next/image';
 import Link from 'next/link';
+import useTransactionStore from "@/stores/transaction/transactionStore";
+import { useRouter } from 'next/navigation';
+import { useGoalStore } from "@/stores/store";
 
 const InsightsSection = function () {
-  // Budget data
-  const budgetCategories = [
-    { name: "Shopping", percentage: 75 },
-    { name: "Bills", percentage: 45 },
-    { name: "Entertainment", percentage: 90 },
-    { name: "Budget Amount Left", percentage: 50 },
-  ];
+  const [goalPercentage, setGoalPercentage] = useState(0);
+  const [filledGoal, setFilledGoal] = useState(0);
+  const router = useRouter();
+  const handleInflowTabClick = function () {
+    router.push('/income-analysis');
+  }; 
+  const handleOutflowTabClick = function () {
+    router.push('/expense-analysis');
+  };
+  const handleGoalTabClick = function () {
+    router.push('/goal-management');
+  };
 
-  // Recent transactions data
-  const transactions = [
-    {
-      name: "Amazon",
-      category: "Shopping",
-      amount: "-$120",
-      color: "bg-blue-100",
-      textColor: "text-red-500",
-      icon: "/shopping_bag_icon.svg",
-    },
-    {
-      name: "Salary",
-      category: "Deposit",
-      amount: "+$4,500",
-      color: "bg-emerald-100",
-      textColor: "text-emerald-500",
-      icon: "/arrow_down_icon.svg",
-    },
-    {
-      name: "Restaurant",
-      category: "Food",
-      amount: "-$45",
-      color: "bg-red-100",
-      textColor: "text-red-500",
-      icon: "/food_icon.svg",
-    },
-  ];
 
-  // Debt overview data
-  const debtCategories = [
-    { name: "Home Loan", percentage: 10 },
-    { name: "Car Loan", percentage: 45 },
-    { name: "Credit Cards", percentage: 90 },
-    { name: "Personal Loan", percentage: 50 },
-  ];
+  const transactionsByCategory = useTransactionStore((state) => state.allIncomeTransactions);
+  const outflowTransactionByCategory = useTransactionStore((state) => state.allExpenseTransactions);
+  const totalActiveGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
+  const totalInitialGoalAmount = useGoalStore((state) => state.totalInitialGoalAmount);
+  const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
+  const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
+  const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
+  const fetchActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
+  const fetchInitialGoalAmount = useGoalStore((state) => state.fetchTotalInitialGoalAmount);
 
-  // Income overview data
-  const incomeCategories = [
-    { name: "Salary", percentage: 10 },
-    { name: "Bank Interests", percentage: 45 },
-    { name: "Investment Returns", percentage: 90 },
-    { name: "Property Rent", percentage: 50 },
-  ];
+  // Separated the store fetching from calculations to prevent loops
+  useEffect(() => {
+    fetchMonthlyTotalIncome();
+    fetchAllIncomeTransactons();
+    fetchAllExpenseTransactons();
+    fetchActiveGoalAmount();
+    fetchInitialGoalAmount();
+  }, [
+    fetchMonthlyTotalIncome, 
+    fetchAllIncomeTransactons, 
+    fetchAllExpenseTransactons,
+    fetchActiveGoalAmount,
+    fetchInitialGoalAmount,
+  ]);
 
-  // Insurance overview data
-  const insuranceCategories = [
-    { name: "Health Insurance", percentage: 10 },
-    { name: "Term Insurance", percentage: 45 },
-    { name: "Life Insurance", percentage: 90 },
-    { name: "Vehicle Insurance", percentage: 50 },
-  ];
+  const goalData = useCallback(function() {
+    if (!totalInitialGoalAmount || !totalActiveGoalAmount) {
+      setGoalPercentage(0);
+      setFilledGoal(0);
+      return;
+    }
 
-  // Bank accounts data
-  const bankAccounts = [
-    {
-      name: "Chase Bank",
-      accountType: "Checking **** 1234",
-      balance: "$12,450.00",
-      icon: "/bank_icon.svg",
-    },
-    {
-      name: "Bank of America",
-      accountType: "Savings **** 5678",
-      balance: "$32,800.00",
-      icon: "/bank_icon.svg",
-    },
-  ];
+    // Calculate how much has been achieved
+    const achievedAmount = totalInitialGoalAmount - totalActiveGoalAmount;
 
-  // Smart insights data
-  const smartInsights = [
-    {
-      title: "Spending Pattern",
-      description:
-        "Your shopping expenses increased by 15% this month. Consider reviewing your budget.",
-      bgColor: "bg-blue-50",
-      icon: "/growth_icon.svg",
-    },
-    {
-      title: "Savings Opportunity",
-      description:
-        "You can save $200 more this month by reducing entertainment expenses.",
-      bgColor: "bg-emerald-50",
-      icon: "/piggy_icon.svg",
-    },
-    {
-      title: "Investment Tracking",
-      description:
-        "Consider diversifying your portfolio with ETFs for better long-term returns.",
-      bgColor: "bg-violet-50",
-      icon: "/growth_chart_icon.svg",
-    },
-  ];
+    // Calculate percentage of goal completed
+    const percentage = (achievedAmount / totalInitialGoalAmount) * 100;
+
+    // Ensure percentage is between 0 and 100
+    const clampedPercentage = Math.max(0, Math.min(100, percentage));
+
+    setGoalPercentage(clampedPercentage);
+    setFilledGoal(achievedAmount);
+  }, [totalActiveGoalAmount, totalInitialGoalAmount]);
+
+  useEffect(() => {
+    goalData();
+  },[goalData]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  // Annually Categorywise Section
+  const totalAmount = transactionsByCategory.reduce((sum, t) => sum += t.total, 0);
+
+  // Calculate percentages and create transactionByCategory
+  const incomeSourcesData = transactionsByCategory.map((transaction) => {
+    const percentage = Math.round((transaction.total / totalAmount) * 100);
+    
+    type CategoryType =
+      'INVESTMENTS' |
+      'MISCELLANEOUS' |
+      'SAVINGS' |
+      'SALARY' |
+      'FREELANCE' |
+      'BUSINESS_INCOME' |
+      'INVESTMENT_RETURN' |
+      'DIVIDEND' |
+      'INTEREST' |
+      'RENTAL_INCOME' |
+      'GIFT_RECEIVED' |
+      'BONUS' |
+      'GOVERNMENT_BENEFIT' |
+      'REFUND' |
+      'OTHER_INCOME' |
+      'REGULAR' |
+      'TRANSFER' |
+      'PAYMENT' |
+      'ADJUSTMENT' |
+      'DEPOSIT' |
+      'REWARD' |
+      'CASHBACK' |
+      'REDEMPTION';
+    
+    // Define colors and icons for each category
+    const categoryStyles: Record<CategoryType, { color: string; icon: string }> = {
+      'INVESTMENTS': { color: 'bg-blue-500', icon: '📈' },
+      'MISCELLANEOUS': { color: 'bg-gray-500', icon: '🔗' },
+      'SAVINGS': { color: 'bg-green-500', icon: '💰' },
+      'SALARY': { color: 'bg-green-500', icon: '💼' },
+      'FREELANCE': { color: 'bg-indigo-500', icon: '💻' },
+      'BUSINESS_INCOME': { color: 'bg-purple-500', icon: '🏢' },
+      'INVESTMENT_RETURN': { color: 'bg-blue-500', icon: '📈' },
+      'DIVIDEND': { color: 'bg-teal-500', icon: '🧮' },
+      'INTEREST': { color: 'bg-cyan-500', icon: '💹' },
+      'RENTAL_INCOME': { color: 'bg-yellow-600', icon: '🏠' },
+      'GIFT_RECEIVED': { color: 'bg-pink-500', icon: '🎁' },
+      'BONUS': { color: 'bg-orange-500', icon: '🎉' },
+      'GOVERNMENT_BENEFIT': { color: 'bg-gray-600', icon: '🏛️' },
+      'REFUND': { color: 'bg-red-400', icon: '↩️' },
+      'OTHER_INCOME': { color: 'bg-gray-400', icon: '📊' },
+      'REGULAR': { color: 'bg-blue-500', icon: '📄' },
+      'TRANSFER': { color: 'bg-blue-500', icon: '🔁' },
+      'PAYMENT': { color: 'bg-blue-500', icon: '💳' },
+      'ADJUSTMENT': { color: 'bg-blue-500', icon: '🔧' },
+      'DEPOSIT': { color: 'bg-blue-500', icon: '📥' },
+      'REWARD': { color: 'bg-blue-500', icon: '🏅' },
+      'CASHBACK': { color: 'bg-blue-500', icon: '💵' },
+      'REDEMPTION': { color: 'bg-blue-500', icon: '🎟️' },
+    };
+    
+    return {
+      name: transaction.category.charAt(0) + transaction.category.slice(1).toLowerCase(),
+      amount: transaction.total,
+      percentage,
+      icon: categoryStyles[transaction.category as CategoryType]?.icon || '📊',
+      color: 'bg-gray-400',
+    };
+  });
+
+  const expenseSourcesData = outflowTransactionByCategory.map((transaction) => {
+    const percentage = Math.round((transaction.total / totalAmount) * 100);
+    
+    type CategoryType =
+      'INVESTMENTS' |
+      'MISCELLANEOUS' |
+      'SAVINGS' |
+      'SALARY' |
+      'FREELANCE' |
+      'BUSINESS_INCOME' |
+      'INVESTMENT_RETURN' |
+      'DIVIDEND' |
+      'INTEREST' |
+      'RENTAL_INCOME' |
+      'GIFT_RECEIVED' |
+      'BONUS' |
+      'GOVERNMENT_BENEFIT' |
+      'REFUND' |
+      'OTHER_INCOME' |
+      'REGULAR' |
+      'TRANSFER' |
+      'PAYMENT' |
+      'ADJUSTMENT' |
+      'DEPOSIT' |
+      'REWARD' |
+      'CASHBACK' |
+      'REDEMPTION';
+    
+    // Define colors and icons for each category
+    const categoryStyles: Record<CategoryType, { color: string; icon: string }> = {
+      'INVESTMENTS': { color: 'bg-blue-500', icon: '📈' },
+      'MISCELLANEOUS': { color: 'bg-gray-500', icon: '🔗' },
+      'SAVINGS': { color: 'bg-green-500', icon: '💰' },
+      'SALARY': { color: 'bg-green-500', icon: '💼' },
+      'FREELANCE': { color: 'bg-indigo-500', icon: '💻' },
+      'BUSINESS_INCOME': { color: 'bg-purple-500', icon: '🏢' },
+      'INVESTMENT_RETURN': { color: 'bg-blue-500', icon: '📈' },
+      'DIVIDEND': { color: 'bg-teal-500', icon: '🧮' },
+      'INTEREST': { color: 'bg-cyan-500', icon: '💹' },
+      'RENTAL_INCOME': { color: 'bg-yellow-600', icon: '🏠' },
+      'GIFT_RECEIVED': { color: 'bg-pink-500', icon: '🎁' },
+      'BONUS': { color: 'bg-orange-500', icon: '🎉' },
+      'GOVERNMENT_BENEFIT': { color: 'bg-gray-600', icon: '🏛️' },
+      'REFUND': { color: 'bg-red-400', icon: '↩️' },
+      'OTHER_INCOME': { color: 'bg-gray-400', icon: '📊' },
+      'REGULAR': { color: 'bg-blue-500', icon: '📄' },
+      'TRANSFER': { color: 'bg-blue-500', icon: '🔁' },
+      'PAYMENT': { color: 'bg-blue-500', icon: '💳' },
+      'ADJUSTMENT': { color: 'bg-blue-500', icon: '🔧' },
+      'DEPOSIT': { color: 'bg-blue-500', icon: '📥' },
+      'REWARD': { color: 'bg-blue-500', icon: '🏅' },
+      'CASHBACK': { color: 'bg-blue-500', icon: '💵' },
+      'REDEMPTION': { color: 'bg-blue-500', icon: '🎟️' },
+    };
+    
+    return {
+      name: transaction.category.charAt(0) + transaction.category.slice(1).toLowerCase(),
+      amount: transaction.total,
+      percentage,
+      icon: categoryStyles[transaction.category as CategoryType]?.icon || '📊',
+      color: 'bg-gray-400',
+    };
+  });
+
+    // Income overview data
+    const incomeCategories = [
+      { name: "Salary", percentage: 10 },
+      { name: "Bank Interests", percentage: 45 },
+      { name: "Investment Returns", percentage: 90 },
+      { name: "Property Rent", percentage: 50 },
+    ];
+
+    // Bank accounts data
+    const bankAccounts = [
+      {
+        name: "Chase Bank",
+        accountType: "Checking **** 1234",
+        balance: "$12,450.00",
+        icon: "/bank_icon.svg",
+      },
+      {
+        name: "Bank of America",
+        accountType: "Savings **** 5678",
+        balance: "$32,800.00",
+        icon: "/bank_icon.svg",
+      },
+    ];
 
   return (
     <section className="w-full py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Budget Overview Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
+        {/* Recent Transactions Card */}
+        <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleInflowTabClick}>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Budget Overview
+              Inflow Overview 
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {budgetCategories.map((category, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.name}
-                    </span>
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.percentage}%
-                    </span>
+              <div className="space-y-4">
+                {incomeSourcesData.map((source, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="text-2xl">{source.icon}</div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{source.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-32 bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${source.color}`}
+                              style={{ width: `${source.percentage}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600">{source.percentage}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900">{formatCurrency(source.amount)}</div>
+                    </div>
                   </div>
-                  <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                    <div
-                      className="h-2 bg-[#00a9e0] rounded-full"
-                      style={{ width: `${category.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Transactions Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
+        {/* Debt Overview Card */}
+        <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleOutflowTabClick}>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Recent Transactions
+              Outflow Overview 
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {transactions.map((transaction, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full ${transaction.color} flex items-center justify-center`}
-                    >
-                      <div className="relative flex items-center justify-center">
-                        <Image
-                          className="relative"
-                          alt="Icon"
-                          src={transaction.icon}
-                          width={24}
-                          height={24}
-                        />
+              <div className="space-y-4">
+                {expenseSourcesData.map((source, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="text-2xl">{source.icon}</div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{source.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-32 bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${source.color}`}
+                              style={{ width: `${source.percentage}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600">{source.percentage}%</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="ml-3">
-                      <div className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                        {transaction.name}
-                      </div>
-                      <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
-                        {transaction.category}
-                      </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900">{formatCurrency(source.amount)}</div>
                     </div>
                   </div>
-                  <div
-                    className={`${transaction.textColor} text-base font-normal [font-family:'Poppins',Helvetica]`}
-                  >
-                    {transaction.amount}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Total Goal Progress Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
+        <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleGoalTabClick}>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Total Goal Progress
+              Goal Overview
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center">
-              <div className="relative w-32 h-32 rounded-full border-8 border-solid border-[#00a9e0] flex items-center justify-center mb-8">
-                <div className="text-center">
-                  <div className="text-2xl font-normal [font-family:'Poppins',Helvetica]">
-                    75%
-                  </div>
-                  <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
-                    Vacation Fund
+              <div className="relative w-32 h-32 mb-8">
+                {/* Background Circle */}
+                <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="8"
+                  />
+                  {/* Progress Circle */}
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke="#00a9e0"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 50}`}
+                    strokeDashoffset={`${2 * Math.PI * 50 * (1 - goalPercentage / 100)}`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-2xl font-normal [font-family:'Poppins',Helvetica]">
+                      {goalPercentage.toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
+                      Goal Progress
+                    </div>
                   </div>
                 </div>
               </div>
               <div className="w-full space-y-2">
                 <div className="flex justify-between text-sm font-normal [font-family:'Poppins',Helvetica]">
-                  <span>Current: $3,750</span>
-                  <span>Goal: $5,000</span>
+                  <span>Achieved: {formatCurrency(filledGoal)}</span>
+                  <span>Target: {formatCurrency(totalInitialGoalAmount)}</span>
                 </div>
                 <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                  <div className="h-2 w-[75%] bg-[#00a9e0] rounded-full" />
+                  <div 
+                    className="h-2 bg-[#00a9e0] rounded-full transition-all duration-300" 
+                    style={{ width: `${goalPercentage}%` }}
+                  />
+                </div>
+                <div className="text-center text-xs text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
+                  Remaining: {formatCurrency(totalActiveGoalAmount)}
                 </div>
               </div>
             </div>
@@ -220,7 +380,7 @@ const InsightsSection = function () {
         <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Emergency Fund Progress
+              Debt Overview 
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -248,42 +408,11 @@ const InsightsSection = function () {
           </CardContent>
         </Card>
 
-        {/* Debt Overview Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Debt Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {debtCategories.map((category, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.name}
-                    </span>
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.percentage}%
-                    </span>
-                  </div>
-                  <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                    <div
-                      className="h-2 bg-[#00a9e0] rounded-full"
-                      style={{ width: `${category.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Income Overview Card */}
         <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Income Overview
+              Investement Overview 
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -310,11 +439,11 @@ const InsightsSection = function () {
           </CardContent>
         </Card>
 
-        {/* Upcoming Payments Card */}
+        {/* Insurance Overview */}
         <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica] text-[#004a7c]">
-              Upcoming Payments
+              Insurance Overview 
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -345,69 +474,6 @@ const InsightsSection = function () {
             </div>
           </CardContent>
         </Card>
-
-        {/* Tax Overview Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Tax Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center">
-              <div className="relative w-32 h-32 rounded-full border-8 border-solid border-[#00a9e0] flex items-center justify-center mb-8">
-                <div className="text-center">
-                  <div className="text-2xl font-normal [font-family:'Poppins',Helvetica]">
-                    0%
-                  </div>
-                  <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
-                    Taxable
-                  </div>
-                </div>
-              </div>
-              <div className="w-full space-y-2">
-                <div className="flex justify-between text-sm font-normal [font-family:'Poppins',Helvetica]">
-                  <span>Current: $3,750</span>
-                  <span>Tax: $0</span>
-                </div>
-                <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                  <div className="h-2 w-[75%] bg-[#00a9e0] rounded-full" />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Insurance Overview Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Insurance Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {insuranceCategories.map((category, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.name}
-                    </span>
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.percentage}%
-                    </span>
-                  </div>
-                  <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                    <div
-                      className="h-2 bg-[#00a9e0] rounded-full"
-                      style={{ width: `${category.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Spending Behavior Score Section */}
@@ -428,7 +494,7 @@ const InsightsSection = function () {
               10-14 Points: Good Progress
             </h3>
             <p className="text-base font-normal [font-family:'Poppins',Helvetica] text-gray-700 mt-2">
-              You`&apos`re on the right track with balanced financial habits. Continue
+              You&apos;re on the right track with balanced financial habits. Continue
               to build your emergency fund and work on increasing your savings
               rate.
             </p>
@@ -436,34 +502,6 @@ const InsightsSection = function () {
         </CardContent>
         </Card>
         </Link>
-
-      {/* Smart Insights Section */}
-      <Card className="mt-6 shadow-[0px_1px_2px_#0000000d] rounded-xl">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-            Smart Insights
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {smartInsights.map((insight, index) => (
-              <div key={index} className={`${insight.bgColor} rounded-lg p-4`}>
-                <div className="flex items-center mb-4">
-                  <div className="flex items-center justify-center">
-                    <Image alt="Icon" src={insight.icon} height={16} width={16} />
-                  </div>
-                  <h3 className="ml-2 text-base font-normal [font-family:'Poppins',Helvetica]">
-                    {insight.title}
-                  </h3>
-                </div>
-                <p className="text-sm font-normal [font-family:'Poppins',Helvetica] text-gray-600">
-                  {insight.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </section>
   );
 };

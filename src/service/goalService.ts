@@ -1,6 +1,6 @@
 import ISmartAnalysisResult from '@/types/ISmartAnalysis';
 import axiosInstance from './axiosInstance';
-import { IGoal, IGoalDetail, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount, IGoalTransaction } from '@/types/IGoal';
+import { IGoal, IGoalDetail, IGoalDailyContributionAmount, IGoalDeleted, IGoalDetails, IGoalMonthlyContributionAmount, ILongestTimePeriod, ITotalActiveGoalAmount, IGoalTransaction, ITotalInitialGoalAmount } from '@/types/IGoal';
 import ICategoryByGoals from '@/types/ICategoryByGoals';
 
 // Sends a request to create a new goal for a user via the backend API
@@ -47,6 +47,25 @@ export const getTotalActiveGoalAmount = async function (): Promise<ITotalActiveG
     try {
         // Send a GET request to fetch the user's goal details
         const response = await axiosInstance.get<ITotalActiveGoalAmount>('/api/v1/goal/summary/total');
+
+        // Validate the response
+        if (response.data && response.data.success) {
+            return response.data; // Return the goal details if the request was successful
+        } else {
+            // Throw an error if the response indicates failure
+            throw new Error(response.data?.message || 'Failed to retrieve the goal details.');
+        }
+    } catch (error) {
+        // Re-throw the error for upstream handling
+        throw error;
+    }
+};
+
+// Sends a request to retrieve goal details for a user via the backend API
+export const getTotalInitialGoalAmount = async function (): Promise<ITotalInitialGoalAmount> {
+    try {
+        // Send a GET request to fetch the user's goal details
+        const response = await axiosInstance.get<ITotalInitialGoalAmount>('/api/v1/goal/summary/initial/total');
 
         // Validate the response
         if (response.data && response.data.success) {

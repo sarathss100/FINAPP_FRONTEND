@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Button from '../../base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../base/Card';
 import { toast } from 'react-toastify';
-import { useUserStore } from '@/stores/store';
+import { useGoalStore, useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
 import { deleteAccount, getUserProfileDetails, toggleUserTwoFactorAuthentication } from '@/service/userService';
@@ -19,6 +19,8 @@ import { Switch } from '@/components/base/switch';
 import { signout } from '@/service/authenticationService';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import ProfilePicture from '@/components/base/ProfilePicture';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export const ProfileBody = function () {
   const [loading, setLoading] = useState(true);
@@ -34,6 +36,19 @@ export const ProfileBody = function () {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
+
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+  const goals = useGoalStore((state: any) => state.goals);
+  const fetchAllGoals = useGoalStore((state: any) => state.fetchAllGoals);
+
+  const handleStore = useCallback(function() {
+    fetchAllGoals();
+  }, [fetchAllGoals]);
+
+  useEffect(() => {
+    handleStore();
+  }, [handleStore]);
 
   // Access Zustand store's state and actions
   const { user, login, logout } = useUserStore();
@@ -151,6 +166,290 @@ export const ProfileBody = function () {
     // Redirect to login page
     window.location.replace('/login');
   }
+
+  // Function to generate Report 
+  const handleGenerateReport = async function() {
+    if (!goals || goals.length === 0) {
+      toast.error('No goals data available to generate report');
+      return;
+    }
+
+    setIsGeneratingReport(true);
+    
+    try {
+      // Initialize PDF document
+      const doc = new jsPDF();
+      
+      // Set up document properties
+      doc.setProperties({
+        title: 'Financial Goals Report',
+        subject: 'Personal Finance Goals Summary',
+        author: `${user?.firstName} ${user?.lastName}`,
+        creator: 'Goal Tracker App'
+      });
+
+      // Document margins and positioning
+      const margin = 20;
+      let yPosition = margin;
+      
+      // Header Section
+      doc.setFontSize(24);
+      doc.setTextColor(0, 74, 124); // Blue color
+      doc.text('Financial Goals Report', margin, yPosition);
+      yPosition += 15;
+      
+      // User Information
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, yPosition);
+      yPosition += 8;
+      doc.text(`Account Holder: ${user?.firstName} ${user?.lastName}`, margin, yPosition);
+      yPosition += 8;
+      doc.text(`Phone: ${user?.phoneNumber}`, margin, yPosition);
+      yPosition += 20;
+
+      // Executive Summary
+      doc.setFontSize(16);
+      doc.setTextColor(0, 74, 124);
+      doc.text('Executive Summary', margin, yPosition);
+      yPosition += 10;
+      
+      // Calculate summary statistics
+      const totalGoals = goals.length;
+      const completedGoals = goals.filter((goal: any) => goal.is_completed).length;
+      const activeGoals = totalGoals - completedGoals;
+      const totalTargetAmount = goals.reduce((sum: number, goal: any) => sum + goal.target_amount, 0);
+      const totalCurrentAmount = goals.reduce((sum: number, goal: any) => sum + goal.current_amount, 0);
+      const totalProgress = totalTargetAmount > 0 ? ((totalCurrentAmount / totalTargetAmount) * 100).toFixed(1) : 0;
+      
+      doc.setFontSize(11);
+      doc.setTextColor(60, 60, 60);
+      
+      const summaryData = [
+        ['Total Goals', totalGoals.toString()],
+        ['Active Goals', activeGoals.toString()],
+        ['Completed Goals', completedGoals.toString()],
+        ['Total Target Amount', `₹${totalTargetAmount.toLocaleString()}`],
+        ['Total Current Amount', `₹${totalCurrentAmount.toLocaleString()}`],
+        ['Overall Progress', `${totalProgress}%`]
+      ];
+      
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [['Metric', 'Value']],
+        body: summaryData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [0, 74, 124],
+          textColor: [255, 255, 255],
+          fontSize: 12,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 10,
+          textColor: [60, 60, 60]
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        margin: { left: margin, right: margin },
+        tableWidth: 'auto',
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 60, halign: 'right' }
+        }
+      });
+      
+      yPosition = (doc as any).lastAutoTable.finalY + 20;
+
+      // Goals by Category Analysis
+      doc.setFontSize(16);
+      doc.setTextColor(0, 74, 124);
+      doc.text('Goals by Category', margin, yPosition);
+      yPosition += 10;
+      
+      // Group goals by category
+      const goalsByCategory = goals.reduce((acc: any, goal: any) => {
+        const category = goal.goal_category || 'Uncategorized';
+        if (!acc[category]) {
+          acc[category] = {
+            count: 0,
+            totalTarget: 0,
+            totalCurrent: 0,
+            completed: 0
+          };
+        }
+        acc[category].count++;
+        acc[category].totalTarget += goal.target_amount;
+        acc[category].totalCurrent += goal.current_amount;
+        if (goal.is_completed) acc[category].completed++;
+        return acc;
+      }, {});
+      
+      const categoryData = Object.entries(goalsByCategory).map(([category, data]: [string, any]) => [
+        category,
+        data.count.toString(),
+        data.completed.toString(),
+        `₹${data.totalTarget.toLocaleString()}`,
+        `₹${data.totalCurrent.toLocaleString()}`,
+        `${((data.totalCurrent / data.totalTarget) * 100).toFixed(1)}%`
+      ]);
+      
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [['Category', 'Total', 'Completed', 'Target Amount', 'Current Amount', 'Progress']],
+        body: categoryData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [0, 74, 124],
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 9,
+          textColor: [60, 60, 60]
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        margin: { left: margin, right: margin }
+      });
+      
+      yPosition = (doc as any).lastAutoTable.finalY + 20;
+
+      // Check if we need a new page
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      // Detailed Goals Table
+      doc.setFontSize(16);
+      doc.setTextColor(0, 74, 124);
+      doc.text('Detailed Goals Information', margin, yPosition);
+      yPosition += 10;
+      
+      // Prepare detailed goals data
+      const detailedGoalsData = goals.map((goal: any) => [
+        goal.goal_name,
+        goal.goal_category || 'N/A',
+        goal.goal_type || 'N/A',
+        `₹${goal.target_amount.toLocaleString()}`,
+        `₹${goal.current_amount.toLocaleString()}`,
+        `${((goal.current_amount / goal.target_amount) * 100).toFixed(1)}%`,
+        goal.priority_level || 'N/A',
+        new Date(goal.target_date).toLocaleDateString(),
+        goal.is_completed ? 'Yes' : 'No'
+      ]);
+      
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [['Goal Name', 'Category', 'Type', 'Target', 'Current', 'Progress', 'Priority', 'Target Date', 'Completed']],
+        body: detailedGoalsData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [0, 74, 124],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [60, 60, 60]
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        margin: { left: margin, right: margin },
+        columnStyles: {
+          0: { cellWidth: 35 }, // Goal Name
+          1: { cellWidth: 20 }, // Category
+          2: { cellWidth: 20 }, // Type
+          3: { cellWidth: 25 }, // Target
+          4: { cellWidth: 25 }, // Current
+          5: { cellWidth: 20 }, // Progress
+          6: { cellWidth: 20 }, // Priority
+          7: { cellWidth: 25 }, // Target Date
+          8: { cellWidth: 15 }  // Completed
+        }
+      });
+
+      // Add contributions details if available
+      if (goals.some((goal: any) => goal.contributions && goal.contributions.length > 0)) {
+        doc.addPage();
+        yPosition = margin;
+        
+        doc.setFontSize(16);
+        doc.setTextColor(0, 74, 124);
+        doc.text('Recent Contributions', margin, yPosition);
+        yPosition += 10;
+        
+        // Collect all contributions
+        const allContributions: any[] = [];
+        goals.forEach((goal: any) => {
+          if (goal.contributions && goal.contributions.length > 0) {
+            goal.contributions.forEach((contribution: any) => {
+              allContributions.push([
+                goal.goal_name,
+                `₹${contribution.amount.toLocaleString()}`,
+                new Date(contribution.date).toLocaleDateString(),
+                contribution.description || 'N/A'
+              ]);
+            });
+          }
+        });
+        
+        // Sort by date (most recent first)
+        allContributions.sort((a, b) => new Date(b[2]).getTime() - new Date(a[2]).getTime());
+        
+        if (allContributions.length > 0) {
+          (doc as any).autoTable({
+            startY: yPosition,
+            head: [['Goal Name', 'Amount', 'Date', 'Description']],
+            body: allContributions.slice(0, 20),
+            theme: 'grid',
+            headStyles: {
+              fillColor: [0, 74, 124],
+              textColor: [255, 255, 255],
+              fontSize: 10,
+              fontStyle: 'bold'
+            },
+            bodyStyles: {
+              fontSize: 9,
+              textColor: [60, 60, 60]
+            },
+            alternateRowStyles: {
+              fillColor: [245, 245, 245]
+            },
+            margin: { left: margin, right: margin }
+          });
+        }
+      }
+
+      // Footer on all pages
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
+        doc.text('Generated by Goal Tracker App', margin, doc.internal.pageSize.height - 10);
+      }
+
+      // Save the PDF
+      const fileName = `financial-goals-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      toast.success('PDF report generated successfully!');
+      
+    } catch (error) {
+      console.error('Error generating PDF report:', error);
+      toast.error('Failed to generate PDF report. Please try again.');
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   const handleAccountDeletion = async function () {
     try {
@@ -356,12 +655,16 @@ export const ProfileBody = function () {
                   <DownloadIcon className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-base text-gray-800">Back up Data</p>
-                  <p className="text-sm text-gray-500">Export your account data for safekeeping</p>
+                  <p className="font-medium text-base text-gray-800">Generate Report</p>
+                  <p className="text-sm text-gray-500">Download a comprehensive PDF report of your financial data</p>
                 </div>
               </div>
-              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-md px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200">
-                Import/Export
+              <Button 
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-md px-4 py-2 shadow-md hover:shadow-lg transition-all duration-200"
+                onClick={handleGenerateReport}
+                disabled={isGeneratingReport}
+              >
+                {isGeneratingReport ? 'Generating...' : 'Generate PDF Report'} 
               </Button>
             </div>
           </div>

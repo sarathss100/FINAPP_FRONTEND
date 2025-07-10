@@ -6,7 +6,7 @@ import { getToken } from '@/service/userService';
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'user' | 'admin';
   timestamp: Date;
 }
 
@@ -39,6 +39,7 @@ interface ChatState {
   sendMessage: (message: string) => void;
   clearMessages: () => void;
   testConnection: () => void;
+  loadHistory: (messages: Message[]) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -49,7 +50,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     {
       id: '1',
       text: "Hello! I'm your AI assistant. How can I help you today?",
-      sender: 'bot',
+      sender: 'admin',
       timestamp: new Date(),
     },
   ],
@@ -83,6 +84,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   maximizeChat: () => set({ isMinimized: false }),
 
+  loadHistory: (messages: Message[]) => set({ messages }),
+
   setInputValue: (value: string) => set({ inputValue: value }),
 
   addMessage: (message: Message) => 
@@ -113,6 +116,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const newSocket = io(socketUrl, {
         auth: {
           accessToken,
+          clientType: 'user'
         },
         transports: ['websocket', 'polling'],
         timeout: 20000,
@@ -205,25 +209,39 @@ export const useChatStore = create<ChatState>((set, get) => ({
       get().addMessage({
       id: Date.now().toString(),
       text: `Connected successfully! Socket ID: ${data.socketId}`,
-      sender: 'bot',
+      sender: 'admin',
       timestamp: new Date(),
       });
     });
 
-    newSocket.on('bot_response', (data: { message: string; id: string }) => {
-      console.log('📨 Received bot response:', data);
+    newSocket.on('chat_history', (history: { _id: string; userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[]) => {
+      console.log('📜 Received chat history:', history);
+      const parsedMessages: Message[] = history.map((msg) => ({
+        id: msg.userId,
+        key: msg._id,
+        text: msg.message,
+        sender: msg.role,
+        timestamp: new Date(msg.timestamp),
+      }));
+
+      get().loadHistory(parsedMessages);
+    });
+
+
+    newSocket.on('user_message', (data: { message: string; id: string }) => {
+      console.log('📨 Received user_message from admin:', data);
       const { setIsTyping, addMessage } = get();
       setIsTyping(false);
       addMessage({
         id: data.id || Date.now().toString(),
         text: data.message,
-        sender: 'bot',
+        sender: 'admin',
         timestamp: new Date(),
       });
     });
 
-    newSocket.on('bot_typing', () => {
-      console.log('⌨️ Bot is typing...');
+    newSocket.on('admin_typing', () => {
+      console.log('⌨️ Admin is typing...');
       set({ isTyping: true });
     });
 
@@ -290,7 +308,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         addMessage({
           id: (Date.now() + 1).toString(),
           text: "I'm sorry, I'm having trouble connecting to the server. Please try again later.",
-          sender: 'bot',
+          sender: 'admin',
           timestamp: new Date(),
         });
       }, 1000);

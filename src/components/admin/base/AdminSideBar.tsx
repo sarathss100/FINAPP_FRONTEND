@@ -1,12 +1,11 @@
 "use client"
 import {
-  // BarChartIcon,
   FileTextIcon,
-  // LayoutDashboardIcon,
   MonitorIcon,
   SettingsIcon,
   UsersIcon,
-  LogOutIcon
+  LogOutIcon,
+  BarChartIcon
 } from "lucide-react";
 import { useState } from "react";
 import { usePathname, useRouter } from 'next/navigation';
@@ -46,11 +45,11 @@ export const AdminSideBar = () => {
       label: "User Management",
       route: "/admin/user-management"
     },
-    // {
-    //   icon: <BarChartIcon className="h-4 w-4" />,
-    //   label: "Analytics & Reports",
-    //   route: "/admin/analytics-reports"
-    // },
+    {
+      icon: <BarChartIcon className="h-4 w-4" />,
+      label: "Admin Chats",
+      route: "/admin/admin-chat"
+    },
     {
       icon: <FileTextIcon className="h-4 w-4" />,
       label: "Content Management",

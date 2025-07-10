@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
 const ADMIN_ROUTES = [
     '/admin/dashboard',
     '/admin/user-management',
+    '/admin/admin-chat',
     '/admin/analytics-reports',
     '/admin/content-management',
     '/admin/system-overview',

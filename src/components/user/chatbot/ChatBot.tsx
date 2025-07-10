@@ -94,9 +94,9 @@ const ChatBot = () => {
         {!isMinimized && (
           <>
             <div className="flex-1 overflow-y-auto p-4 space-y-4 h-80">
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <div
-                  key={message.id}
+                  key={index}
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
@@ -107,7 +107,7 @@ const ChatBot = () => {
                     }`}
                   >
                     <div className="flex items-start gap-2">
-                      {message.sender === 'bot' && <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />}
+                      {message.sender === 'admin' && <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />}
                       {message.sender === 'user' && <User className="w-4 h-4 mt-0.5 flex-shrink-0" />}
                       <div>
                         <p className="text-sm">{message.text}</p>

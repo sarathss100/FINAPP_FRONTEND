@@ -14,11 +14,11 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('Request Config:', config); // Log request details
+    // console.log('Request Config:', config); // Log request details
     return config;
   },
   (error) => {
-    console.error('Request Error:', error); // Log request errors
+    //console.error('Request Error:', error); // Log request errors
     return Promise.reject(error);
   }
 );
@@ -26,17 +26,17 @@ axiosInstance.interceptors.request.use(
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log('Response Data:', response.data); // Log response data
+    //console.log('Response Data:', response.data); // Log response data
     return response;
   },
   (error) => {
-    console.error('Response Error:', error); // Log response errors
+    //console.error('Response Error:', error); // Log response errors
     if (error.response) {
-      console.error('Response Body:', error.response.data.message);
+      //console.error('Response Body:', error.response.data.message);
     } else if (error.request) {
-      console.error('No response received:', error.request);
+      //console.error('No response received:', error.request);
     } else {
-      console.error('Error Message:', error.message);
+      //console.error('Error Message:', error.message);
     }
     return Promise.reject(error.response.data);
   }

@@ -1,15 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
-import Image from 'next/image';
 import Link from 'next/link';
 import useTransactionStore from "@/stores/transaction/transactionStore";
 import { useRouter } from 'next/navigation';
-import { useGoalStore } from "@/stores/store";
+import { useGoalStore, useInsuranceStore } from "@/stores/store";
+import useDebtStore from "@/stores/debt/debtStore";
+import useInvestmentStore from "@/stores/investment/investmentStore";
 
 const InsightsSection = function () {
   const [goalPercentage, setGoalPercentage] = useState(0);
   const [filledGoal, setFilledGoal] = useState(0);
+  const [debtPercentage, setDebtPercentage] = useState(0);
+  const [leftToPay, setLeftToPay] = useState(0);
+  const [profitLossPercentage, setProfitLossPercentage] = useState(0);
+
   const router = useRouter();
+
   const handleInflowTabClick = function () {
     router.push('/income-analysis');
   }; 
@@ -19,17 +25,40 @@ const InsightsSection = function () {
   const handleGoalTabClick = function () {
     router.push('/goal-management');
   };
-
-
+  const handleDebtTabClick = function () {
+    router.push('/debt-analysis');
+  };
+  const handleInvestmentTabClick = function () {
+    router.push('/investments');
+  };
+  const handleInsuranceTabClick = function () {
+    router.push('/insurances');
+  };
   const transactionsByCategory = useTransactionStore((state) => state.allIncomeTransactions);
   const outflowTransactionByCategory = useTransactionStore((state) => state.allExpenseTransactions);
   const totalActiveGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
   const totalInitialGoalAmount = useGoalStore((state) => state.totalInitialGoalAmount);
+  const totalDebt = useDebtStore((state) => state.totalDebt);
+  const totalOutstandingDebtAmount = useDebtStore((state) => state.totalOutstandingDebtAmount);
+  const totalInvestedAmount = useInvestmentStore((state) => state.totalInvestedAmount);
+  const currentValue = useInvestmentStore((state) => state.totalCurrentValue);
+  const totalReturns = useInvestmentStore((state) => state.totalCurrentValue);
+  const totalInsuranceCoverage = useInsuranceStore((state) => state.totalInsuranceCoverage);
+  const totalAnnualPremium = useInsuranceStore((state) => state.totalAnnualInsurancePremium);
+  const upcomingPaymentDate = useInsuranceStore((state) => state.insuranceWithClosestNextPaymentDate);
   const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
   const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
   const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
   const fetchActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
   const fetchInitialGoalAmount = useGoalStore((state) => state.fetchTotalInitialGoalAmount);
+  const fetchTotalDebt = useDebtStore((state) => state.fetchTotalDebt);
+  const fetchTotalOutstandingDebtAmount = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
+  const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
+  const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
+  const fetchTotalReturns = useInvestmentStore((state) => state.fetchTotalReturns);
+  const fetchTotalInsuranceCoverage = useInsuranceStore((state) => state.fetchTotalInsuranceCoverage);
+  const fetchTotalAnnualPremium = useInsuranceStore((state) => state.fetchTotalAnnualInsurancePremium);
+  const fetchUpcomingPaymentDate = useInsuranceStore((state) => state.fetchInsuranceWithClosestNextPaymentDate);
 
   // Separated the store fetching from calculations to prevent loops
   useEffect(() => {
@@ -38,12 +67,28 @@ const InsightsSection = function () {
     fetchAllExpenseTransactons();
     fetchActiveGoalAmount();
     fetchInitialGoalAmount();
+    fetchTotalDebt();
+    fetchTotalOutstandingDebtAmount();
+    fetchTotalInvestedAmount();
+    fetchCurrentValue();
+    fetchTotalReturns();
+    fetchTotalInsuranceCoverage();
+    fetchTotalAnnualPremium();
+    fetchUpcomingPaymentDate();
   }, [
     fetchMonthlyTotalIncome, 
     fetchAllIncomeTransactons, 
     fetchAllExpenseTransactons,
     fetchActiveGoalAmount,
     fetchInitialGoalAmount,
+    fetchTotalDebt,
+    fetchTotalOutstandingDebtAmount,
+    fetchTotalInvestedAmount,
+    fetchCurrentValue,
+    fetchTotalReturns,
+    fetchTotalInsuranceCoverage,
+    fetchTotalAnnualPremium,
+    fetchUpcomingPaymentDate,
   ]);
 
   const goalData = useCallback(function() {
@@ -66,9 +111,48 @@ const InsightsSection = function () {
     setFilledGoal(achievedAmount);
   }, [totalActiveGoalAmount, totalInitialGoalAmount]);
 
+  const debtData = useCallback(function() {
+    if (!totalDebt || !totalOutstandingDebtAmount) {
+      setDebtPercentage(0);
+      setLeftToPay(0);
+      return;
+    }
+
+    // Calculate how much has been left to pay
+    const leftToPay = totalOutstandingDebtAmount;
+
+    // Calculate percentage of goal completed
+    const percentage = 100 - ((totalDebt / leftToPay) * 100);
+
+    // Ensure percentage is between 0 and 100
+    const clampedPercentage = Math.max(0, Math.min(100, percentage));
+
+    setDebtPercentage(clampedPercentage);
+    setLeftToPay(leftToPay);
+  }, [totalDebt, totalOutstandingDebtAmount]);
+
+  const investmentData = useCallback(function() {
+    if (!totalInvestedAmount || !currentValue || !totalReturns) {
+      setProfitLossPercentage(0);
+      return;
+    }
+
+    const profitLossPercentage = currentValue - totalInvestedAmount;
+
+    // Calculate percentage of investment completed
+    const percentage = ((profitLossPercentage / totalInvestedAmount) * 100);
+
+    // Ensure percentage is between 0 and 100
+    const clampedPercentage = Math.max(0, Math.min(100, percentage));
+
+    setProfitLossPercentage(clampedPercentage);
+  }, [totalInvestedAmount, currentValue, totalReturns]);
+
   useEffect(() => {
     goalData();
-  },[goalData]);
+    debtData();
+    investmentData();
+  },[goalData, debtData, investmentData]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -76,6 +160,23 @@ const InsightsSection = function () {
       currency: 'INR',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  // Helper function to format date consistently
+  const formatDate = (date: string | Date): string => {
+    if (!date) return '';
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      // Use consistent formatting that works on both server and client
+      return dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.log((error as Error).message);
+      return '';
+    }
   };
 
   // Annually Categorywise Section
@@ -209,30 +310,6 @@ const InsightsSection = function () {
       color: 'bg-gray-400',
     };
   });
-
-    // Income overview data
-    const incomeCategories = [
-      { name: "Salary", percentage: 10 },
-      { name: "Bank Interests", percentage: 45 },
-      { name: "Investment Returns", percentage: 90 },
-      { name: "Property Rent", percentage: 50 },
-    ];
-
-    // Bank accounts data
-    const bankAccounts = [
-      {
-        name: "Chase Bank",
-        accountType: "Checking **** 1234",
-        balance: "$12,450.00",
-        icon: "/bank_icon.svg",
-      },
-      {
-        name: "Bank of America",
-        accountType: "Savings **** 5678",
-        balance: "$32,800.00",
-        icon: "/bank_icon.svg",
-      },
-    ];
 
   return (
     <section className="w-full py-8">
@@ -377,31 +454,80 @@ const InsightsSection = function () {
         </Card>
 
         {/* Emergency Fund Progress Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
+        <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleInvestmentTabClick}>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Debt Overview 
+              Investment Overview
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center">
-              <div className="relative w-32 h-32 rounded-full border-8 border-solid border-[#00a9e0] flex items-center justify-center mb-8">
-                <div className="text-center">
-                  <div className="text-2xl font-normal [font-family:'Poppins',Helvetica]">
-                    100%
-                  </div>
-                  <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
-                    Emergency Fund
+              <div className="relative w-32 h-32 mb-8">
+                {/* Background Circle */}
+                <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="8"
+                  />
+                  {/* Progress Circle */}
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke={profitLossPercentage >= 0 ? "#10b981" : "#ef4444"}
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 50}`}
+                    strokeDashoffset={`${2 * Math.PI * 50 * (1 - Math.abs(profitLossPercentage) / 100)}`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className={`text-2xl font-normal [font-family:'Poppins',Helvetica] ${
+                      profitLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {profitLossPercentage >= 0 ? '+' : ''}{profitLossPercentage.toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
+                      {profitLossPercentage >= 0 ? 'Profit' : 'Loss'}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="w-full space-y-2">
+              <div className="w-full space-y-3">
                 <div className="flex justify-between text-sm font-normal [font-family:'Poppins',Helvetica]">
-                  <span>Current: $3,750</span>
-                  <span>Goal: $5,000</span>
+                  <span>Invested Amount:</span>
+                  <span className="font-medium">{formatCurrency(totalInvestedAmount)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-normal [font-family:'Poppins',Helvetica]">
+                  <span>Current Valuation:</span>
+                  <span className="font-medium">{formatCurrency(currentValue)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-normal [font-family:'Poppins',Helvetica]">
+                  <span>Profit/Loss:</span>
+                  <span className={`font-medium ${
+                    totalReturns >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {totalReturns >= 0 ? '+' : ''}{formatCurrency(totalReturns - totalInvestedAmount)}
+                  </span>
                 </div>
                 <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                  <div className="h-2 w-[75%] bg-[#00a9e0] rounded-full" />
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      profitLossPercentage >= 0 ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(Math.abs(profitLossPercentage), 100)}%` }}
+                  />
+                </div>
+                <div className="text-center text-xs text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
+                  Return: {profitLossPercentage >= 0 ? '+' : ''}{profitLossPercentage.toFixed(2)}%
                 </div>
               </div>
             </div>
@@ -409,38 +535,72 @@ const InsightsSection = function () {
         </Card>
 
         {/* Income Overview Card */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
+        <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleDebtTabClick}>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-              Investement Overview 
+              Debt Overview
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {incomeCategories.map((category, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.name}
-                    </span>
-                    <span className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                      {category.percentage}%
-                    </span>
-                  </div>
-                  <div className="relative h-2 w-full bg-gray-200 rounded-full">
-                    <div
-                      className="h-2 bg-[#00a9e0] rounded-full"
-                      style={{ width: `${category.percentage}%` }}
-                    />
+            <div className="flex flex-col items-center">
+              <div className="relative w-32 h-32 mb-8">
+                {/* Background Circle */}
+                <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="8"
+                  />
+                  {/* Progress Circle */}
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke="#00a9e0"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 50}`}
+                    strokeDashoffset={`${2 * Math.PI * 50 * (1 - debtPercentage / 100)}`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-2xl font-normal [font-family:'Poppins',Helvetica]">
+                      {debtPercentage.toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
+                      Debt Progress
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+              <div className="w-full space-y-2">
+                <div className="flex justify-between text-sm font-normal [font-family:'Poppins',Helvetica]">
+                  <span>Left To Pay: {formatCurrency(leftToPay)}</span>
+                  <span>Target: {formatCurrency(totalDebt)}</span>
+                </div>
+                <div className="relative h-2 w-full bg-gray-200 rounded-full">
+                  <div 
+                    className="h-2 bg-[#00a9e0] rounded-full transition-all duration-300" 
+                    style={{ width: `${debtPercentage}%` }}
+                  />
+                </div>
+                <div className="text-center text-xs text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
+                  Remaining: {formatCurrency(leftToPay)}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Insurance Overview */}
-        <Card className="shadow-[0px_1px_2px_#0000000d] rounded-xl">
+        <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleInsuranceTabClick}>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica] text-[#004a7c]">
               Insurance Overview 
@@ -448,29 +608,36 @@ const InsightsSection = function () {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {bankAccounts.map((account, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-50 rounded-lg p-4 flex justify-between items-center"
-                >
-                  <div className="flex items-center">
-                    <div className="flex items-center justify-center">
-                      <Image alt="Icon" src={account.icon} width={16} height={16} />
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                  <div className="text-center">
+                    <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica] mb-2">
+                      Total Coverage
                     </div>
-                    <div className="ml-3">
-                      <div className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                        {account.name}
-                      </div>
-                      <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica]">
-                        {account.accountType}
-                      </div>
+                    <div className="text-2xl font-medium [font-family:'Poppins',Helvetica]">
+                      {formatCurrency(totalInsuranceCoverage)}
                     </div>
                   </div>
-                  <div className="text-base font-normal [font-family:'Poppins',Helvetica]">
-                    {account.balance}
+                  
+                  <div className="text-center">
+                    <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica] mb-2">
+                      Total Premium Paid
+                    </div>
+                    <div className="text-2xl font-medium [font-family:'Poppins',Helvetica]">
+                     {formatCurrency(totalAnnualPremium)}
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="text-sm text-gray-500 font-normal [font-family:'Poppins',Helvetica] mb-2">
+                      Next Payment
+                    </div>
+                    <div className="text-2xl font-medium [font-family:'Poppins',Helvetica]">
+                      {upcomingPaymentDate?.next_payment_date ? formatDate(upcomingPaymentDate.next_payment_date) : 'N/A'}
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </CardContent>
         </Card>

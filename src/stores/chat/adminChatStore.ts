@@ -4,16 +4,14 @@ import { getToken } from '@/service/userService';
 
 interface AdminMessage {
   id: string;
-  key?: string;
   text: string;
   sender: 'admin' | 'user';
   timestamp: Date;
 }
 
 interface ChatSession {
-    key?: string;
   userId: string;
-  userName?: string;
+  userName: string;
   messages: AdminMessage[];
   unreadCount: number;
   isActive: boolean;
@@ -30,18 +28,14 @@ interface AdminChatState {
 
   // Actions
   setInputValue: (value: string) => void;
-  addUserSession: (userId: string) => void;
   selectChatSession: (userId: string) => void;
   addMessageToSession: (userId: string, message: AdminMessage) => void;
   setIsTyping: (typing: boolean) => void;
-  setIsConnected: (connected: boolean) => void;
-  setConnectionError: (error: string | null) => void;
   initializeSocket: () => void;
   disconnectSocket: () => void;
   sendMessage: (message: string) => void;
-  clearMessages: () => void;
-  testConnection: () => void;
   loadHistoryForUser: (userId: string, messages: AdminMessage[]) => void;
+  loadAllChatSessions: (sessions: { userId: string; chats: { _id: string, userId: string, role: 'admin' | 'user', message: string, timestamp: string }[] }[]) => void;
 }
 
 export const useAdminChatStore = create<AdminChatState>((set, get) => ({
@@ -55,25 +49,6 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
 
   setInputValue: (value: string) => set({ inputValue: value }),
 
-  addUserSession: (userId: string) => {
-    set((state) => {
-      const exists = state.chatSessions.find((s) => s.userId === userId);
-      if (exists) return {};
-      return {
-        chatSessions: [
-          ...state.chatSessions,
-          {
-            userId,
-            userName: `User ${userId.slice(-4)}`,
-            messages: [],
-            unreadCount: 0,
-            isActive: true,
-          },
-        ],
-      };
-    });
-  },
-
   selectChatSession: (userId: string) => {
     set((state) => ({
       selectedUserId: userId,
@@ -82,7 +57,7 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
       ),
     }));
 
-    // Join user room
+    // Join user room and request specific user's history
     const socket = get().socket;
     socket?.emit('join_user_room', { userId });
   },
@@ -103,19 +78,30 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
       ),
     })),
 
-    loadHistoryForUser: (userId, messages) =>
-        set((state) => ({
-            chatSessions: state.chatSessions.map((s) =>
-            s.userId === userId ? { ...s, messages } : s
-            ),
-        })),
+  loadHistoryForUser: (userId, messages) =>
+    set((state) => ({
+      chatSessions: state.chatSessions.map((s) =>
+        s.userId === userId ? { ...s, messages } : s
+      ),
+    })),
 
+  loadAllChatSessions: (sessions) =>
+    set(() => ({
+      chatSessions: sessions.map((s) => ({
+        userId: s.userId,
+        userName: `User ${s.userId.slice(-4)}`,
+        messages: s.chats.map((msg) => ({
+          id: msg._id,
+          text: msg.message,
+          sender: msg.role,
+          timestamp: new Date(msg.timestamp),
+        })),
+        unreadCount: 0,
+        isActive: true,
+      })),
+    })),
 
   setIsTyping: (typing: boolean) => set({ isTyping: typing }),
-
-  setIsConnected: (connected: boolean) => set({ isConnected: connected }),
-
-  setConnectionError: (error: string | null) => set({ connectionError: error }),
 
   initializeSocket: async () => {
     try {
@@ -147,34 +133,35 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
 
       newSocket.on('connect_error', (error: Error) => {
         set({ isConnected: false, connectionError: error.message });
+        console.error('Admin socket connection error:', error);
       });
 
-      newSocket.on('connection_confirmed', ({ socketId }: { socketId: string }) => {
-        console.log(`Admin socket confirmed: ${socketId}`);
+      newSocket.on('auth_error', (error: string) => {
+        set({ connectionError: error });
+        console.error('Admin socket auth error:', error);
       });
 
-      newSocket.on('user_connected', ({ userId }: { userId: string }) => {
-        console.log(`New user connected: ${userId}`);
-        get().addUserSession(userId);
+      // Load all chat sessions when admin connects
+      newSocket.on('get_all_chats', (history: { userId: string, chats: { _id: string, userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[] }[]) => {
+        get().loadAllChatSessions(history);
       });
 
-      newSocket.on('chat_history', (history: { _id: string, userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[]) => {
-        const selectedUserId = get().selectedUserId;
-        if (!selectedUserId) return;
+      // Load specific user's chat history when joining their room
+      newSocket.on('user_chat_history', (data: { userId: string, history: { _id: string, userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[] }) => {
+        const { userId, history } = data;
+        
         const parsedMessages: AdminMessage[] = history.map((msg) => ({
-            key: msg._id,
-            id: msg.userId,
-            text: msg.message,
-            sender: msg.role,
-            timestamp: new Date(msg.timestamp),
+          id: msg._id,
+          text: msg.message,
+          sender: msg.role,
+          timestamp: new Date(msg.timestamp),
         }));
 
-        get().loadHistoryForUser(selectedUserId, parsedMessages);
+        get().loadHistoryForUser(userId, parsedMessages);
       });
 
-
+      // Handle incoming user messages
       newSocket.on('user_message', (data: { message: string; id: string; userId: string }) => {
-        
         get().addMessageToSession(data.userId, {
           id: data.id,
           text: data.message,
@@ -183,12 +170,44 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
         });
       });
 
-      newSocket.on('user_typing', () => set({ isTyping: true }));
-      newSocket.on('user_stop_typing', () => set({ isTyping: false }));
+      // Handle user typing indicators
+      newSocket.on('user_typing', ({ userId }: { userId: string }) => {
+        if (get().selectedUserId === userId) {
+          set({ isTyping: true });
+        }
+      });
+
+      newSocket.on('user_stop_typing', ({ userId }: { userId: string }) => {
+        if (get().selectedUserId === userId) {
+          set({ isTyping: false });
+        }
+      });
+
+      // Handle new user connections
+      newSocket.on('user_connected', ({ userId }: { userId: string }) => {
+        console.log(`New user connected: ${userId}`);
+        // Add user session if it doesn't exist
+        set((state) => {
+          const exists = state.chatSessions.find((s) => s.userId === userId);
+          if (exists) return {};
+          return {
+            chatSessions: [
+              ...state.chatSessions,
+              {
+                userId,
+                userName: `User ${userId.slice(-4)}`,
+                messages: [],
+                unreadCount: 0,
+                isActive: true,
+              },
+            ],
+          };
+        });
+      });
 
       set({ socket: newSocket });
     } catch (error) {
-      console.error('Admin socket error:', error);
+      console.error('Admin socket initialization error:', error);
       set({ connectionError: 'Unable to connect. Please retry.' });
     }
   },
@@ -199,11 +218,6 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
       socket.disconnect();
       set({ socket: null, isConnected: false });
     }
-  },
-
-  testConnection: () => {
-    const { socket } = get();
-    socket?.emit('test_connection');
   },
 
   sendMessage: (message: string) => {
@@ -227,6 +241,4 @@ export const useAdminChatStore = create<AdminChatState>((set, get) => ({
       });
     }
   },
-
-  clearMessages: () => set({ chatSessions: [] }),
 }));

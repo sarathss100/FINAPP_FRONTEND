@@ -250,6 +250,7 @@ const NotificationBody = function () {
                     height={24}
                     width={24}
                     className="filter invert brightness-0 contrast-100"
+                    style={{ width: '24px', height: '24px' }}
                   />
                 </div>
                 <div>
@@ -274,6 +275,7 @@ const NotificationBody = function () {
                     src="/double_tick.svg"
                     height={16}
                     width={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="font-['Poppins',Helvetica] text-sm font-medium">
                     Mark all as read
@@ -302,6 +304,7 @@ const NotificationBody = function () {
                       src={category.icon}
                       height={20}
                       width={20}
+                      style={{ width: '20px', height: '20px' }}
                     />
                   </div>
                   <h3 className="font-['Poppins',Helvetica] font-semibold text-[#004a7c] text-sm mb-1">
@@ -363,6 +366,7 @@ const NotificationBody = function () {
                           width={16}
                           height={16}
                           className="filter invert brightness-0 contrast-100"
+                          style={{ width: '16px', height: '16px' }}
                         />
                       </div>
                       <h2 className="font-['Poppins',Helvetica] font-semibold text-[#004a7c] text-lg">
@@ -387,6 +391,7 @@ const NotificationBody = function () {
                                   src={getNotificationIcon(notification.type)}
                                   height={20}
                                   width={20}
+                                  style={{ width: '20px', height: '20px' }}
                                 />
                               </div>
                             </div>
@@ -450,6 +455,7 @@ const NotificationBody = function () {
                             src={getNotificationIcon(notification.type)}
                             height={20}
                             width={20}
+                            style={{ width: '20px', height: '20px' }}
                           />
                         </div>
                       </div>
@@ -505,6 +511,7 @@ const NotificationBody = function () {
                     height={32}
                     width={32}
                     className="opacity-50"
+                    style={{ width: '32px', height: '32px' }}
                   />
                 </div>
                 <h3 className="font-['Poppins',Helvetica] font-semibold text-gray-600 text-lg mb-2">

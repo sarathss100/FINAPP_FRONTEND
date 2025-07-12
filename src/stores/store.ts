@@ -15,6 +15,7 @@ import useTransactionStore from './transaction/transactionStore';
 import useInvestmentStore from './investment/investmentStore';
 import { useNotificationStore } from './notifications/notificationStore';
 import { useChatStore } from './chat/chatStore';
+import { connectWebSocket } from '@/service/websocketService';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -25,7 +26,11 @@ export const useUserStore = create<IUserState>()(
                 contentType: '',
                 extention: '',
             },
-            login: (userData: IUser) => set(() => ({ user: { ...userData } })),
+            login: async (userData: IUser) => {
+                set(() => ({ user: { ...userData } }));
+                console.log(`WebSocket connection intialized`);
+                await connectWebSocket();
+            },
             
             // fetchtheProfileUrl
             fetchProfilePictureUrl: async () => {
@@ -87,40 +92,12 @@ export const useUserStore = create<IUserState>()(
                 // Clear the persisted goal storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');
-                }
-
-                // Clear the persisted user storage
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('user-storage');
-                }
-
-                // Clear the persisted transaction storage
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('transactions-storage');
-                }
-
-                // Clear the persisted useraccount storage 
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('accounts-storage');
-                }
-
-                // Clear the persisted insurance storage 
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('insurances-storage');
-                }
-
-                // Clear the persisted faqs storage 
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('faqs-storage');
-                }
-
-                // Clear the persisted investments storage 
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('investments-storage');
-                }
-
-                // Clear the persisted debt storage 
-                if (typeof window !== 'undefined') {
                     localStorage.removeItem('debts-storage');
                 }
             }

@@ -127,9 +127,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       newSocket.on('connect', () => {
-        console.log('✅ Connected to chat server');
-        console.log('Socket ID:', newSocket.id);
-        console.log('Transports:', newSocket.io.opts.transports);
+        console.log('Connected to chat server');
         set({ isConnected: true, connectionError: null });
         
         // Test the connection
@@ -137,28 +135,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       newSocket.on('disconnect', (reason: string) => {
-      console.log('❌ Disconnected from chat server, reason:', reason);
+      console.log('Disconnected from chat server, reason:', reason);
       set({ isConnected: false });
       
       // Log different disconnect reasons for debugging
         switch (reason) {
           case 'io server disconnect':
-            console.log('🔴 Server disconnected the client');
+            console.log('Server disconnected the client');
             break;
           case 'io client disconnect':
-            console.log('🔴 Client disconnected');
+            console.log('Client disconnected');
             break;
           case 'ping timeout':
-            console.log('🔴 Connection timed out');
+            console.log('Connection timed out');
             break;
           case 'transport close':
-            console.log('🔴 Transport closed');
+            console.log('Transport closed');
             break;
           case 'transport error':
-            console.log('🔴 Transport error');
+            console.log('Transport error');
             break;
           default:
-            console.log('🔴 Unknown disconnect reason:', reason);
+            console.log('Unknown disconnect reason:', reason);
         }
       });
 
@@ -169,7 +167,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       newSocket.on('connect_error', (error: SocketConnectError) => {
-        console.error('❌ Connection error:', error);
+        console.error('Connection error:', error);
         console.error('Error type:', error.type);
         console.error('Error description:', error.description);
         set({ 
@@ -179,7 +177,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       newSocket.on('reconnect', (attemptNumber: number) => {
-        console.log('🔄 Reconnected after', attemptNumber, 'attempts');
+        console.log('Reconnected after', attemptNumber, 'attempts');
       });
 
       interface SocketReconnectError {
@@ -189,11 +187,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       newSocket.on('reconnect_error', (error: SocketReconnectError) => {
-        console.error('🔄 Reconnection error:', error);
+        console.error('Reconnection error:', error);
       });
 
       newSocket.on('reconnect_failed', () => {
-        console.error('🔄 Reconnection failed');
+        console.error('Reconnection failed');
         set({ connectionError: 'Failed to reconnect to server' });
       });
 
@@ -205,7 +203,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
 
     newSocket.on('connection_confirmed', (data: ConnectionConfirmedData) => {
-      console.log('✅ Connection test successful:', data);
+      console.log('Connection test successful:', data);
       get().addMessage({
       id: Date.now().toString(),
       text: `Connected successfully! Socket ID: ${data.socketId}`,
@@ -215,7 +213,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
 
     newSocket.on('chat_history', (history: { _id: string; userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[]) => {
-      console.log('📜 Received chat history:', history);
       const parsedMessages: Message[] = history.map((msg) => ({
         id: msg.userId,
         key: msg._id,
@@ -229,7 +226,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
 
     newSocket.on('user_message', (data: { message: string; id: string }) => {
-      console.log('📨 Received user_message from admin:', data);
       const { setIsTyping, addMessage } = get();
       setIsTyping(false);
       addMessage({
@@ -241,19 +237,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
 
     newSocket.on('admin_typing', () => {
-      console.log('⌨️ Admin is typing...');
       set({ isTyping: true });
     });
 
     newSocket.on('bot_stop_typing', () => {
-      console.log('⌨️ Bot stopped typing');
       set({ isTyping: false });
     });
 
     set({ socket: newSocket });
 
     } catch (error) {
-      console.error('❌ Failed to initialize socket:', error);
+      console.error('Failed to initialize socket:', error);
       set({
         connectionError: 'Unable to fetch token. Please login again.',
       });
@@ -263,7 +257,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   disconnectSocket: () => {
     const { socket } = get();
     if (socket) {
-      console.log('🔌 Disconnecting socket...');
+      console.log('Disconnecting socket...');
       socket.disconnect();
       set({ socket: null, isConnected: false });
     }
@@ -272,10 +266,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   testConnection: () => {
     const { socket } = get();
     if (socket && socket.connected) {
-      console.log('🧪 Testing connection...');
+      console.log('Testing connection...');
       socket.emit('test_connection');
     } else {
-      console.log('🚫 No socket connection to test');
+      console.log('No socket connection to test');
     }
   },
 
@@ -296,13 +290,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // Send message to backend via Socket.IO
     if (socket && isConnected) {
-      console.log('📤 Sending message:', message);
       socket.emit('user_message', {
         message: message,
         userId: socket.id,
       });
     } else {
-      console.log('🚫 No socket connection, showing fallback message');
       // Fallback: simulate bot response if no socket connection
       setTimeout(() => {
         addMessage({

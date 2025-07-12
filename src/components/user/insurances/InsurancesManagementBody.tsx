@@ -247,6 +247,7 @@ const InsuranceManagementBody = function () {
             alt={`${card.type} icon`}
             height={30}
             width={30}
+            style={{ width: '30px', height: '30px' }}
           />
           <div className="flex items-center gap-2">
             {card.status === 'active' ? (
@@ -359,6 +360,7 @@ const InsuranceManagementBody = function () {
                     className="mr-2"
                     width={16}
                     height={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="text-base text-gray-600 font-normal font-['Poppins',Helvetica]">
                     Total Policies
@@ -377,6 +379,7 @@ const InsuranceManagementBody = function () {
                     className="mr-2"
                     width={16}
                     height={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="text-base text-gray-600 font-normal font-['Poppins',Helvetica]">
                     Total Premium
@@ -395,6 +398,7 @@ const InsuranceManagementBody = function () {
                     className="mr-2"
                     width={16}
                     height={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="text-base text-gray-600 font-normal font-['Poppins',Helvetica]">
                     Upcoming Payment Date

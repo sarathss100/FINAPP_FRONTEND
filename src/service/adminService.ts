@@ -171,26 +171,16 @@ export const updateFaq = async function (faqId: string, formData: IFaq): Promise
     }
 };
 
-/**
- * Fetches all FAQ entries for administrative purposes by sending a GET request to the backend API.
- *
- * @returns {Promise<IFaqs>} A promise resolving to an object containing all FAQ details from the server.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
-export const getAllFaqsForAdmin = async function (): Promise<IFaqs> {
+export const getAllFaqsForAdmin = async function (params: { page?: number, limit?: number, search?: string } = {}): Promise<IFaqs> {
     try {
-        // Send a GET request to fetch all FAQs
-        const response = await axiosInstance.get<IFaqs>(`/api/v1/admin/faqs/all`);
+        const response = await axiosInstance.get<IFaqs>(`/api/v1/admin/faqs/all`, { params });
     
-        // Validate the response
         if (response.data && response.data.success) {
-            return response.data; // Return the data if successful
+            return response.data; 
         } else {
-            // Throw an error if the response indicates failure
             throw new Error(response.data?.message || 'Failed to fetch FAQs.');
         }
     } catch (error) {
-        // Catch and re-throw any error that occurs during the API call
         throw error;
     }
 };

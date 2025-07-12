@@ -118,6 +118,11 @@ export const useUserStore = create<IUserState>()(
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('investments-storage');
                 }
+
+                // Clear the persisted debt storage 
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('debts-storage');
+                }
             }
         }),
         {

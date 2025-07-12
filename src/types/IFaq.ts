@@ -12,7 +12,15 @@ export interface IFaqs {
     success: boolean,
     message: string,
     data: {
-        faqDetails: IFaq[]
+        faqDetails: IFaq[],
+        pagination: {
+            currentPage: number,
+            totalPages: number,
+            totalItems: number,
+            itemsPerPage: number,
+            hasNextPage: boolean,
+            hasPreviousPage: boolean,
+        }
     };
 }
 

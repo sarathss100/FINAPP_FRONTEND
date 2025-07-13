@@ -62,7 +62,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       // --- Socket Event Handlers ---
       newSocket.on('connect', () => {
-        console.log('✅ Connected to notification server');
+        console.log('Connected to notification server');
         set({ isConnected: true, connectionError: null });
       });
 
@@ -72,7 +72,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       }
 
       newSocket.on('disconnect', (reason: DisconnectReason) => {
-        console.log('❌ Disconnected:', reason);
+        console.log('Disconnected:', reason);
         set({ isConnected: false });
       });
 
@@ -82,19 +82,19 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       }
 
       newSocket.on('connect_error', (error: ConnectError) => {
-        console.error('❌ Connection error:', error.message);
+        console.error('Connection error:', error.message);
         set({ connectionError: `Connection failed: ${error.message}` });
       });
 
       newSocket.emit('request_notifications');
 
       newSocket.on('notifications', (notifications: INotification[]) => {
-        console.log('📬 notifications received:', notifications);
+        console.log('notifications received:', notifications);
         set({ notifications });
       });
 
       newSocket.on('notification_marked_read', (notificationId: string) => {
-          console.log('🔔 Notification marked read:', notificationId);
+          console.log('Notification marked read:', notificationId);
           set((state) => ({
             notifications: state.notifications.map((n) =>
               n._id === notificationId ? { ...n, is_read: true } : n
@@ -103,17 +103,26 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       });
 
       newSocket.on('all_notifications_marked_read', () => {
-        console.log('✅ All notifications marked read');
+        console.log('All notifications marked read');
         set((state) => ({
           notifications: state.notifications.map((n) => ({ ...n, is_read: true })),
         }));
+      });
+
+      newSocket.on('new_notification', (new_notification: INotification) => {
+        console.log('New Notification Event Emitted');
+        console.log(new_notification);
+        newSocket.emit('request_notifications');
+        // set((state) => ({
+        //   notifications: [...state.notifications, new_notification]
+        // }));
       });
 
       // Finalize
       set({ socket: newSocket });
 
     } catch (error) {
-      console.error('❌ Failed to initialize socket:', error);
+      console.error('Failed to initialize socket:', error);
       set({
         connectionError: 'Unable to fetch token. Please login again.',
       });

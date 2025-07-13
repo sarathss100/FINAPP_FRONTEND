@@ -71,7 +71,6 @@ const AdminChatBody = function () {
   const messages = selectedChatData?.messages || [];
   const totalUnreadCount = chatSessions.reduce((sum, chat) => sum + chat.unreadCount, 0);
 
-  // Connection status indicator
   const getConnectionStatus = () => {
     if (connectionError) return { text: 'Connection Error', color: 'bg-red-100 text-red-700' };
     if (isConnected) return { text: 'Connected', color: 'bg-green-100 text-green-700' };
@@ -149,9 +148,6 @@ const AdminChatBody = function () {
                           <div className="flex items-center justify-between mb-1">
                             <h3 className="font-medium text-[#004a7c] truncate">{chat.userName}</h3>
                             <div className="flex items-center gap-2">
-                              {/* {chat.isActive && (
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              )} */}
                               {chat.unreadCount > 0 && (
                                 <Badge className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                                   {chat.unreadCount}

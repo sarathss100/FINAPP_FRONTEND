@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Button from '../../base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../base/Card';
 import { toast } from 'react-toastify';
-import { useGoalStore, useInsuranceStore, useUserStore } from '@/stores/store';
+import { useUserStore } from '@/stores/store';
 import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import auth from '@/lib/firebaseConfig';
 import { deleteAccount, getUserProfileDetails, toggleUserTwoFactorAuthentication } from '@/service/userService';
@@ -24,6 +24,8 @@ import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
 import useInvestmentStore from "@/stores/investment/investmentStore";
 import useDebtStore from "@/stores/debt/debtStore";
+import { useInsuranceStore } from "@/stores/insurances/insuranceStore";
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 interface AutoTableOptions {
   startY?: number;

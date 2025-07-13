@@ -4,7 +4,7 @@ import { GoalManagementSection } from './GoalManagementSection/GoalManagementSec
 import { MainContentSection } from './MainContentSection/MainContentSection';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
-import { useGoalStore } from '@/stores/store';
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 export const GoalManagementBody = () => {
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);

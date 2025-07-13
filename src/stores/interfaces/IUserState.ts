@@ -9,6 +9,7 @@ interface IUserState {
     };
     login: (userData: IUser) => void;
     fetchProfilePictureUrl: () => void;
+    initializeWebSocketConnection: () => void;
     logout: () => void;
     reset: () => void;
 }

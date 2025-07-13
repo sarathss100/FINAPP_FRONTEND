@@ -13,11 +13,11 @@ import AdvancedFinancialCalendar from './AdvancedFinancialCalendar';
 import { TransactionInputModal } from './TransactionInputModal';
 import { ITransaction } from '@/types/ITransaction';
 import { addTransaction } from '@/service/transactionService';
-import { useAccountsStore } from '@/stores/store';
 import { updateAccount } from '@/service/accountService';
 import ImportModal from './ImportModal';
 import BankStatementUploader from './BankStatementUploader';
 import useTransactionStore from '@/stores/transaction/transactionStore';
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
 const TransactionBody = function () {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);

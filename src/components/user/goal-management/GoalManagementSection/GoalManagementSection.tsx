@@ -5,7 +5,7 @@ import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import { Progress } from '@/components/base/progress';
 import GoalInputModal from '../GoalInputModal';
-import { useGoalStore } from '@/stores/store';
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 export const GoalManagementSection = function () {
   const [isGoalInputModalOpen, setIsGoalInputModalOpen] = useState(false);

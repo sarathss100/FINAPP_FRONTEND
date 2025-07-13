@@ -7,9 +7,10 @@ import {
 } from "lucide-react";
 import React, { useCallback, useEffect } from "react";
 import { Card, CardContent } from '@/components/base/Card';
-import { useAccountsStore, useGoalStore } from "@/stores/store";
 import useInvestmentStore from "@/stores/investment/investmentStore";
 import useDebtStore from "@/stores/debt/debtStore";
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 const DashboardSection = function () {
   const totalBalance = useAccountsStore((state) => state.totalBalance);

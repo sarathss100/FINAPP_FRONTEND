@@ -13,7 +13,7 @@ import { Controller } from 'react-hook-form';
 import { createGoal } from '@/service/goalService';
 import { toast } from 'react-toastify';
 import { IGoal } from '@/types/IGoal';
-import { useGoalStore } from '@/stores/store';
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 interface IGoalModalProps {
   onClose: () => void;

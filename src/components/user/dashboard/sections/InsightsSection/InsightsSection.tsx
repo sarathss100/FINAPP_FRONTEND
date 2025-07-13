@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card
 import Link from 'next/link';
 import useTransactionStore from "@/stores/transaction/transactionStore";
 import { useRouter } from 'next/navigation';
-import { useGoalStore, useInsuranceStore } from "@/stores/store";
 import useDebtStore from "@/stores/debt/debtStore";
 import useInvestmentStore from "@/stores/investment/investmentStore";
+import { useInsuranceStore } from "@/stores/insurances/insuranceStore";
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 const InsightsSection = function () {
   const [goalPercentage, setGoalPercentage] = useState(0);

@@ -11,9 +11,9 @@ import { Card, CardContent } from '@/components/base/Card';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 import Image from 'next/image';
-import { useInsuranceStore } from '@/stores/store';
 import { toast } from 'react-toastify';
 import { createInsurance, markPaymentAsPaid, removeInsurance } from '@/service/insuranceService';
+import { useInsuranceStore } from "@/stores/insurances/insuranceStore";
 
 // Insurance types for dropdown
 const insuranceTypes = [

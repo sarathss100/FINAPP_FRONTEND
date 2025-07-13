@@ -17,9 +17,9 @@ import PageTitle from '../base/PageTitle';
 import UserHeader from '../base/Header';
 import { AccountModal } from './AccountInputModal';
 import { IAccount } from '@/types/IAccounts';
-import { useAccountsStore } from '@/stores/store';
 import { removeAccount } from '@/service/accountService';
 import { toast } from 'react-toastify';
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
 const AccountsBody = function () {
   const [isInputModalOpen, setIsInputModalOpen] = useState(false);

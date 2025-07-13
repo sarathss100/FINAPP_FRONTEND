@@ -19,7 +19,7 @@ import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount, updateAccount } from '@/service/accountService';
-import { useAccountsStore } from '@/stores/store';
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
 // Account type definitions
 const ACCOUNT_TYPES = [

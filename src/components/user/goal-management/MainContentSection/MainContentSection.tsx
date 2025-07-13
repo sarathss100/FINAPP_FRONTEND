@@ -11,7 +11,6 @@ import {
 import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
 import { deleteGoal, getGoalDetails, updateGoal, updateTransaction } from '@/service/goalService';
-import { useGoalStore } from '@/stores/store';
 import { GoalDetailsModal } from '../GoalViewModal';
 import {
   Dialog,
@@ -23,6 +22,7 @@ import {
 import { ContributionModal } from '../GoalContributionModal';
 import { GoalEditModal } from '../GoalEditModal';
 import { IGoal } from '@/types/IGoal';
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 export const MainContentSection = () => {
   const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);

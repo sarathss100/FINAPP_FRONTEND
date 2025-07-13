@@ -11,11 +11,13 @@ const UserHeader = function () {
   const profilePicture = useUserStore((state) => state.profilePicture);
   const fetchProfilePictureUrl = useUserStore((state) => state.fetchProfilePictureUrl);
   const toggleChat = useChatStore((state) => state.toggleChat);
+  // const initializeWebSocketConnection = useUserStore((state) => state.initializeWebSocketConnection);
   
   const router = useRouter();
 
   useEffect(() => {
     fetchProfilePictureUrl();
+    // initializeWebSocketConnection();
   }, [fetchProfilePictureUrl]);
 
   const handleAvatarClick = function () {

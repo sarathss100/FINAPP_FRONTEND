@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import { searchMutualFundFromApi, searchStocksFromApi } from '@/service/investmentService';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount } from '@/service/accountService';
-import { useAccountsStore } from '@/stores/store';
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
 // Investment Types
 const INVESTMENT_TYPES = [

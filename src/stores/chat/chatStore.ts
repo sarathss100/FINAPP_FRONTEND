@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
 import { getToken } from '@/service/userService';
-import { getUserSocket } from '@/lib/userSocket';
+import { disconnectUserSocket, getUserSocket } from '@/lib/userSocket';
 
 interface Message {
   id: string;
@@ -269,7 +269,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { socket } = get();
     if (socket) {
       console.log('Disconnecting socket...');
-      socket.disconnect();
+      disconnectUserSocket('chat');
       set({ socket: null, isConnected: false });
     }
   },

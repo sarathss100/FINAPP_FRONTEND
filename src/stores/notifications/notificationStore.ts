@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Socket } from 'socket.io-client';
 import { getToken } from '@/service/userService';
 import { INotification } from '@/types/INotification';
-import { getUserSocket } from '@/lib/userSocket';
+import { disconnectUserSocket, getUserSocket } from '@/lib/userSocket';
 
 interface NotificationState {
   // Chat UI state
@@ -128,7 +128,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   disconnectSocket: () => {
     const { socket } = get();
     if (socket) {
-      socket.disconnect();
+      disconnectUserSocket('notification');
       set({ socket: null, isConnected: false });
       console.log('Socket disconnected');
     }

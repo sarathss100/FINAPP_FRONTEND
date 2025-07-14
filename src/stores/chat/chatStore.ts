@@ -304,7 +304,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       socket.emit('user_message', {
         message: message,
         id: userMessage.id,
-        // Use stored userId if available, otherwise fallback to socket.id
         userId: userId || socket.id,
       });
     } else {

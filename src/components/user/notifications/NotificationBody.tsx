@@ -7,7 +7,6 @@ import Image from 'next/image';
 import UserHeader from '../base/Header';
 import { INotification, NOTIFICATION_TYPES } from "@/types/INotification";
 import { useNotificationStore } from "@/stores/notifications/notificationStore";
-import { markAllNotificationsAsSeen, markNotificationReaded } from "@/service/notificationService";
 
 // Enhanced category mapping with read/unread categories
 const categories = [
@@ -85,6 +84,7 @@ const NotificationBody = function () {
   const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { markNotificationReaded, markAllNotificationsAsSeen } = useNotificationStore();
 
   const calculateCategoryCounts = useCallback((notificationList: INotification[]) => {
     const counts: { [key: string]: number } = {
@@ -141,21 +141,12 @@ const NotificationBody = function () {
   //   });
   // };
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      console.log(notificationId);
-      await markNotificationReaded(notificationId);
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+  const markAsRead = (notificationId: string) => {
+    markNotificationReaded(notificationId);
   };
 
-  const markAllAsRead = async () => {
-    try {
-      await markAllNotificationsAsSeen();
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+  const markAllAsRead = () => {
+    markAllNotificationsAsSeen();
   };
 
   const getNotificationIcon = (type: string) => {

@@ -18,12 +18,10 @@ const DashboardSection = function () {
   const totalInvestmentValue = useInvestmentStore((state) => state.totalInvestedAmount);
   const totalDebt = useDebtStore((state) => state.totalOutstandingDebtAmount);
   const fetchTotalInvestment = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
-  const fetchTotalDebt = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
 
   const handleStore = useCallback(() => {
     fetchTotalInvestment();
-    fetchTotalDebt();
-  }, [fetchTotalInvestment, fetchTotalDebt]);
+  }, [fetchTotalInvestment]);
 
   useEffect(() => {
     handleStore();

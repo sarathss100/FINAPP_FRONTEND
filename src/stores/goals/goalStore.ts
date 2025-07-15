@@ -160,7 +160,7 @@ export const useGoalStore = create<GoalState>()(
                             globalDataRequest();
                         });
 
-                        newSocket.on('goal_removed', () => {
+                        newSocket.on('goal_remove', () => {
                             globalDataRequest();
                         });
 
@@ -301,8 +301,6 @@ export const useGoalStore = create<GoalState>()(
                     set({ connectionError: null });
                 } catch (error) {
                     console.error("HTTP fallback failed:", error);
-                    // For fresh users, this is expected - just log it
-                    // Don't set connection error as this is likely a fresh user scenario
                 }
             },
 

@@ -30,6 +30,7 @@ export const useUserStore = create<IUserState>()(
             initializeSockets: () => {
                 useAccountsStore.getState().initializeSocket();
                 useNotificationStore.getState().initializeSocket();
+                useGoalStore.getState().initializeSocket();
             },
             
             // fetchtheProfileUrl
@@ -60,9 +61,6 @@ export const useUserStore = create<IUserState>()(
             },
 
             logout: () => {
-                // Reset the goal store 
-                useGoalStore.getState().reset();
-
                 // Disconnect the account socket
                 useAccountsStore.getState().disconnectSocket();
                 useAccountsStore.getState().reset();
@@ -70,6 +68,10 @@ export const useUserStore = create<IUserState>()(
                 // Disconnect the notification socket
                 useNotificationStore.getState().disconnectSocket();
                 useNotificationStore.getState().clearMessages();
+
+                // Disconnect the goals socket
+                useGoalStore.getState().disconnectSocket();
+                useGoalStore.getState().reset();
 
                 // Reset the transaction store
                 useTransactionStore.getState().reset();

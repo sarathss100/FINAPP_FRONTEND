@@ -1,5 +1,8 @@
+import { getUserSocket } from "@/lib/userSocket";
 import { analyzeGoal, findLongestTimePeriod, getDailyContribution, getMonthlyContribution, getTotalActiveGoalAmount, getTotalInitialGoalAmount, getUserGoals, goalsByCategory } from "@/service/goalService";
+import { getToken } from "@/service/userService";
 import { IGoal } from "@/types/IGoal";
+import { Socket } from "socket.io-client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -39,6 +42,17 @@ interface GoalState {
     categoryByGoals: ICategoryByGoals; // Category By Goals
     dailyContribution: number; // Daily Contribution Amount 
     monthlyContribution: number; // Monthly Contribution Amount
+
+    isConnected: boolean;
+    connectionError: string | null;
+
+
+    setIsConnected: (connected: boolean) => void;
+    setConnectionError: (error: string | null) => void;
+    initializeSocket: () => void;
+    disconnectSocket: () => void;
+
+    fetchAllDataWithHttpFallback: () => Promise<void>;
     fetchAllGoals: () => Promise<void>; // Function to fetch goals 
     addGoal: (newGoal: IGoal) => void; // Function to add a new goal
     deleteGoal: (goalId: string) => void; // Function to delete a goal by ID    
@@ -52,9 +66,11 @@ interface GoalState {
     reset: () => void;
 }
 
+let goalsSocket: typeof Socket | null = null;
+
 export const useGoalStore = create<GoalState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             goals: [], 
             totalActiveGoalAmount: 0,
             totalInitialGoalAmount: 0,
@@ -70,6 +86,8 @@ export const useGoalStore = create<GoalState>()(
             },
             dailyContribution: 0,
             monthlyContribution: 0,
+            isConnected: false,
+            connectionError: null,
 
             // Reset function
             reset: () => 
@@ -89,7 +107,204 @@ export const useGoalStore = create<GoalState>()(
                     },
                     dailyContribution: 0,
                     monthlyContribution: 0,
+                    isConnected: false,
+                    connectionError: null,
                 }),
+
+            setIsConnected: (connected: boolean) => set({ isConnected: connected }),
+            setConnectionError: (error: string | null) => set({ connectionError: error }),
+
+            initializeSocket: async () => {
+                try {
+                    const res = await getToken();
+                    if (!res.success) throw new Error("Token fetch failed");
+                    const accessToken = res.data.accessToken;
+            
+                    const newSocket = getUserSocket(accessToken, 'goals');
+            
+                    // Clean up previous socket completely
+                    if (goalsSocket) {
+                        goalsSocket.removeAllListeners();
+                        goalsSocket.disconnect();
+                    }
+            
+                    goalsSocket = newSocket;
+
+                    const globalDataRequest = function() {
+                        newSocket.emit('request_all_goals');
+                        newSocket.emit('request_categorized_goals');
+                        newSocket.emit('request_longest_timeperiod');
+                        newSocket.emit('request_total_active_goal_amount');
+                        newSocket.emit('request_total_initial_goal_amount');
+                        newSocket.emit('request_smart_analysis');
+                        newSocket.emit('request_daily_contribution');
+                        newSocket.emit('request_monthly_contribution');
+                    }
+            
+                    // Setup all event listeners
+                    const setupSocketListeners = () => {
+                        // Connection handler
+                        newSocket.on('connect', () => {
+                            console.log(`Connected to Goals Server`);
+                            set({ isConnected: true, connectionError: null });
+                                        
+                            // Request initial data after connection
+                            globalDataRequest();
+                        });
+
+                        newSocket.on('new_goal_created', () => {
+                            globalDataRequest();
+                        });
+
+                        newSocket.on('goal_updated', () => {
+                            globalDataRequest();
+                        });
+
+                        newSocket.on('goal_removed', () => {
+                            globalDataRequest();
+                        });
+
+                        // All Goal
+                        newSocket.on('all_goals', (goals: IGoal[]) => {
+                            set({ goals });
+                        });
+
+                        // Categorized Goals
+                        newSocket.on('categorized_goals', (categoryByGoals: ICategoryByGoals) => {
+                            set({ categoryByGoals });
+                        });
+
+                        // Longest Time period
+                        newSocket.on('longest_timeperiod', (longestTimePeriod: string) => {
+                            set({ longestTimePeriod: longestTimePeriod });
+                        });
+
+                        // Total Acitve Goal Amount
+                        newSocket.on('total_active_goal_amount', (totalActiveGoalAmount: number) => {
+                            set({ totalActiveGoalAmount:  totalActiveGoalAmount });
+                        });
+
+                        // Total Initial Goal Amount
+                        newSocket.on('total_initial_goal_amount', (totalInitialGoalAmount: number) => {
+                            set({ totalInitialGoalAmount:  totalInitialGoalAmount });
+                        });
+
+                        // Smart Goal Analysis
+                        newSocket.on('smart_analysis', (smartAnalysis: IAnalysisResult) => {
+                            set({ smartAnalysis:  smartAnalysis });
+                        });
+
+                        // Total Daily Contribution
+                        newSocket.on('daily_contribution', (totalDailyContribution: number) => {
+                            set({ dailyContribution: totalDailyContribution });
+                        });
+
+                        // Total Monthly Contribution
+                        newSocket.on('monthly_contribution', (totalMonthlyContribution: number) => {
+                            set({ monthlyContribution: totalMonthlyContribution });
+                        });
+            
+                        // Handle server errors gracefully - don't disconnect socket
+                        newSocket.on('error', (error: Error & { type?: string }) => {
+                            console.log('Server error received:', error);
+                            set({ connectionError: error.message || 'Server error occurred' });
+                                        
+                            // Don't disconnect socket, just fall back to HTTP for data
+                            // Socket connection remains intact for future updates
+                            if (error.type === 'balance_error' || error.type === 'accounts_error') {
+                                console.log('Falling back to HTTP for initial data...');
+                                get().fetchAllDataWithHttpFallback();
+                            }
+                        });            
+            
+                        // Disconnect
+                        newSocket.on('disconnect', (reason: string) => {
+                            console.log('Disconnected:', reason);
+                            set({ isConnected: false });
+                        });
+            
+                        // Connect Error - only for actual connection issues
+                        newSocket.on('connect_error', (error: Error) => {
+                            console.error('Goals socket connect error:', error);
+                            set({ 
+                                connectionError: `Connection failed: ${error.message || 'Unknown error'}`,
+                                isConnected: false 
+                            });
+                            
+                            // Fall back to HTTP data but don't give up on socket
+                            get().fetchAllDataWithHttpFallback();
+                        });
+                    };
+            
+                    // Remove all existing listeners before setting up new ones
+                    newSocket.removeAllListeners();
+                    setupSocketListeners();
+
+                    // If already connected, request initial data
+                    if (newSocket.connected) {
+                        set({ isConnected: true });
+                        globalDataRequest();
+                    }
+            
+                } catch (error) {
+                    console.error("Failed to initialize goal socket:", error);
+                    set({ connectionError: "Unable to fetch token. Please login again." });
+                    // Still try to get data via HTTP
+                    get().fetchAllDataWithHttpFallback();
+                }
+            },               
+
+            disconnectSocket: () => {
+                if (goalsSocket) {
+                    goalsSocket.removeAllListeners();
+                    goalsSocket.disconnect();
+                    goalsSocket = null;
+                }
+
+                set({
+                    goals: [],
+                    totalActiveGoalAmount: 0,
+                    totalInitialGoalAmount: 0,
+                    longestTimePeriod: '',
+                    smartAnalysis: null,
+                    categoryByGoals: {
+                        shortTermGoalsCurrntAmount: 0,
+                        shortTermGoalsTargetAmount: 0,
+                        mediumTermGoalsCurrntAmount: 0,
+                        mediumTermGoalsTargetAmount: 0,
+                        longTermGoalsCurrntAmount: 0,
+                        longTermGoalsTargetAmount: 0,
+                    },
+                    dailyContribution: 0,
+                    monthlyContribution: 0,
+                    isConnected: false,
+                    connectionError: null,
+                });
+
+                get().fetchAllDataWithHttpFallback();
+            },
+
+            fetchAllDataWithHttpFallback: async () => {
+                try {
+                    await Promise.all([
+                        get().fetchAllGoals(),
+                        get().fetchCategoryByGoals(),
+                        get().fetchDailyContribution(),
+                        get().fetchLongestTimePeriod(),
+                        get().fetchMonthlyContribution(),
+                        get().fetchSmartAnalysis(),
+                        get().fetchTotalActiveGoalAmount(),
+                        get().fetchTotalInitialGoalAmount(),
+                    ]);
+                    
+                    // Clear connection error if HTTP fallback succeeds
+                    set({ connectionError: null });
+                } catch (error) {
+                    console.error("HTTP fallback failed:", error);
+                    // For fresh users, this is expected - just log it
+                    // Don't set connection error as this is likely a fresh user scenario
+                }
+            },
 
             // In your store.ts file, update the fetchSmartAnalysis function:
             fetchSmartAnalysis: async () => {
@@ -210,7 +425,7 @@ export const useGoalStore = create<GoalState>()(
             },
         }),
         {
-            name: 'goal-storage', // Persisted state key
+            name: 'goal-storage', 
         }
     )
 );

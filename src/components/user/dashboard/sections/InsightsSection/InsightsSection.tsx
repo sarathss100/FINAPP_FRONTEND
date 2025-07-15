@@ -50,8 +50,6 @@ const InsightsSection = function () {
   const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
   const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
   const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
-  const fetchActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const fetchInitialGoalAmount = useGoalStore((state) => state.fetchTotalInitialGoalAmount);
   const fetchTotalDebt = useDebtStore((state) => state.fetchTotalDebt);
   const fetchTotalOutstandingDebtAmount = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
   const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
@@ -66,8 +64,6 @@ const InsightsSection = function () {
     fetchMonthlyTotalIncome();
     fetchAllIncomeTransactons();
     fetchAllExpenseTransactons();
-    fetchActiveGoalAmount();
-    fetchInitialGoalAmount();
     fetchTotalDebt();
     fetchTotalOutstandingDebtAmount();
     fetchTotalInvestedAmount();
@@ -80,8 +76,6 @@ const InsightsSection = function () {
     fetchMonthlyTotalIncome,
     fetchAllIncomeTransactons, 
     fetchAllExpenseTransactons,
-    fetchActiveGoalAmount,
-    fetchInitialGoalAmount,
     fetchTotalDebt,
     fetchTotalOutstandingDebtAmount,
     fetchTotalInvestedAmount,

@@ -37,6 +37,7 @@ interface AccountState {
     setConnectionError: (error: string | null) => void;
     initializeSocket: () => void;
     disconnectSocket: () => void;
+
     fetchAllDataWithHttpFallback: () => Promise<void>;
     fetchTotalBalance: () => Promise<void>;
     fetchTotalBankBalance: () => Promise<void>;
@@ -220,6 +221,7 @@ export const useAccountsStore = create<AccountState>()(
                     investmentAccounts: [],
                     debtAccounts: [],
                     liquidAccounts: [],
+                    connectionError: null,
                 });
 
                 get().fetchAllDataWithHttpFallback();

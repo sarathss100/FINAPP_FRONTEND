@@ -18,16 +18,14 @@ const DashboardSection = function () {
   const totalInvestmentValue = useInvestmentStore((state) => state.totalInvestedAmount);
   const totalDebt = useDebtStore((state) => state.totalOutstandingDebtAmount);
   const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
   const fetchTotalInvestment = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
   const fetchTotalDebt = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
 
   const handleStore = useCallback(() => {
     fetchTotalActiveGoalAmount();
-    fetchTotalBalance();
     fetchTotalInvestment();
     fetchTotalDebt();
-  }, [fetchTotalActiveGoalAmount, fetchTotalBalance, fetchTotalInvestment, fetchTotalDebt]);
+  }, [fetchTotalActiveGoalAmount, fetchTotalInvestment, fetchTotalDebt]);
 
   useEffect(() => {
     handleStore();

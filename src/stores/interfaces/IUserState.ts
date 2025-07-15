@@ -8,8 +8,8 @@ interface IUserState {
         extention: string,
     };
     login: (userData: IUser) => void;
+    initializeSockets: () => void;
     fetchProfilePictureUrl: () => void;
-    initializeWebSocketConnection: () => void;
     logout: () => void;
     reset: () => void;
 }

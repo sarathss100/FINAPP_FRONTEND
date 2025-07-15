@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import IUserState from './interfaces/IUserState';
-import IUser from './interfaces/IUser';
+// import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
 import { getUserProfilePicture, getUserProfilePictureId } from '@/service/userService';
 import useDebtStore from './debt/debtStore';
@@ -8,10 +8,10 @@ import useFaqStore from './faqs/faqStore';
 import useTransactionStore from './transaction/transactionStore';
 import useInvestmentStore from './investment/investmentStore';
 import { useNotificationStore } from './notifications/notificationStore';
-import { connectWebSocket, disconnectWebSocket } from '@/service/websocketService';
 import { useInsuranceStore } from './insurances/insuranceStore';
 import { useAccountsStore } from './accounts/accountsStore';
 import { useGoalStore } from './goals/goalStore';
+import IUser from './interfaces/IUser';
 
 export const useUserStore = create<IUserState>()(
     persist(
@@ -22,8 +22,14 @@ export const useUserStore = create<IUserState>()(
                 contentType: '',
                 extention: '',
             },
-            login: async (userData: IUser) => {
+            
+            login: (userData: IUser) => {
                 set(() => ({ user: { ...userData } }));
+            },
+
+            initializeSockets: () => {
+                useAccountsStore.getState().initializeSocket();
+                useNotificationStore.getState().initializeSocket();
             },
             
             // fetchtheProfileUrl
@@ -43,10 +49,6 @@ export const useUserStore = create<IUserState>()(
               }
             }, 
 
-            initializeWebSocketConnection: async () => {
-                await connectWebSocket();
-            },
-
             reset: () => {
                 // Clear the user state
                 set(() => ({ user: null }));
@@ -61,11 +63,13 @@ export const useUserStore = create<IUserState>()(
                 // Reset the goal store 
                 useGoalStore.getState().reset();
 
-                // Reset the user store
-                useUserStore.getState().reset();
-
-                // Reset the account store 
+                // Disconnect the account socket
+                useAccountsStore.getState().disconnectSocket();
                 useAccountsStore.getState().reset();
+
+                // Disconnect the notification socket
+                useNotificationStore.getState().disconnectSocket();
+                useNotificationStore.getState().clearMessages();
 
                 // Reset the transaction store
                 useTransactionStore.getState().reset();
@@ -82,11 +86,10 @@ export const useUserStore = create<IUserState>()(
                 // Reset the investment store 
                 useInvestmentStore.getState().reset();
 
-                // Disconnect the socket
-                useNotificationStore.getState().disconnectSocket();
-                useNotificationStore.getState().clearMessages();
-
-                // Clear the persisted goal storage
+                // Reset the user store
+                useUserStore.getState().reset();
+                
+                // Clear the persisted storage
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('goal-storage');
                     localStorage.removeItem('user-storage');
@@ -97,8 +100,6 @@ export const useUserStore = create<IUserState>()(
                     localStorage.removeItem('investments-storage');
                     localStorage.removeItem('debts-storage');
                 }
-
-                disconnectWebSocket();
             }
         }),
         {

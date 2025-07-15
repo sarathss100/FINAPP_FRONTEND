@@ -1,16 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import UserHeader from '../base/Header';
 import DashboardSection from './sections/DashboardSection/DashboardSection';
 import InsightsSection from './sections/InsightsSection/InsightsSection';
 import PageTitle from '../base/PageTitle';
-import { useUserStore } from "@/stores/store";
 
 const UserDashBoardBody = function () {
-  const initializeWebSocketConnection = useUserStore((store) => store.initializeWebSocketConnection);
-
-  useEffect(() => {
-    initializeWebSocketConnection();
-  }, [initializeWebSocketConnection]);
   return (
     <div className="w-full max-w-[1184px] mx-auto">
       {/* Header with search and profile */}

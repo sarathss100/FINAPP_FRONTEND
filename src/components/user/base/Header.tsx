@@ -15,14 +15,12 @@ const UserHeader = function () {
   
   const router = useRouter();
 ;
-  const notificationInitializeSocket = useNotificationStore((state) => state.initializeSocket);
   const notifications = useNotificationStore((state) => state.notifications);
   const unreadNotifications = notifications.filter(n => !n.is_read).length;
 
   useEffect(() => {
     fetchProfilePictureUrl();
-    notificationInitializeSocket();
-  }, [fetchProfilePictureUrl, notificationInitializeSocket]);
+  }, [fetchProfilePictureUrl]);
 
   const handleAvatarClick = function () {
     router.push('/profile-settings');

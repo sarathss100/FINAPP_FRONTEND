@@ -33,23 +33,26 @@ const AccountsBody = function () {
   const investmentAccounts = useAccountsStore((state) => state.investmentAccounts);
   const liquidAccounts = useAccountsStore((state) => state.liquidAccounts);
   const debtAccounts = useAccountsStore((state) => state.debtAccounts);
-  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
-  const fetchTotalBankBalance = useAccountsStore((state) => state.fetchTotalBankBalance);
-  const fetchTotalDebt = useAccountsStore((state) => state.fetchTotalDebt);
-  const fetchTotalInvestment = useAccountsStore((state) => state.fetchTotalInvestment);
-  const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
+  const isConnected = useAccountsStore((state) => state.isConnected);
+  const connectionError = useAccountsStore((state) => state.connectionError);
+  const fetchAllDataWithHttpFallback = useAccountsStore((state) => state.fetchAllDataWithHttpFallback);
+  // const initializeAccountSocketConnection = useAccountsStore((state) => state.initializeSocket);
 
-  const handleStore = useCallback(() => {
-    fetchTotalBalance();
-    fetchTotalBankBalance();
-    fetchTotalDebt();
-    fetchTotalInvestment();
-    fetchAllAccounts();
-  }, [fetchTotalBalance, fetchTotalBankBalance, fetchTotalDebt, fetchTotalInvestment, fetchAllAccounts]);
+  // const handleStore = useCallback(() => {
+  //   initializeAccountSocketConnection();
+  // }, [initializeAccountSocketConnection]);
 
+  // useEffect(() => {
+  //   handleStore();
+  // }, [handleStore]);
+
+  // Fallback to HTTP if socket connection fails
   useEffect(() => {
-    handleStore();
-  }, [handleStore]);
+    if (connectionError) {
+      console.warn('Socket connection failed, falling back to HTTP:', connectionError);
+      fetchAllDataWithHttpFallback();
+    }
+  }, [connectionError, fetchAllDataWithHttpFallback]);
 
   const handleAddAccount = function () {
     setAccountToEdit(undefined);
@@ -66,8 +69,11 @@ const AccountsBody = function () {
       const response = await removeAccount(accountId);
       if (response.success) {
         toast.success(response.message || `Account Successfully Removed`);
-        await handleStore();
+        // await handleStore();
         setDeleteConfirmationId(null);
+        if (!isConnected) {
+          await fetchAllDataWithHttpFallback();
+        }
       }
     } catch (error) {
       toast.error((error as Error).message || `Failed Remove the Account`);
@@ -75,8 +81,18 @@ const AccountsBody = function () {
   }
 
   const handleSaveAccount = async function () {
-    await handleStore();
+    if (!isConnected) {
+      await fetchAllDataWithHttpFallback();
+    }
   }
+
+  const handleModalClose = useCallback(async () => {
+    setIsInputModalOpen(false);
+
+    if (!isConnected) {
+      await fetchAllDataWithHttpFallback();
+    }
+  }, [isConnected, fetchAllDataWithHttpFallback]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -86,7 +102,6 @@ const AccountsBody = function () {
     }).format(amount);
   };
 
-  // Function to render account item with animation and delete button
   const renderAccountItem = (account: IAccount, icon: React.ReactNode, isDebt: boolean = false) => (
     <div
       key={account._id}
@@ -351,10 +366,7 @@ const AccountsBody = function () {
       {/* Render the account modal */}
       <AccountModal
         isOpen={isInputModalOpen}
-        onClose={async () => { 
-          await handleStore();
-          setIsInputModalOpen(false);
-        }}
+        onClose={handleModalClose}
         onSave={handleSaveAccount}
         accountToEdit={accountToEdit}
       />

@@ -1,28 +1,59 @@
-import { getTotalBalance, getTotalBankBalance, getTotalDebt, getTotalInvestment, getUserAccounts } from "@/service/accountService";
+import { getUserSocket } from "@/lib/userSocket";
+import {
+    getTotalBalance,
+    getTotalBankBalance,
+    getTotalDebt,
+    getTotalInvestment,
+    getUserAccounts
+} from "@/service/accountService";
+import { getToken } from "@/service/userService";
 import { IAccount } from "@/types/IAccounts";
+import { Socket } from "socket.io-client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// Only store serializable data in Zustand state
+interface BalanceUpdate {
+    totalBalance?: number;
+    totalBankBalance?: number;
+    totalDebt?: number;
+    totalInvestment?: number;
+}
+
 interface AccountState {
-    totalBalance: number; // Total account balance
-    totalBankBalance: number; // Total bank account balance
-    totalDebt: number; // Total total debt
-    totalInvestment: number; // Total investment
-    bankAccounts: IAccount[]; // bankAccount Details
-    investmentAccounts: IAccount[]; // investmentAccount Details 
-    debtAccounts: IAccount[]; // debt Account Details
-    liquidAccounts: IAccount[]; // liquid Account Details
-    fetchTotalBalance: () => Promise<void>; // Function to fetch total active goal amount
-    fetchTotalBankBalance: () => Promise<void>; // Function to fetch total Bank Balance
-    fetchTotalDebt: () => Promise<void>; // Function to fetch total Debt
-    fetchTotalInvestment: () => Promise<void>; // Function to fetch total Investment
-    fetchAllAccounts: () => Promise<void>; // Function to fetch all account details 
+    totalBalance: number;
+    totalBankBalance: number;
+    totalDebt: number;
+    totalInvestment: number;
+    bankAccounts: IAccount[];
+    investmentAccounts: IAccount[];
+    debtAccounts: IAccount[];
+    liquidAccounts: IAccount[];
+    isConnected: boolean;
+    connectionError: string | null;
+
+    // Actions
+    setIsConnected: (connected: boolean) => void;
+    setConnectionError: (error: string | null) => void;
+    initializeSocket: () => void;
+    disconnectSocket: () => void;
+    fetchAllDataWithHttpFallback: () => Promise<void>;
+    fetchTotalBalance: () => Promise<void>;
+    fetchTotalBankBalance: () => Promise<void>;
+    fetchTotalDebt: () => Promise<void>;
+    fetchTotalInvestment: () => Promise<void>;
+    fetchAllAccounts: () => Promise<void>;
+    updateBalances: (data: BalanceUpdate) => void;
+    updateAccounts: (data: IAccount[]) => void;
     reset: () => void;
 }
 
+// Store outside Zustand state
+let accountSocket: typeof Socket | null = null;
+
 export const useAccountsStore = create<AccountState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             totalBalance: 0,
             totalBankBalance: 0,
             totalDebt: 0,
@@ -31,9 +62,10 @@ export const useAccountsStore = create<AccountState>()(
             investmentAccounts: [],
             debtAccounts: [],
             liquidAccounts: [],
+            isConnected: false,
+            connectionError: null,
 
-            // Reset function
-            reset: () => 
+            reset: () =>
                 set({
                     totalBalance: 0,
                     totalBankBalance: 0,
@@ -43,52 +75,211 @@ export const useAccountsStore = create<AccountState>()(
                     investmentAccounts: [],
                     debtAccounts: [],
                     liquidAccounts: [],
+                    isConnected: false,
+                    connectionError: null,
                 }),
-            
-            // fetch Total Balance 
+
+            setIsConnected: (connected: boolean) => set({ isConnected: connected }),
+            setConnectionError: (error: string | null) => set({ connectionError: error }),
+
+            initializeSocket: async () => {
+                try {
+                    const res = await getToken();
+                    if (!res.success) throw new Error("Token fetch failed");
+                    const accessToken = res.data.accessToken;
+
+                    const newSocket = getUserSocket(accessToken, 'accounts');
+
+                    // Clean up previous socket completely
+                    if (accountSocket) {
+                        accountSocket.removeAllListeners();
+                        accountSocket.disconnect();
+                    }
+
+                    accountSocket = newSocket;
+
+                    // Setup all event listeners - remove hasListeners check
+                    const setupSocketListeners = () => {
+                        // Connection handler
+                        newSocket.on('connect', () => {
+                            console.log(`Connected to Accounts Server`);
+                            set({ isConnected: true, connectionError: null });
+                            
+                            // Request initial data after connection
+                            newSocket.emit('request_balance_update');
+                            newSocket.emit('request_accounts_update');
+                        });
+
+                        // Balance Update
+                        newSocket.on('balance_update', (data: BalanceUpdate) => {
+                            set({
+                                totalBalance: data.totalBalance || 0,
+                                totalBankBalance: data.totalBankBalance || 0,
+                                totalDebt: data.totalDebt || 0,
+                                totalInvestment: data.totalInvestment || 0,
+                            });
+                        });
+
+                        // Accounts Update
+                        newSocket.on('accounts_update', (data: Record<string, IAccount>) => {
+                            const accountsArray = Object.values(data);
+
+                            const bankAccounts = accountsArray.filter(acc => acc.account_type === 'Bank');
+                            const investmentAccounts = accountsArray.filter(acc => acc.account_type === 'Investment');
+                            const debtAccounts = accountsArray.filter(acc => acc.account_type === 'Debt');
+                            const liquidAccounts = accountsArray.filter(acc => acc.account_type === 'Cash');
+
+                            set({ 
+                                bankAccounts, 
+                                investmentAccounts, 
+                                debtAccounts, 
+                                liquidAccounts 
+                            });
+                        });
+
+                        // New Account Created
+                        newSocket.on('new_account_created', () => {
+                            // Refresh accounts data
+                            newSocket.emit('request_accounts_update');
+                            newSocket.emit('request_balance_update');
+                        });
+
+                        newSocket.on('account_deleted', () => {
+                            // Refresh accounts data
+                            newSocket.emit('request_accounts_update');
+                            newSocket.emit('request_balance_update');
+                        });
+
+                        newSocket.on('account_updated', () => {
+                            // Refresh accounts data
+                            newSocket.emit('request_accounts_update');
+                            newSocket.emit('request_balance_update');
+                        });
+
+                        // Handle server errors gracefully - don't disconnect socket
+                        newSocket.on('error', (error: Error & { type?: string }) => {
+                            console.log('Server error received:', error);
+                            set({ connectionError: error.message || 'Server error occurred' });
+                            
+                            // Don't disconnect socket, just fall back to HTTP for data
+                            // Socket connection remains intact for future updates
+                            if (error.type === 'balance_error' || error.type === 'accounts_error') {
+                                console.log('Falling back to HTTP for initial data...');
+                                get().fetchAllDataWithHttpFallback();
+                            }
+                        });
+
+                        // Disconnect
+                        newSocket.on('disconnect', (reason: string) => {
+                            console.log('Disconnected:', reason);
+                            set({ isConnected: false });
+                        });
+
+                        // Connect Error - only for actual connection issues
+                        newSocket.on('connect_error', (error: Error) => {
+                            console.error('Account socket connect error:', error);
+                            set({ 
+                                connectionError: `Connection failed: ${error.message || 'Unknown error'}`,
+                                isConnected: false 
+                            });
+                            
+                            // Fall back to HTTP data but don't give up on socket
+                            get().fetchAllDataWithHttpFallback();
+                        });
+                    };
+
+                    // Remove all existing listeners before setting up new ones
+                    newSocket.removeAllListeners();
+                    setupSocketListeners();
+
+                    // If already connected, request initial data
+                    if (newSocket.connected) {
+                        set({ isConnected: true });
+                        newSocket.emit('request_balance_update');
+                        newSocket.emit('request_accounts_update');
+                    }
+
+                } catch (error) {
+                    console.error("Failed to initialize account socket:", error);
+                    set({ connectionError: "Unable to fetch token. Please login again." });
+                    // Still try to get data via HTTP
+                    get().fetchAllDataWithHttpFallback();
+                }
+            },
+
+            disconnectSocket: () => {
+                if (accountSocket) {
+                    accountSocket.removeAllListeners();
+                    accountSocket.disconnect();
+                    accountSocket = null;
+                }
+
+                set({
+                    isConnected: false,
+                    bankAccounts: [],
+                    investmentAccounts: [],
+                    debtAccounts: [],
+                    liquidAccounts: [],
+                });
+
+                get().fetchAllDataWithHttpFallback();
+            },
+
+            fetchAllDataWithHttpFallback: async () => {
+                try {
+                    await Promise.all([
+                        get().fetchTotalBalance(),
+                        get().fetchTotalBankBalance(),
+                        get().fetchTotalDebt(),
+                        get().fetchTotalInvestment(),
+                        get().fetchAllAccounts(),
+                    ]);
+                    
+                    // Clear connection error if HTTP fallback succeeds
+                    set({ connectionError: null });
+                } catch (error) {
+                    console.error("HTTP fallback failed:", error);
+                    // For fresh users, this is expected - just log it
+                    // Don't set connection error as this is likely a fresh user scenario
+                }
+            },
+
             fetchTotalBalance: async () => {
                 try {
                     const response = await getTotalBalance();
-                    const data = await response.data;
-                    set({ totalBalance: data.totalBalance });
+                    set({ totalBalance: response.data.totalBalance || 0 });
                 } catch (error) {
-                    console.error(`Failed to get total Balance`, error);
+                    console.error("Failed to fetch total balance", error);
                     set({ totalBalance: 0 });
                 }
             },
 
-            // fetch Total Bank Balance
             fetchTotalBankBalance: async () => {
                 try {
                     const response = await getTotalBankBalance();
-                    const data = await response.data;
-                    set({ totalBankBalance: data.totalBankBalance });
+                    set({ totalBankBalance: response.data.totalBankBalance || 0 });
                 } catch (error) {
-                    console.error(`Failed to get total Bank Balance`, error);
+                    console.error("Failed to fetch total bank balance", error);
                     set({ totalBankBalance: 0 });
                 }
             },
 
-            // fetch Total Debt 
             fetchTotalDebt: async () => {
                 try {
                     const response = await getTotalDebt();
-                    const data = await response.data;
-                    set({ totalDebt: data.totalDebt });
+                    set({ totalDebt: response.data.totalDebt || 0 });
                 } catch (error) {
-                    console.error(`Failed to get total Debt`, error);
+                    console.error("Failed to fetch total debt", error);
                     set({ totalDebt: 0 });
                 }
             },
 
-            // fetch Total Investment
             fetchTotalInvestment: async () => {
                 try {
                     const response = await getTotalInvestment();
-                    const data = await response.data;
-                    set({ totalInvestment: data.totalInvestment });
+                    set({ totalInvestment: response.data.totalInvestment || 0 });
                 } catch (error) {
-                    console.error(`Failed to get total Investment`, error);
+                    console.error("Failed to fetch total investment", error);
                     set({ totalInvestment: 0 });
                 }
             },
@@ -96,28 +287,44 @@ export const useAccountsStore = create<AccountState>()(
             fetchAllAccounts: async () => {
                 try {
                     const response = await getUserAccounts();
-                    const data = await response.data;
-                    const accountDetails = Object.values(data);
-                    const bankAccounts = accountDetails.filter((account) => account.account_type === 'Bank');
-                    const investmentAccounts = accountDetails.filter((account) => account.account_type === 'Investment');
-                    const debtAccounts = accountDetails.filter((account) => account.account_type === 'Debt');
-                    const liquidAccounts = accountDetails.filter((account) => account.account_type === 'Cash');
+                    const data = Object.values(response.data);
 
-                    set({ bankAccounts: bankAccounts });
-                    set({ investmentAccounts: investmentAccounts });
-                    set({ debtAccounts: debtAccounts });
-                    set({ liquidAccounts: liquidAccounts });
+                    const bankAccounts = data.filter(acc => acc.account_type === 'Bank');
+                    const investmentAccounts = data.filter(acc => acc.account_type === 'Investment');
+                    const debtAccounts = data.filter(acc => acc.account_type === 'Debt');
+                    const liquidAccounts = data.filter(acc => acc.account_type === 'Cash');
+
+                    set({ bankAccounts, investmentAccounts, debtAccounts, liquidAccounts });
                 } catch (error) {
-                    console.error(`Failed to get all accounts`, error);
-                    set({ bankAccounts: [] });
-                    set({ investmentAccounts: [] });
-                    set({ debtAccounts: [] });
-                    set({ liquidAccounts: [] });
+                    console.error("Failed to fetch all accounts", error);
+                    set({
+                        bankAccounts: [],
+                        investmentAccounts: [],
+                        debtAccounts: [],
+                        liquidAccounts: [],
+                    });
                 }
-            }
+            },
+
+            updateBalances: (data: BalanceUpdate) =>
+                set({
+                    totalBalance: data.totalBalance || 0,
+                    totalBankBalance: data.totalBankBalance || 0,
+                    totalDebt: data.totalDebt || 0,
+                    totalInvestment: data.totalInvestment || 0,
+                }),
+
+            updateAccounts: (data: IAccount[]) => {
+                const bankAccounts = data.filter(acc => acc.account_type === 'Bank');
+                const investmentAccounts = data.filter(acc => acc.account_type === 'Investment');
+                const debtAccounts = data.filter(acc => acc.account_type === 'Debt');
+                const liquidAccounts = data.filter(acc => acc.account_type === 'Cash');
+
+                set({ bankAccounts, investmentAccounts, debtAccounts, liquidAccounts });
+            },
         }),
         {
-            name: 'accounts-storage', // Persisted state key
+            name: 'accounts-storage',
         }
     )
 );

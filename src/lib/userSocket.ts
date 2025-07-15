@@ -22,8 +22,6 @@ export const getUserSocket = function(accessToken: string, namespace: string): t
         timeout: 20000,
     });
 
-    console.log(`New User ${namespace} Socket Connected`);
-
     userSockets[namespace] = newSocket;
 
     return newSocket;
@@ -31,16 +29,25 @@ export const getUserSocket = function(accessToken: string, namespace: string): t
 
 export const disconnectUserSocket = function(namespace?: string) {
     if (namespace) {
-        if (userSockets[namespace]) {
-            userSockets[namespace]?.disconnect();
+        const socket = userSockets[namespace];
+
+        if (socket) {
+            socket.removeAllListeners();
+            socket.disconnect();
             userSockets[namespace] = null;
-            console.log(`User ${namespace} Socket Disconnected`);
+
+            console.log(`User ${namespace} Socket Disconnected and Listeners Cleared`);
         }
     } else {
         Object.keys(userSockets).forEach(ns => {
-            userSockets[ns]?.disconnect();
-            console.log(`User ${ns} Socket Disconnected`);
+            const socket = userSockets[ns];
+            if (socket) {
+                socket.removeAllListeners();
+                userSockets[ns]?.disconnect();
+                console.log(`User ${ns} Socket Disconnectd and Listeners Cleared`);
+            }
         });
+
         userSockets = {};
     }
 };

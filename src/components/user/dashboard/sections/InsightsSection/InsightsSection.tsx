@@ -77,7 +77,7 @@ const InsightsSection = function () {
     fetchTotalAnnualPremium();
     fetchUpcomingPaymentDate();
   }, [
-    fetchMonthlyTotalIncome, 
+    fetchMonthlyTotalIncome,
     fetchAllIncomeTransactons, 
     fetchAllExpenseTransactons,
     fetchActiveGoalAmount,

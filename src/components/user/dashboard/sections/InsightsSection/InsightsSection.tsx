@@ -53,9 +53,6 @@ const InsightsSection = function () {
   const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
   const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
   const fetchTotalReturns = useInvestmentStore((state) => state.fetchTotalReturns);
-  const fetchTotalInsuranceCoverage = useInsuranceStore((state) => state.fetchTotalInsuranceCoverage);
-  const fetchTotalAnnualPremium = useInsuranceStore((state) => state.fetchTotalAnnualInsurancePremium);
-  const fetchUpcomingPaymentDate = useInsuranceStore((state) => state.fetchInsuranceWithClosestNextPaymentDate);
 
   // Separated the store fetching from calculations to prevent loops
   useEffect(() => {
@@ -65,9 +62,6 @@ const InsightsSection = function () {
     fetchTotalInvestedAmount();
     fetchCurrentValue();
     fetchTotalReturns();
-    fetchTotalInsuranceCoverage();
-    fetchTotalAnnualPremium();
-    fetchUpcomingPaymentDate();
   }, [
     fetchMonthlyTotalIncome,
     fetchAllIncomeTransactons, 
@@ -75,9 +69,6 @@ const InsightsSection = function () {
     fetchTotalInvestedAmount,
     fetchCurrentValue,
     fetchTotalReturns,
-    fetchTotalInsuranceCoverage,
-    fetchTotalAnnualPremium,
-    fetchUpcomingPaymentDate,
   ]);
 
   const goalData = useCallback(function() {

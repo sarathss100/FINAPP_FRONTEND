@@ -32,6 +32,7 @@ export const useUserStore = create<IUserState>()(
                 useNotificationStore.getState().initializeSocket();
                 useGoalStore.getState().initializeSocket();
                 useDebtStore.getState().initializeSocket();
+                useInsuranceStore.getState().initializeSocket();
             },
             
             // fetchtheProfileUrl
@@ -78,11 +79,12 @@ export const useUserStore = create<IUserState>()(
                 useDebtStore.getState().disconnectSocket();
                 useDebtStore.getState().reset();
 
+                // Disconnect the insurances socket
+                useInsuranceStore.getState().disconnectSocket();
+                useInsuranceStore.getState().reset();
+
                 // Reset the transaction store
                 useTransactionStore.getState().reset();
-
-                // Reset the insurance store 
-                useInsuranceStore.getState().reset();
 
                 // Reset the faq store 
                 useFaqStore.getState().reset();

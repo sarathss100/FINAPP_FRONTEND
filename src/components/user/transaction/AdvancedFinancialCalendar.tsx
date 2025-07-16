@@ -19,7 +19,6 @@ export default function AdvancedFinancialCalendar() {
   
   // Get data from the store
   const allTransactions = useTransactionStore((state) => state.allTransactions);
-  const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
 
   // Extract unique categories from transactions
   const categories = ["all", ...new Set(allTransactions.map(t => t.category))];
@@ -30,11 +29,6 @@ export default function AdvancedFinancialCalendar() {
     totalExpenses: 0,
     balance: 0,
   });
-
-  // Fetch transactions on component mount
-  useEffect(() => {
-    fetchAllTransactions();
-  }, [fetchAllTransactions]);
 
   // Helper functions
   interface DateParam {

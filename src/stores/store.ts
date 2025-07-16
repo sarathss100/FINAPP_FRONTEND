@@ -34,6 +34,7 @@ export const useUserStore = create<IUserState>()(
                 useDebtStore.getState().initializeSocket();
                 useInsuranceStore.getState().initializeSocket();
                 useInvestmentStore.getState().initializeSocket();
+                useTransactionStore.getState().initializeSocket();
             },
             
             // fetchtheProfileUrl
@@ -88,7 +89,8 @@ export const useUserStore = create<IUserState>()(
                 useInvestmentStore.getState().disconnectSocket();
                 useInvestmentStore.getState().reset();
 
-                // Reset the transaction store
+                // Disconnect the transaction socket
+                useTransactionStore.getState().disconnectSocket();
                 useTransactionStore.getState().reset();
 
                 // Reset the faq store 

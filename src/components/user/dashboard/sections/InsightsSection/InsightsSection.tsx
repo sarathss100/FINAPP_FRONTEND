@@ -47,20 +47,6 @@ const InsightsSection = function () {
   const totalInsuranceCoverage = useInsuranceStore((state) => state.totalInsuranceCoverage);
   const totalAnnualPremium = useInsuranceStore((state) => state.totalAnnualInsurancePremium);
   const upcomingPaymentDate = useInsuranceStore((state) => state.insuranceWithClosestNextPaymentDate);
-  const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
-  const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
-
-  // Separated the store fetching from calculations to prevent loops
-  useEffect(() => {
-    fetchMonthlyTotalIncome();
-    fetchAllIncomeTransactons();
-    fetchAllExpenseTransactons();
-  }, [
-    fetchMonthlyTotalIncome,
-    fetchAllIncomeTransactons, 
-    fetchAllExpenseTransactons,
-  ]);
 
   const goalData = useCallback(function() {
     if (!totalInitialGoalAmount || !totalActiveGoalAmount) {

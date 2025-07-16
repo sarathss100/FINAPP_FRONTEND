@@ -38,12 +38,6 @@ const TransactionBody = function () {
   const commonflowTable = useTransactionStore((state) => state.commonflowTable);
   const commonflowFilters = useTransactionStore((state) => state.commonflowFilters);
   const isLoadingCommonflowTable = useTransactionStore((state) => state.isLoadingCommonflowTable);
-  const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
-  const fetchTotalMonthlyIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
-  const fetchMonthlyTotalExpense = useTransactionStore((state) => state.fetchMonthlyTotalExpense);
-  const fetchCategoryWiseExpenses = useTransactionStore((state) => state.fetchCategoryWiseExpenses);
-  const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
   const fetchTableCommonflow = useTransactionStore((state) => state.fetchTableCommonflow);
   const setCommonflowPage = useTransactionStore((state) => state.setCommonflowPage);
   // const setCommonflowLimit = useTransactionStore((state) => state.setCommonflowLimit);
@@ -56,14 +50,8 @@ const TransactionBody = function () {
   const goToPrevCommonflowPage = useTransactionStore((state) => state.goToPrevCommonflowPage);
 
   const handleStore = useCallback(() => {
-    fetchAllAccounts();
-    fetchTotalMonthlyIncome();
-    fetchTotalBalance();
-    fetchMonthlyTotalExpense();
-    fetchCategoryWiseExpenses();
-    fetchAllTransactions();
     fetchTableCommonflow();
-  }, [fetchAllAccounts, fetchTotalMonthlyIncome, fetchTotalBalance, fetchMonthlyTotalExpense, fetchCategoryWiseExpenses, fetchAllTransactions, fetchTableCommonflow]);
+  }, [fetchTableCommonflow]);
 
   useEffect(() => {
     handleStore();

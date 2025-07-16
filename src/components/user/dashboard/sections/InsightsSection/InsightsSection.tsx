@@ -50,25 +50,16 @@ const InsightsSection = function () {
   const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
   const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
   const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
-  const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
-  const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
-  const fetchTotalReturns = useInvestmentStore((state) => state.fetchTotalReturns);
 
   // Separated the store fetching from calculations to prevent loops
   useEffect(() => {
     fetchMonthlyTotalIncome();
     fetchAllIncomeTransactons();
     fetchAllExpenseTransactons();
-    fetchTotalInvestedAmount();
-    fetchCurrentValue();
-    fetchTotalReturns();
   }, [
     fetchMonthlyTotalIncome,
     fetchAllIncomeTransactons, 
     fetchAllExpenseTransactons,
-    fetchTotalInvestedAmount,
-    fetchCurrentValue,
-    fetchTotalReturns,
   ]);
 
   const goalData = useCallback(function() {

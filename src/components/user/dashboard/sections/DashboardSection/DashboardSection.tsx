@@ -5,7 +5,7 @@ import {
   TrendingDownIcon,
   TrendingUpIcon,
 } from "lucide-react";
-import React, { useCallback, useEffect } from "react";
+import React from "react";
 import { Card, CardContent } from '@/components/base/Card';
 import useInvestmentStore from "@/stores/investment/investmentStore";
 import useDebtStore from "@/stores/debt/debtStore";
@@ -17,15 +17,6 @@ const DashboardSection = function () {
   const totalGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
   const totalInvestmentValue = useInvestmentStore((state) => state.totalInvestedAmount);
   const totalDebt = useDebtStore((state) => state.totalOutstandingDebtAmount);
-  const fetchTotalInvestment = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
-
-  const handleStore = useCallback(() => {
-    fetchTotalInvestment();
-  }, [fetchTotalInvestment]);
-
-  useEffect(() => {
-    handleStore();
-  }, [handleStore]);
 
   // Data for dashboard cards
   const dashboardCards = [

@@ -14,13 +14,13 @@ import useDebtStore from "@/stores/debt/debtStore";
 import { useAccountsStore } from "@/stores/accounts/accountsStore";
 import { useGoalStore } from "@/stores/goals/goalStore";
 import { useRouter } from 'next/navigation';
+import { useUserStore } from "@/stores/store";
 
 const DashboardSection = function () {
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const router = useRouter();
 
-  // Mock subscription status - replace with actual subscription check from your store/API
-  const isSubscribed = false; // This should come from your user store or API
+  const isSubscribed = useUserStore((state) => state.isSubscribed);
 
   const totalBalance = useAccountsStore((state) => state.totalBalance);
   const totalGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);

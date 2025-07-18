@@ -7,6 +7,7 @@ interface IUser {
     is2FA: boolean;
     role?: string;
     status?: boolean;
+    subscription_status?: boolean;
     email?: string;
     lastPasswordChange?: Date;
     twoFactorEnabled?: boolean;

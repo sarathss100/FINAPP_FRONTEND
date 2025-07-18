@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import IUserState from './interfaces/IUserState';
 // import IUser from './interfaces/IUser';
 import { persist } from 'zustand/middleware';
-import { getUserProfilePicture, getUserProfilePictureId } from '@/service/userService';
+import { getUserProfileDetails, getUserProfilePicture, getUserProfilePictureId } from '@/service/userService';
 import useDebtStore from './debt/debtStore';
 import useFaqStore from './faqs/faqStore';
 import useTransactionStore from './transaction/transactionStore';
@@ -17,6 +17,7 @@ export const useUserStore = create<IUserState>()(
     persist(
         (set) => ({
             user: null,
+            isSubscribed: null,
             profilePicture: {
                 image: '',
                 contentType: '',
@@ -54,9 +55,23 @@ export const useUserStore = create<IUserState>()(
               }
             }, 
 
+            // fetchtheSubscriptionStatus
+            fetchSubscriptionStatus: async () => {
+              try {         
+                  const response = await getUserProfileDetails();
+                  const data = await response.data;
+                  const isSubscribed = data.subscription_status
+                  set({ isSubscribed });
+              } catch (error) {
+                  console.error(`Failed to fetch Subscription status:`, error);
+                  set({ isSubscribed: null });
+              }
+            }, 
+
             reset: () => {
                 // Clear the user state
                 set(() => ({ user: null }));
+                set(() => ({ isSubscribed: null}));
                 set(() => ({ profilePicture: {
                     image: '',
                     contentType: '',

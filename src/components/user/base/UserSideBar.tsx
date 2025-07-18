@@ -31,8 +31,7 @@ export const UserSideBar = () => {
   // Zustand store actions 
   const { logout } = useUserStore();
 
-  // Mock subscription status - replace with actual subscription check from your store/API
-  const isSubscribed = false; // This should come from your user store or API
+  const isSubscribed = useUserStore((state) => state.isSubscribed);
 
   // Define which routes are accessible to free users
   const freeRoutes = [

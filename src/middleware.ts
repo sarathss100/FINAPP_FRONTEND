@@ -13,6 +13,15 @@ const PUBLIC_ROUTES = [
     '/charts'
 ];
 
+const PREMIUM_ROUTES = [
+    '/debt-analysis',
+    '/goal-management',
+    '/accounts',
+    '/investments',
+    '/insurances',
+    '/notifications'
+];
+
 const ADMIN_ROUTES = [
     '/admin/dashboard',
     '/admin/user-management',
@@ -26,6 +35,7 @@ const ADMIN_ROUTES = [
 // Helper Functions
 const isPublicRoute = (pathname: string) => PUBLIC_ROUTES.includes(pathname);
 const isAdminRoute = (pathname: string) => ADMIN_ROUTES.includes(pathname);
+const isPremiumRoute = (pathname: string) => PREMIUM_ROUTES.includes(pathname);
 
 const redirectToDashboard = (userRole: string, requestUrl: string) => {
     const redirectPath = userRole === 'admin' ? '/admin/user-management' : '/dashboard';
@@ -98,6 +108,14 @@ export async function middleware(request: NextRequest) {
                 return handleBlockedUser(request.url);
             }
 
+            // Extract subscription status  
+            const isSubscribed = data.data.subscription_status === true;
+            
+            // Handle subscription-based access 
+            if (isPremiumRoute(pathname) && !isSubscribed) {
+                return NextResponse.redirect(new URL('/subscription', request.url));
+            }
+
             // Check role-based access
             if (isAdminRoute(pathname) && user.role !== 'admin') {
                 return NextResponse.redirect(new URL('/unauthorized', request.url));
@@ -109,7 +127,7 @@ export async function middleware(request: NextRequest) {
                     return NextResponse.redirect(new URL('/admin/user-management', request.url));
                 }
             } 
-
+            
             // Allow access to protected routes
             return NextResponse.next();
         }

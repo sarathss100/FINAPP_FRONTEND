@@ -5,6 +5,7 @@ interface IVerifyTokenResponse {
         phoneNumber?: string,
         status?: boolean,
         role?: string,
+        subscription_status?: boolean,
         newAccessToken?: string;
     };
 }

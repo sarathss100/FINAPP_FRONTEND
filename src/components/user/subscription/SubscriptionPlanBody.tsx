@@ -14,6 +14,7 @@ import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 // import Image from 'next/image';
 import { toast } from 'react-toastify';
+import { initiatePayment } from "@/service/subscriptionService";
 
 const SubscriptionPlanBody = function () {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -22,21 +23,15 @@ const SubscriptionPlanBody = function () {
     setIsProcessing(true);
     
     try {
-      // This is where you'll integrate your payment gateway
-      // For now, we'll simulate a process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Here you would call your payment gateway API
-      // const response = await initiatePayment({
-      //   amount: 199,
-      //   currency: 'INR',
-      //   plan: 'monthly'
-      // });
-      
+      const response = await initiatePayment({
+        amount: 199,
+        currency: 'INR',
+        plan: 'monthly', 
+      });
+
       toast.success('Redirecting to payment gateway...');
       
-      // In a real implementation, you'd redirect to the payment gateway
-      // window.location.href = response.paymentUrl;
+      window.location.href = response.data.checkoutUrl;
       
     } catch (error) {
         console.log((error as Error).message);

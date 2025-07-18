@@ -15,9 +15,6 @@ const IncomeAnalysisDashboard = () => {
   const previousMonthTotalIncome = useTransactionStore((state) => state.previousMonthTotalIncome);
   const monthlyIncomeTrends = useTransactionStore((state) => state.monthlyIncomeTrends);
   const transactionsByCategory = useTransactionStore((state) => state.allIncomeTransactions);
-  const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchMonthlyIncomeTrends = useTransactionStore((state) => state.fetchMonthlyIncomeTrends);
-  const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
 
   const getDaysInMonth = function (date: Date): number {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -50,14 +47,6 @@ const IncomeAnalysisDashboard = () => {
     }
   }, [monthlyIncomeTrends]);
   
-  // Separated the store fetching from calculations to prevent loops
-  useEffect(() => {
-    fetchMonthlyTotalIncome();
-    fetchMonthlyIncomeTrends();
-    fetchAllIncomeTransactons();
-    // fetchDataForInflowTable();
-  }, [fetchMonthlyTotalIncome, fetchMonthlyIncomeTrends, fetchAllIncomeTransactons]);
-
   // Separate effect for calculations that depend on the fetched data
   useEffect(() => {
     calculatePercentage();

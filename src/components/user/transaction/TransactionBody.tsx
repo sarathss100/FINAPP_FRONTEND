@@ -13,11 +13,11 @@ import AdvancedFinancialCalendar from './AdvancedFinancialCalendar';
 import { TransactionInputModal } from './TransactionInputModal';
 import { ITransaction } from '@/types/ITransaction';
 import { addTransaction } from '@/service/transactionService';
-import { useAccountsStore } from '@/stores/store';
 import { updateAccount } from '@/service/accountService';
 import ImportModal from './ImportModal';
 import BankStatementUploader from './BankStatementUploader';
 import useTransactionStore from '@/stores/transaction/transactionStore';
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
 const TransactionBody = function () {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -38,12 +38,6 @@ const TransactionBody = function () {
   const commonflowTable = useTransactionStore((state) => state.commonflowTable);
   const commonflowFilters = useTransactionStore((state) => state.commonflowFilters);
   const isLoadingCommonflowTable = useTransactionStore((state) => state.isLoadingCommonflowTable);
-  const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
-  const fetchTotalMonthlyIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
-  const fetchMonthlyTotalExpense = useTransactionStore((state) => state.fetchMonthlyTotalExpense);
-  const fetchCategoryWiseExpenses = useTransactionStore((state) => state.fetchCategoryWiseExpenses);
-  const fetchAllTransactions = useTransactionStore((state) => state.fetchAllTransactions);
   const fetchTableCommonflow = useTransactionStore((state) => state.fetchTableCommonflow);
   const setCommonflowPage = useTransactionStore((state) => state.setCommonflowPage);
   // const setCommonflowLimit = useTransactionStore((state) => state.setCommonflowLimit);
@@ -56,14 +50,8 @@ const TransactionBody = function () {
   const goToPrevCommonflowPage = useTransactionStore((state) => state.goToPrevCommonflowPage);
 
   const handleStore = useCallback(() => {
-    fetchAllAccounts();
-    fetchTotalMonthlyIncome();
-    fetchTotalBalance();
-    fetchMonthlyTotalExpense();
-    fetchCategoryWiseExpenses();
-    fetchAllTransactions();
     fetchTableCommonflow();
-  }, [fetchAllAccounts, fetchTotalMonthlyIncome, fetchTotalBalance, fetchMonthlyTotalExpense, fetchCategoryWiseExpenses, fetchAllTransactions, fetchTableCommonflow]);
+  }, [fetchTableCommonflow]);
 
   useEffect(() => {
     handleStore();

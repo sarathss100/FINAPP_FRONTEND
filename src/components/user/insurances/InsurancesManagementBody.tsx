@@ -4,16 +4,16 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge } from '@/components/base/Badge';
 import Button from '@/components/base/Button';
 import { Card, CardContent } from '@/components/base/Card';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
 import Image from 'next/image';
-import { useInsuranceStore } from '@/stores/store';
 import { toast } from 'react-toastify';
 import { createInsurance, markPaymentAsPaid, removeInsurance } from '@/service/insuranceService';
+import { useInsuranceStore } from "@/stores/insurances/insuranceStore";
 
 // Insurance types for dropdown
 const insuranceTypes = [
@@ -64,10 +64,6 @@ const InsuranceManagementBody = function () {
   const totalAnnualPremium = useInsuranceStore((state) => state.totalAnnualInsurancePremium);
   const insurances = useInsuranceStore((state) => state.allInsurances);
   const upcomingPaymentDate = useInsuranceStore((state) => state.insuranceWithClosestNextPaymentDate);
-  const fetchTotalInsuranceCoverage = useInsuranceStore((state) => state.fetchTotalInsuranceCoverage);
-  const fetchTotalAnnualPremium = useInsuranceStore((state) => state.fetchTotalAnnualInsurancePremium);
-  const fetchAllInsurances = useInsuranceStore((state) => state.fetchAllInsurances);
-  const fetchUpcomingPaymentDate = useInsuranceStore((state) => state.fetchInsuranceWithClosestNextPaymentDate);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [showAddPolicyModal, setShowAddPolicyModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,23 +81,11 @@ const InsuranceManagementBody = function () {
     setIsClient(true);
   }, []);
 
-  const handleStore = useCallback(() => {
-    fetchTotalInsuranceCoverage();
-    fetchTotalAnnualPremium();
-    fetchAllInsurances();
-    fetchUpcomingPaymentDate();
-  }, [fetchTotalInsuranceCoverage, fetchTotalAnnualPremium, fetchAllInsurances, fetchUpcomingPaymentDate]);
-
-  useEffect(() => {
-    handleStore();
-  }, [handleStore]);
-
   const handleDeleteCard = async function (insuranceId: string) {
     try {
       const response = await removeInsurance(insuranceId);
       if (response.success) {
         toast.success(response.message || `Successfully Removed the Insurance`);
-        await handleStore();
         setDeleteConfirmationId(null);
       }
     } catch (error) {
@@ -122,7 +106,6 @@ const InsuranceManagementBody = function () {
       const response = await markPaymentAsPaid(insuranceId);
       if (response.success) {
         toast.success(response.message || `Payment status updated Successfully`);
-        await handleStore();
       }
     } catch (error) {
       toast.error((error as Error).message || `Failed to update the payment status`);
@@ -165,8 +148,6 @@ const InsuranceManagementBody = function () {
           payment_status: ''
         });
 
-        // Refresh data
-        await handleStore();
         setShowAddPolicyModal(false);
       }
     } catch (error) {
@@ -247,6 +228,7 @@ const InsuranceManagementBody = function () {
             alt={`${card.type} icon`}
             height={30}
             width={30}
+            style={{ width: '30px', height: '30px' }}
           />
           <div className="flex items-center gap-2">
             {card.status === 'active' ? (
@@ -359,6 +341,7 @@ const InsuranceManagementBody = function () {
                     className="mr-2"
                     width={16}
                     height={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="text-base text-gray-600 font-normal font-['Poppins',Helvetica]">
                     Total Policies
@@ -377,6 +360,7 @@ const InsuranceManagementBody = function () {
                     className="mr-2"
                     width={16}
                     height={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="text-base text-gray-600 font-normal font-['Poppins',Helvetica]">
                     Total Premium
@@ -395,6 +379,7 @@ const InsuranceManagementBody = function () {
                     className="mr-2"
                     width={16}
                     height={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="text-base text-gray-600 font-normal font-['Poppins',Helvetica]">
                     Upcoming Payment Date

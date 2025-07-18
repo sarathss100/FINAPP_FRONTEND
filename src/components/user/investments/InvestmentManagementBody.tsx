@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useEffect } from "react";
+import React from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent } from '@/components/base/Card';
 import UserHeader from '../base/Header';
@@ -67,21 +67,6 @@ const InvestmentManagementBody = function () {
   const currentValue = useInvestmentStore((state) => state.totalCurrentValue);
   const totalReturns = useInvestmentStore((state) => state.totalCurrentValue);
   const categorizedInvestments = useInvestmentStore((state) => state.investments);
-  const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
-  const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
-  const fetchTotalReturns = useInvestmentStore((state) => state.fetchTotalReturns);
-  const fetchCategorizedInvestments = useInvestmentStore((state) => state.fetchInvestments);
-
-  const handleStore = useCallback(() => {
-    fetchTotalInvestedAmount();
-    fetchCurrentValue();
-    fetchTotalReturns();
-    fetchCategorizedInvestments();
-  }, [fetchTotalInvestedAmount, fetchCurrentValue, fetchTotalReturns, fetchCategorizedInvestments]);
-
-  useEffect(() => {
-    handleStore();
-  }, [handleStore]);
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [expandedCard, setExpandedCard] = React.useState<string | null>(null);
@@ -103,7 +88,6 @@ const InvestmentManagementBody = function () {
       // Replace this with your actual delete service call
       const response = await removeInvestment(investmentType, investmentId);
       if (response.success) {
-        handleStore(); // Refresh data after deletion
         toast.success('Investment deleted successfully!');
       }
     } catch (error) {
@@ -140,7 +124,6 @@ const InvestmentManagementBody = function () {
       const response = await createInvestment(investmentData);
       if (response.success) {
         console.log(investmentData);
-        handleStore(); // Refresh data after adding investment
         handleCloseModal();
         toast.success(`Investment Added Successfully!`);
       }

@@ -11,7 +11,6 @@ import {
 import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
 import { deleteGoal, getGoalDetails, updateGoal, updateTransaction } from '@/service/goalService';
-import { useGoalStore } from '@/stores/store';
 import { GoalDetailsModal } from '../GoalViewModal';
 import {
   Dialog,
@@ -23,27 +22,10 @@ import {
 import { ContributionModal } from '../GoalContributionModal';
 import { GoalEditModal } from '../GoalEditModal';
 import { IGoal } from '@/types/IGoal';
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 export const MainContentSection = () => {
-  const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
-  const fetchCategoryByGoals = useGoalStore((state) => state.fetchCategoryByGoals);
-  const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
-  const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const fetchSmartAnalysis = useGoalStore((state) => state.fetchSmartAnalysis);
-  const fetchDailyContribution = useGoalStore((state) => state.fetchDailyContribution);
-  const fetchMonthlyContribution = useGoalStore((state) => state.fetchMonthlyContribution);
   const goals = useGoalStore((state) => state.goals);
-
-  const globalFetch = function () {
-    fetchAllGoals();
-    fetchCategoryByGoals();
-    fetchLongestTimePeriod();
-    fetchTotalActiveGoalAmount();
-    fetchSmartAnalysis();
-    fetchDailyContribution();
-    fetchMonthlyContribution();
-  }
-
   const [selectedGoal, setSelectedGoal] = useState<IGoal | null>(null);
   const [deleteGoalId, setDeleteGoalId] = useState<string | null>(null);
   const [goalName, setGoalName] = useState<string | null>(null);
@@ -194,9 +176,6 @@ export const MainContentSection = () => {
       if (response.data) {
         toast.success(response.message || `Your goal has been successfully deleted. You can always create a new one whenever you're ready!`);
       } 
-      setTimeout(() => {
-        globalFetch();
-      }, 300);
     } catch (error) {
       toast.error((error as Error).message || `Oops! Something went wrong. Please try again later or contact support if the issue persists.`);
     }
@@ -242,11 +221,7 @@ export const MainContentSection = () => {
   const handleContributionSubmit = async (amount: number) => {
     try {
       if (deleteGoalId) {
-        const response = await updateTransaction(deleteGoalId, amount);
-        if (response.success) {
-          await globalFetch();
-          return Promise.resolve();
-        }
+        await updateTransaction(deleteGoalId, amount);
       }
     } catch (error) {
       console.error(`Error adding contribution:`, error);
@@ -577,7 +552,6 @@ export const MainContentSection = () => {
           const respone = await updateGoal(goalData._id, goalData);
           if (respone.success) {
             toast.success(`Goal updated successfully`);
-            await globalFetch();
             setIsEditModalOpen(false);
           }
         }}

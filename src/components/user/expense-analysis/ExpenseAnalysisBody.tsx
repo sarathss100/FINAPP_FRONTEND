@@ -15,9 +15,6 @@ const ExpenseAnalysisBody = () => {
   const previousMonthTotalExpense = useTransactionStore((state) => state.previousMonthTotalExpense);
   const monthlyExpenseTrends = useTransactionStore((state) => state.monthlyExpenseTrends);
   const transactionsByCategory = useTransactionStore((state) => state.allExpenseTransactions);
-  const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchMonthlyExpenseTrends = useTransactionStore((state) => state.fetchMonthlyExpenseTrends);
-  const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
 
   const getDaysInMonth = function (date: Date): number {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -49,13 +46,6 @@ const ExpenseAnalysisBody = () => {
       setMaxMonthlyIncome(0);
     }
   }, [monthlyExpenseTrends]);
-  
-  // Separated the store fetching from calculations to prevent loops
-  useEffect(() => {
-    fetchMonthlyTotalIncome();
-    fetchMonthlyExpenseTrends();
-    fetchAllExpenseTransactons();
-  }, [fetchMonthlyTotalIncome, fetchMonthlyExpenseTrends, fetchAllExpenseTransactons]);
 
   // Separate effect for calculations that depend on the fetched data
   useEffect(() => {

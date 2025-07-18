@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import io from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { getToken } from '@/service/userService';
 import { INotification } from '@/types/INotification';
+import { disconnectUserSocket, getUserSocket } from '@/lib/userSocket';
 
 interface NotificationState {
   // Chat UI state
@@ -17,6 +17,8 @@ interface NotificationState {
   setIsConnected: (connected: boolean) => void;
   setConnectionError: (error: string | null) => void;
   initializeSocket: () => void;
+  markNotificationReaded: (notificationId: string) => void;
+  markAllNotificationsAsSeen: () => void;
   disconnectSocket: () => void;
   clearMessages: () => void;
 }
@@ -35,85 +37,68 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   initializeSocket: async () => {
     try {
-      const { socket } = get();
-      if (socket) {
-        console.log('Socket already exists, skipping initialization');
-        return;
-      }
-
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000/';
-      console.log('Attempting to connect to:', socketUrl);
-
       const res = await getToken();
       if (!res.success) throw new Error(`Token fetch failed`);
-
       const accessToken = res.data.accessToken;
+  
+      const newSocket = getUserSocket(accessToken, 'notification');
 
-      const newSocket = io(socketUrl, {
-        auth: {
-          accessToken,
-        },
-        transports: ['websocket'],
-        timeout: 20000,
-        reconnection: true,
-        reconnectionAttempts: Infinity,
-        reconnectionDelay: 1000,
-      });
+      if (!newSocket.hasListeners('connect')) {
+        newSocket.on('connect', () => {
+          console.log('Connected to notification server');
+          set({ isConnected: true, connectionError: null });
+        });
 
-      // --- Socket Event Handlers ---
-      newSocket.on('connect', () => {
-        console.log('✅ Connected to notification server');
-        set({ isConnected: true, connectionError: null });
-      });
+        interface DisconnectReason {
+          type: string;
+          description?: string;
+        }
 
-      interface DisconnectReason {
-        type: string;
-        description?: string;
-      }
+        newSocket.on('disconnect', (reason: DisconnectReason) => {
+          console.log('Disconnected:', reason);
+          set({ isConnected: false });
+        });
 
-      newSocket.on('disconnect', (reason: DisconnectReason) => {
-        console.log('❌ Disconnected:', reason);
-        set({ isConnected: false });
-      });
+        interface ConnectError {
+          message: string;
+          [key: string]: unknown;
+        }
 
-      interface ConnectError {
-        message: string;
-        [key: string]: unknown;
-      }
+        newSocket.on('connect_error', (error: ConnectError) => {
+          console.error('Connection error:', error.message);
+          set({ connectionError: `Connection failed: ${error.message}` });
+        });
 
-      newSocket.on('connect_error', (error: ConnectError) => {
-        console.error('❌ Connection error:', error.message);
-        set({ connectionError: `Connection failed: ${error.message}` });
-      });
+        newSocket.emit('request_notifications');
 
-      newSocket.emit('request_notifications');
+        newSocket.on('notifications', (notifications: INotification[]) => {
+          set({ notifications });
+        });
 
-      newSocket.on('notifications', (notifications: INotification[]) => {
-        console.log('📬 notifications received:', notifications);
-        set({ notifications });
-      });
+        newSocket.on('notification_marked_read', (notificationId: string) => {
+            set((state) => ({
+              notifications: state.notifications.map((n) =>
+                n._id === notificationId ? { ...n, is_read: true } : n
+              ),
+            }));
+        });
 
-      newSocket.on('notification_marked_read', (notificationId: string) => {
-          console.log('🔔 Notification marked read:', notificationId);
+        newSocket.on('all_notifications_marked_read', () => {
           set((state) => ({
-            notifications: state.notifications.map((n) =>
-              n._id === notificationId ? { ...n, is_read: true } : n
-            ),
+            notifications: state.notifications.map((n) => ({ ...n, is_read: true })),
           }));
-      });
+        });
 
-      newSocket.on('all_notifications_marked_read', () => {
-        console.log('✅ All notifications marked read');
-        set((state) => ({
-          notifications: state.notifications.map((n) => ({ ...n, is_read: true })),
-        }));
-      });
+        newSocket.on('new_notification', () => {
+          newSocket.emit('request_notifications');
+        });
+      }
 
       // Finalize
       set({ socket: newSocket });
 
     } catch (error) {
-      console.error('❌ Failed to initialize socket:', error);
+      console.error('Failed to initialize socket:', error);
       set({
         connectionError: 'Unable to fetch token. Please login again.',
       });
@@ -122,12 +107,30 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   clearMessages: () => set({ notifications: [] }),
 
+  markNotificationReaded: (notificationId: string) => {
+    const { socket, isConnected } = get();
+    if (socket && isConnected) {
+      socket.emit('mark_notification_as_read', { notificationId });
+    } else {
+      console.log(`No socket connection found`);
+    }
+  },
+
+  markAllNotificationsAsSeen: () => {
+    const { socket, isConnected } = get();
+    if (socket && isConnected) {
+      socket.emit('mark_all_notification_as_read');
+    } else {
+      console.log(`No socket connection found`);
+    }
+  },
+
   disconnectSocket: () => {
     const { socket } = get();
     if (socket) {
-      socket.disconnect();
+      disconnectUserSocket('notification');
       set({ socket: null, isConnected: false });
-      console.log('🔌 Socket disconnected');
+      console.log('Socket disconnected');
     }
   },
 }));

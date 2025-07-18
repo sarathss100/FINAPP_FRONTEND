@@ -2,7 +2,7 @@
 import { createDebt, markAsPaid, removeDebt } from '@/service/debtService';
 import useDebtStore from '@/stores/debt/debtStore';
 import { PlusCircle, TrendingUp, Calendar, BarChart3, XIcon, IndianRupee, CheckCircle, Trash2 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { toast } from 'react-toastify';
 
 // Common debt types for dropdown
@@ -87,29 +87,6 @@ const DebtManagementSection = function () {
   const goodDebts = useDebtStore((state) => state.goodDebts);
   const badDebts = useDebtStore((state) => state.badDebts);
   const repaymentSimulationResult = useDebtStore((state) => state.repaymentSimulationResult);
-  const fetchTotalDebt = useDebtStore((state) => state.fetchTotalDebt);
-  const fetchTotalOutstandingDebtAmount = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
-  const fetchTotalMonthlyPayment = useDebtStore((state) => state.fetchTotalMonthlyPayment);
-  const fetchLongestDebtTenure = useDebtStore((state) => state.fetchLongestDebtTenure);
-  const fetchGoodDebts = useDebtStore((state) => state.fetchGoodDebts);
-  const fetchBadDebts = useDebtStore((state) => state.fetchBadDebts);
-  const fetchRepaymentSimulationResult = useDebtStore((state) => state.fetchRepaymentSimulationResult);
-  const fetchAllDebts = useDebtStore((state) => state.fetchAllDebts);
-
-  const handleStore = useCallback(function () {
-    fetchTotalDebt()
-    fetchTotalOutstandingDebtAmount();
-    fetchTotalMonthlyPayment();
-    fetchLongestDebtTenure();
-    fetchGoodDebts();
-    fetchBadDebts();
-    fetchRepaymentSimulationResult();
-    fetchAllDebts();
-  }, [fetchTotalOutstandingDebtAmount, fetchTotalMonthlyPayment, fetchTotalDebt, fetchLongestDebtTenure, fetchGoodDebts, fetchBadDebts, fetchRepaymentSimulationResult, fetchAllDebts]);
-
-  useEffect(() => {
-    handleStore();
-  }, [handleStore]);
 
   // Helper function to get interest rate color
   const getInterestRateColor = (rate: number) => {
@@ -158,7 +135,6 @@ const DebtManagementSection = function () {
       if (response.success) {
         toast.success(response.message || 'Updated Successfully');
         setDeleteConfirmationId(null);
-        handleStore();
       }
     } catch (error) {
       toast.error((error as Error).message || 'Failed to Mark As Paid!');
@@ -171,7 +147,6 @@ const DebtManagementSection = function () {
       if (response.success) {
         toast.success(response.message || 'Successfully Removed Debt');
         setDeleteConfirmationId(null);
-        handleStore();
       }
     } catch (error) {
       toast.error((error as Error).message || 'Failed to Delele the Debt!');
@@ -230,7 +205,6 @@ const DebtManagementSection = function () {
       // Here you would call your API to add the debt
       const response = await createDebt(refinedData);
       if (response.success) {
-        handleStore();
         toast.success(response.message || 'Debt added successfully!');
       }
       // Reset form and close modal

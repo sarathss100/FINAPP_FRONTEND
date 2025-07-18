@@ -32,7 +32,9 @@ const SigninFormbody = function () {
   const [isOTPLoading, setIsOTPLoading] = useState(false);
   const [isResetPasswordLoading, setIsResetPasswordLoading] = useState(false);
   const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false);
+  const [role, setRole] = useState('');
   const router = useRouter();
+  
   // Zustand store actions 
   const { logout } = useUserStore();
 
@@ -54,9 +56,14 @@ const SigninFormbody = function () {
       setLoading(true);
       const data = await signIn(formData);
 
+      setRole(data.data.role);
+
       if (data.success && data.data.is2FA) {
         handlePhoneVerificationSuccess(formData.phone_number);
       } else {
+        if (data.data.role === 'user') {
+          useUserStore.getState().initializeSockets();
+        }
         router.replace('/dashboard');
       }
     } catch (error) {
@@ -93,6 +100,9 @@ const SigninFormbody = function () {
       if (isPasswordResetFlow) {
         setIsResetPasswordModalOpen(true);
       } else {
+        if (role === 'user') {
+          useUserStore.getState().initializeSockets();
+        }
         // For 2FA, proceed to dashboard or next step
         router.replace('/dashboard');
       }

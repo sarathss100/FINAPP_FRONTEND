@@ -7,7 +7,6 @@ import Image from 'next/image';
 import UserHeader from '../base/Header';
 import { INotification, NOTIFICATION_TYPES } from "@/types/INotification";
 import { useNotificationStore } from "@/stores/notifications/notificationStore";
-import { markAllNotificationsAsSeen, markNotificationReaded } from "@/service/notificationService";
 
 // Enhanced category mapping with read/unread categories
 const categories = [
@@ -85,6 +84,7 @@ const NotificationBody = function () {
   const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { markNotificationReaded, markAllNotificationsAsSeen } = useNotificationStore();
 
   const calculateCategoryCounts = useCallback((notificationList: INotification[]) => {
     const counts: { [key: string]: number } = {
@@ -141,21 +141,12 @@ const NotificationBody = function () {
   //   });
   // };
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      console.log(notificationId);
-      await markNotificationReaded(notificationId);
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+  const markAsRead = (notificationId: string) => {
+    markNotificationReaded(notificationId);
   };
 
-  const markAllAsRead = async () => {
-    try {
-      await markAllNotificationsAsSeen();
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+  const markAllAsRead = () => {
+    markAllNotificationsAsSeen();
   };
 
   const getNotificationIcon = (type: string) => {
@@ -250,6 +241,7 @@ const NotificationBody = function () {
                     height={24}
                     width={24}
                     className="filter invert brightness-0 contrast-100"
+                    style={{ width: '24px', height: '24px' }}
                   />
                 </div>
                 <div>
@@ -274,6 +266,7 @@ const NotificationBody = function () {
                     src="/double_tick.svg"
                     height={16}
                     width={16}
+                    style={{ width: '16px', height: '16px' }}
                   />
                   <span className="font-['Poppins',Helvetica] text-sm font-medium">
                     Mark all as read
@@ -302,6 +295,7 @@ const NotificationBody = function () {
                       src={category.icon}
                       height={20}
                       width={20}
+                      style={{ width: '20px', height: '20px' }}
                     />
                   </div>
                   <h3 className="font-['Poppins',Helvetica] font-semibold text-[#004a7c] text-sm mb-1">
@@ -363,6 +357,7 @@ const NotificationBody = function () {
                           width={16}
                           height={16}
                           className="filter invert brightness-0 contrast-100"
+                          style={{ width: '16px', height: '16px' }}
                         />
                       </div>
                       <h2 className="font-['Poppins',Helvetica] font-semibold text-[#004a7c] text-lg">
@@ -387,6 +382,7 @@ const NotificationBody = function () {
                                   src={getNotificationIcon(notification.type)}
                                   height={20}
                                   width={20}
+                                  style={{ width: '20px', height: '20px' }}
                                 />
                               </div>
                             </div>
@@ -450,6 +446,7 @@ const NotificationBody = function () {
                             src={getNotificationIcon(notification.type)}
                             height={20}
                             width={20}
+                            style={{ width: '20px', height: '20px' }}
                           />
                         </div>
                       </div>
@@ -505,6 +502,7 @@ const NotificationBody = function () {
                     height={32}
                     width={32}
                     className="opacity-50"
+                    style={{ width: '32px', height: '32px' }}
                   />
                 </div>
                 <h3 className="font-['Poppins',Helvetica] font-semibold text-gray-600 text-lg mb-2">

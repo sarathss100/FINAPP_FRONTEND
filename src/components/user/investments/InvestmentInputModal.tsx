@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import { searchMutualFundFromApi, searchStocksFromApi } from '@/service/investmentService';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount } from '@/service/accountService';
-import { useAccountsStore } from '@/stores/store';
+import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
 // Investment Types
 const INVESTMENT_TYPES = [
@@ -213,7 +213,6 @@ export default function InvestmentInputModal({
   const investmentAccounts = useAccountsStore((state) => state.investmentAccounts);
   const liquidAccounts = useAccountsStore((state) => state.liquidAccounts);
   const debtAccounts = useAccountsStore((state) => state.debtAccounts);
-  const fetchAllAccounts = useAccountsStore((state) => state.fetchAllAccounts);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -259,7 +258,6 @@ export default function InvestmentInputModal({
       const createAccount = await addAccount(accountData);
 
       if (createAccount.success) {
-        handleStore();
         // Reset form and close 
         setNewAccount({
           account_name: '',
@@ -288,14 +286,6 @@ export default function InvestmentInputModal({
       console.error(`Error loading accounts:`, error);
     }
   }, [bankAccounts, debtAccounts, liquidAccounts, investmentAccounts, setAccounts]);
-
-  const handleStore = useCallback(() => {
-    fetchAllAccounts();
-  }, [fetchAllAccounts]);
-
-  useEffect(() => {
-    handleStore();
-  }, [handleStore]);
 
   useEffect(() => {
     loadAccounts();

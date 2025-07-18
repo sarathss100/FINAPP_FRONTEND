@@ -13,14 +13,12 @@ import { Controller } from 'react-hook-form';
 import { createGoal } from '@/service/goalService';
 import { toast } from 'react-toastify';
 import { IGoal } from '@/types/IGoal';
-import { useGoalStore } from '@/stores/store';
 
 interface IGoalModalProps {
   onClose: () => void;
-  onGoalCreated?: () => void;
 }
 
-const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalProps & { initialData?: Partial<GoalFormValues>}) {
+const GoalModal = function ({ onClose, initialData }: IGoalModalProps & { initialData?: Partial<GoalFormValues>}) {
   const {
     register,
     handleSubmit,
@@ -46,13 +44,11 @@ const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalP
   });
 
   const [targetDate, setTargetDate] = useState<Date | null>(null);
-  const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
 
   // Modified close handler to clear localStorage
   const handleClose = function () {
     localStorage.removeItem('goalFormData');
     onClose();
-    if (onGoalCreated) onGoalCreated();
   };
 
   // Reset the form with updated data when 'initialData' changes
@@ -91,10 +87,8 @@ const GoalModal = function ({ onClose, initialData, onGoalCreated }: IGoalModalP
     try {
       const response = await createGoal(data as IGoal);
       if (response.success) {
-        if (onGoalCreated) onGoalCreated();
         handleClose();
         toast.success(response.message || `Successfully Created Goal`);
-        fetchAllGoals();
       }
     } catch (error) {
       console.error("Error saving goal:", error);

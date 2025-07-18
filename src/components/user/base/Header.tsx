@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useUserStore } from '@/stores/store';
 import { useRouter } from 'next/navigation';
 import { useChatStore } from '@/stores/chat/chatStore';
+import { useNotificationStore } from '@/stores/notifications/notificationStore';
 
 const UserHeader = function () {
   const profilePicture = useUserStore((state) => state.profilePicture);
@@ -13,6 +14,9 @@ const UserHeader = function () {
   const toggleChat = useChatStore((state) => state.toggleChat);
   
   const router = useRouter();
+;
+  const notifications = useNotificationStore((state) => state.notifications);
+  const unreadNotifications = notifications.filter(n => !n.is_read).length;
 
   useEffect(() => {
     fetchProfilePictureUrl();
@@ -34,7 +38,10 @@ const UserHeader = function () {
     <header className="flex justify-end items-center mb-6">
       <div className="flex items-center gap-4">
         {/* Chat Bubble Icon */}
-        <div className="relative cursor-pointer hover:opacity-80 transition-opacity" onClick={handleChatBubbleClick}>
+        <div 
+          className="relative cursor-pointer hover:opacity-80 transition-opacity" 
+          onClick={handleChatBubbleClick}
+        >
           <Image
             src="/chat-bubble.png"
             alt="Chat bubble"
@@ -46,6 +53,11 @@ const UserHeader = function () {
         {/* Notification Bell Icon */}
         <div className="relative" onClick={handleChatIconClick}>
           <BellIcon className="h-6 w-6" />
+          {unreadNotifications > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadNotifications > 9 ? "9+" : unreadNotifications}
+            </span>
+          )}
         </div>
 
         {/* Avatar */}

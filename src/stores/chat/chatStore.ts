@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import io from 'socket.io-client';
-import type { Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { getToken } from '@/service/userService';
+import { disconnectUserSocket, getUserSocket } from '@/lib/userSocket';
 
 interface Message {
   id: string;
@@ -22,6 +22,9 @@ interface ChatState {
   
   // Socket instance
   socket: typeof Socket | null;
+  
+  // User ID (important for backend communication)
+  userId: string | null;
   
   // Actions
   openChat: () => void;
@@ -59,6 +62,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isConnected: false,
   connectionError: null,
   socket: null,
+  userId: null,
 
   // Actions
   openChat: () => {
@@ -99,161 +103,162 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   initializeSocket: async() => {
     try {
-      const { socket } = get();
-      if (socket) {
-        console.log('Socket already exists, skipping initialization');
-        return;
-      }
-
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000/';
-      console.log('Attempting to connect to:', socketUrl);
-
       const res = await getToken();
       if (!res.success) throw new Error(`Token fetch failed`);
-
       const accessToken = res.data.accessToken;
 
-      const newSocket = io(socketUrl, {
-        auth: {
-          accessToken,
-          clientType: 'user'
-        },
-        transports: ['websocket', 'polling'],
-        timeout: 20000,
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        autoConnect: true,
-      });
+      const newSocket = getUserSocket(accessToken, 'chat');
 
-      newSocket.on('connect', () => {
-        console.log('✅ Connected to chat server');
-        console.log('Socket ID:', newSocket.id);
-        console.log('Transports:', newSocket.io.opts.transports);
-        set({ isConnected: true, connectionError: null });
-        
-        // Test the connection
-        newSocket.emit('test_connection');
-      });
-
-      newSocket.on('disconnect', (reason: string) => {
-      console.log('❌ Disconnected from chat server, reason:', reason);
-      set({ isConnected: false });
-      
-      // Log different disconnect reasons for debugging
-        switch (reason) {
-          case 'io server disconnect':
-            console.log('🔴 Server disconnected the client');
-            break;
-          case 'io client disconnect':
-            console.log('🔴 Client disconnected');
-            break;
-          case 'ping timeout':
-            console.log('🔴 Connection timed out');
-            break;
-          case 'transport close':
-            console.log('🔴 Transport closed');
-            break;
-          case 'transport error':
-            console.log('🔴 Transport error');
-            break;
-          default:
-            console.log('🔴 Unknown disconnect reason:', reason);
-        }
-      });
-
-      interface SocketConnectError {
-        message: string;
-        type?: string;
-        description?: string;
-      }
-
-      newSocket.on('connect_error', (error: SocketConnectError) => {
-        console.error('❌ Connection error:', error);
-        console.error('Error type:', error.type);
-        console.error('Error description:', error.description);
-        set({ 
-          isConnected: false, 
-          connectionError: `Connection failed: ${error.message}` 
+      if (!newSocket.hasListeners('connect')) {
+        newSocket.on('connect', () => {
+          console.log('Connected to chat server');
+          set({ isConnected: true, connectionError: null });
+          
+          // Test the connection
+          newSocket.emit('test_connection');
         });
-      });
 
-      newSocket.on('reconnect', (attemptNumber: number) => {
-        console.log('🔄 Reconnected after', attemptNumber, 'attempts');
-      });
+        newSocket.on('disconnect', (reason: string) => {
+          console.log('Disconnected from chat server, reason:', reason);
+          set({ isConnected: false });
+          
+          // Log different disconnect reasons for debugging
+          switch (reason) {
+            case 'io server disconnect':
+              console.log('Server disconnected the client');
+              break;
+            case 'io client disconnect':
+              console.log('Client disconnected');
+              break;
+            case 'ping timeout':
+              console.log('Connection timed out');
+              break;
+            case 'transport close':
+              console.log('Transport closed');
+              break;
+            case 'transport error':
+              console.log('Transport error');
+              break;
+            default:
+              console.log('Unknown disconnect reason:', reason);
+          }
+        });
 
-      interface SocketReconnectError {
-        message: string;
-        type?: string;
-        description?: string;
+        interface SocketConnectError {
+          message: string;
+          type?: string;
+          description?: string;
+        }
+
+        newSocket.on('connect_error', (error: SocketConnectError) => {
+          console.error('Connection error:', error);
+          console.error('Error type:', error.type);
+          console.error('Error description:', error.description);
+          set({ 
+            isConnected: false, 
+            connectionError: `Connection failed: ${error.message}` 
+          });
+        });
+
+        newSocket.on('reconnect', (attemptNumber: number) => {
+          console.log('Reconnected after', attemptNumber, 'attempts');
+        });
+
+        interface SocketReconnectError {
+          message: string;
+          type?: string;
+          description?: string;
+        }
+
+        newSocket.on('reconnect_error', (error: SocketReconnectError) => {
+          console.error('Reconnection error:', error);
+        });
+
+        newSocket.on('reconnect_failed', () => {
+          console.error('Reconnection failed');
+          set({ connectionError: 'Failed to reconnect to server' });
+        });
+
+        // Test connection response
+        interface ConnectionConfirmedData {
+          socketId: string;
+          userId?: string;
+          [key: string]: unknown;
+        }
+
+        newSocket.on('connection_confirmed', (data: ConnectionConfirmedData) => {
+          console.log('Connection test successful:', data);
+          
+          // Store userId if provided
+          if (data.userId) {
+            set({ userId: data.userId });
+          }
+          
+          get().addMessage({
+            id: Date.now().toString(),
+            text: `Connected successfully! Socket ID: ${data.socketId}`,
+            sender: 'admin',
+            timestamp: new Date(),
+          });
+        });
+
+        newSocket.on('chat_history', (history: { _id: string; userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[]) => {
+          const parsedMessages: Message[] = history.map((msg) => ({
+            id: msg._id,
+            text: msg.message,
+            sender: msg.role,
+            timestamp: new Date(msg.timestamp),
+          }));
+
+          get().loadHistory(parsedMessages);
+        });
+
+        // Handle bot responses (AI responses)
+        newSocket.on('bot_response', (data: { message: string; id: string }) => {
+          const { setIsTyping, addMessage } = get();
+          setIsTyping(false);
+          addMessage({
+            id: data.id || Date.now().toString(),
+            text: data.message,
+            sender: 'admin',
+            timestamp: new Date(),
+          });
+        });
+
+        // Handle admin messages (human admin responses)
+        newSocket.on('admin_message', (data: { message: string; id: string, sender: 'admin' | 'user' }) => {
+          const { setIsTyping, addMessage } = get();
+          setIsTyping(false);
+          addMessage({
+            id: data.id || Date.now().toString(),
+            text: data.message,
+            sender: 'admin',
+            timestamp: new Date(),
+          });
+        });
+
+        // Handle typing indicators
+        newSocket.on('bot_typing', () => {
+          set({ isTyping: true });
+        });
+
+        newSocket.on('bot_stop_typing', () => {
+          set({ isTyping: false });
+        });
+
+        newSocket.on('admin_typing', () => {
+          set({ isTyping: true });
+        });
+
+        newSocket.on('admin_stop_typing', () => {
+          set({ isTyping: false });
+        });
       }
 
-      newSocket.on('reconnect_error', (error: SocketReconnectError) => {
-        console.error('🔄 Reconnection error:', error);
-      });
-
-      newSocket.on('reconnect_failed', () => {
-        console.error('🔄 Reconnection failed');
-        set({ connectionError: 'Failed to reconnect to server' });
-      });
-
-      // Test connection response
-    interface ConnectionConfirmedData {
-      socketId: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      [key: string]: any;
-    }
-
-    newSocket.on('connection_confirmed', (data: ConnectionConfirmedData) => {
-      console.log('✅ Connection test successful:', data);
-      get().addMessage({
-      id: Date.now().toString(),
-      text: `Connected successfully! Socket ID: ${data.socketId}`,
-      sender: 'admin',
-      timestamp: new Date(),
-      });
-    });
-
-    newSocket.on('chat_history', (history: { _id: string; userId: string, message: string; role: 'user' | 'admin'; timestamp: string }[]) => {
-      console.log('📜 Received chat history:', history);
-      const parsedMessages: Message[] = history.map((msg) => ({
-        id: msg.userId,
-        key: msg._id,
-        text: msg.message,
-        sender: msg.role,
-        timestamp: new Date(msg.timestamp),
-      }));
-
-      get().loadHistory(parsedMessages);
-    });
-
-
-    newSocket.on('user_message', (data: { message: string; id: string }) => {
-      console.log('📨 Received user_message from admin:', data);
-      const { setIsTyping, addMessage } = get();
-      setIsTyping(false);
-      addMessage({
-        id: data.id || Date.now().toString(),
-        text: data.message,
-        sender: 'admin',
-        timestamp: new Date(),
-      });
-    });
-
-    newSocket.on('admin_typing', () => {
-      console.log('⌨️ Admin is typing...');
-      set({ isTyping: true });
-    });
-
-    newSocket.on('bot_stop_typing', () => {
-      console.log('⌨️ Bot stopped typing');
-      set({ isTyping: false });
-    });
-
-    set({ socket: newSocket });
+      set({ socket: newSocket });
 
     } catch (error) {
-      console.error('❌ Failed to initialize socket:', error);
+      console.error('Failed to initialize socket:', error);
       set({
         connectionError: 'Unable to fetch token. Please login again.',
       });
@@ -263,8 +268,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   disconnectSocket: () => {
     const { socket } = get();
     if (socket) {
-      console.log('🔌 Disconnecting socket...');
-      socket.disconnect();
+      console.log('Disconnecting socket...');
+      disconnectUserSocket('chat');
       set({ socket: null, isConnected: false });
     }
   },
@@ -272,15 +277,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
   testConnection: () => {
     const { socket } = get();
     if (socket && socket.connected) {
-      console.log('🧪 Testing connection...');
+      console.log('Testing connection...');
       socket.emit('test_connection');
     } else {
-      console.log('🚫 No socket connection to test');
+      console.log('No socket connection to test');
     }
   },
 
   sendMessage: (message: string) => {
-    const { socket, isConnected, addMessage } = get();
+    const { socket, isConnected, addMessage, userId } = get();
     
     if (message.trim() === '') return;
 
@@ -296,13 +301,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // Send message to backend via Socket.IO
     if (socket && isConnected) {
-      console.log('📤 Sending message:', message);
       socket.emit('user_message', {
         message: message,
-        userId: socket.id,
+        id: userMessage.id,
+        userId: userId || socket.id,
       });
     } else {
-      console.log('🚫 No socket connection, showing fallback message');
       // Fallback: simulate bot response if no socket connection
       setTimeout(() => {
         addMessage({

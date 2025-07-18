@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -19,7 +19,6 @@ import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount, updateAccount } from '@/service/accountService';
-import { useAccountsStore } from '@/stores/store';
 
 // Account type definitions
 const ACCOUNT_TYPES = [
@@ -90,18 +89,6 @@ export const AccountModal = ({
   const [formData, setFormData] = useState(defaultFormValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchTotalBalance = useAccountsStore((state) => state.fetchTotalBalance);
-  const fetchTotalBankBalance = useAccountsStore((state) => state.fetchTotalBankBalance);
-  const fetchTotalDebt = useAccountsStore((state) => state.fetchTotalDebt);
-  const fetchTotalInvestment = useAccountsStore((state) => state.fetchTotalInvestment);
-
-  const handleStore = useCallback(() => {
-    fetchTotalBalance();
-    fetchTotalBankBalance();
-    fetchTotalDebt();
-    fetchTotalInvestment();
-  }, [fetchTotalBalance, fetchTotalBankBalance, fetchTotalDebt, fetchTotalInvestment]);
 
   // Initialize form data when editing an account
   useEffect(() => {
@@ -242,7 +229,6 @@ export const AccountModal = ({
         toast.error(`Failed to ${accountToEdit ? 'update' : 'create'} account`);
         console.error(`Error ${accountToEdit ? 'updating' : 'saving'} account:`, error);
       } finally {
-        await handleStore();
         setIsSubmitting(false);
       }
     } else {

@@ -1,11 +1,11 @@
 "use client";
 import { MoreVertical, TrendingUp, Clock, Wallet, Calendar, PlusCircleIcon } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
 import { Progress } from '@/components/base/progress';
 import GoalInputModal from '../GoalInputModal';
-import { useGoalStore } from '@/stores/store';
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 export const GoalManagementSection = function () {
   const [isGoalInputModalOpen, setIsGoalInputModalOpen] = useState(false);
@@ -15,24 +15,7 @@ export const GoalManagementSection = function () {
   const goalsByCategory = useGoalStore((state) => state.categoryByGoals);
   const dailyContributionAmount = useGoalStore((state) => state.dailyContribution);
   const monthlyContributionAmount = useGoalStore((state) => state.monthlyContribution);
-  const fetchLongestTimePeriod = useGoalStore((state) => state.fetchLongestTimePeriod);
-  const fetchTotalActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const analysisData = useGoalStore((state) => state.fetchSmartAnalysis);
-  const fetchCategoryByGoals = useGoalStore((state) => state.fetchCategoryByGoals);
-  const fetchAllGoals = useGoalStore((state) => state.fetchAllGoals);
-  const fetchDailyContribution = useGoalStore((state) => state.fetchDailyContribution);
-  const fetchMonthlyContribution = useGoalStore((state) => state.fetchMonthlyContribution);
-
-  const handleGoalCreated = useCallback(() => {
-    fetchTotalActiveGoalAmount();
-    fetchLongestTimePeriod();
-    analysisData();
-    fetchCategoryByGoals();
-    fetchAllGoals();
-    fetchDailyContribution();
-    fetchMonthlyContribution();
-  }, [fetchTotalActiveGoalAmount, fetchLongestTimePeriod, analysisData, fetchCategoryByGoals, fetchAllGoals, fetchDailyContribution, fetchMonthlyContribution]); 
-
+  
   const handleGoalInput = function () {
     setIsGoalInputModalOpen(true);
   };
@@ -289,7 +272,6 @@ export const GoalManagementSection = function () {
         {isGoalInputModalOpen && (
           <GoalInputModal
             onClose={() => setIsGoalInputModalOpen(false)}
-            onGoalCreated={handleGoalCreated}
           />
         )}
       </div>

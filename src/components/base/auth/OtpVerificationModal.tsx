@@ -6,6 +6,7 @@ import Input from '../Input';
 import { Card, CardContent } from '../Card';
 import Image from 'next/image';
 import { signUp } from '@/service/authenticationService';
+import { useUserStore } from '@/stores/store';
 
 const OtpVerificationModal = ({
   phoneNumber,
@@ -73,6 +74,7 @@ const OtpVerificationModal = ({
 
       if (confirmation) {
         await signUp(formData);
+        useUserStore.getState().initializeSockets();
         window.location.replace('/dashboard');
       }
 

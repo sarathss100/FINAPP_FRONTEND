@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card
 import Link from 'next/link';
 import useTransactionStore from "@/stores/transaction/transactionStore";
 import { useRouter } from 'next/navigation';
-import { useGoalStore, useInsuranceStore } from "@/stores/store";
 import useDebtStore from "@/stores/debt/debtStore";
 import useInvestmentStore from "@/stores/investment/investmentStore";
+import { useInsuranceStore } from "@/stores/insurances/insuranceStore";
+import { useGoalStore } from "@/stores/goals/goalStore";
 
 const InsightsSection = function () {
   const [goalPercentage, setGoalPercentage] = useState(0);
@@ -46,50 +47,6 @@ const InsightsSection = function () {
   const totalInsuranceCoverage = useInsuranceStore((state) => state.totalInsuranceCoverage);
   const totalAnnualPremium = useInsuranceStore((state) => state.totalAnnualInsurancePremium);
   const upcomingPaymentDate = useInsuranceStore((state) => state.insuranceWithClosestNextPaymentDate);
-  const fetchMonthlyTotalIncome = useTransactionStore((state) => state.fetchMonthlyTotalIncome);
-  const fetchAllIncomeTransactons = useTransactionStore((state) => state.fetchAllIncomeTransactions);
-  const fetchAllExpenseTransactons = useTransactionStore((state) => state.fetchAllExpenseTransactions);
-  const fetchActiveGoalAmount = useGoalStore((state) => state.fetchTotalActiveGoalAmount);
-  const fetchInitialGoalAmount = useGoalStore((state) => state.fetchTotalInitialGoalAmount);
-  const fetchTotalDebt = useDebtStore((state) => state.fetchTotalDebt);
-  const fetchTotalOutstandingDebtAmount = useDebtStore((state) => state.fetchTotalOutstandingDebtAmount);
-  const fetchTotalInvestedAmount = useInvestmentStore((state) => state.fetchTotalInvestedAmount);
-  const fetchCurrentValue = useInvestmentStore((state) => state.fetchCurrentValue);
-  const fetchTotalReturns = useInvestmentStore((state) => state.fetchTotalReturns);
-  const fetchTotalInsuranceCoverage = useInsuranceStore((state) => state.fetchTotalInsuranceCoverage);
-  const fetchTotalAnnualPremium = useInsuranceStore((state) => state.fetchTotalAnnualInsurancePremium);
-  const fetchUpcomingPaymentDate = useInsuranceStore((state) => state.fetchInsuranceWithClosestNextPaymentDate);
-
-  // Separated the store fetching from calculations to prevent loops
-  useEffect(() => {
-    fetchMonthlyTotalIncome();
-    fetchAllIncomeTransactons();
-    fetchAllExpenseTransactons();
-    fetchActiveGoalAmount();
-    fetchInitialGoalAmount();
-    fetchTotalDebt();
-    fetchTotalOutstandingDebtAmount();
-    fetchTotalInvestedAmount();
-    fetchCurrentValue();
-    fetchTotalReturns();
-    fetchTotalInsuranceCoverage();
-    fetchTotalAnnualPremium();
-    fetchUpcomingPaymentDate();
-  }, [
-    fetchMonthlyTotalIncome, 
-    fetchAllIncomeTransactons, 
-    fetchAllExpenseTransactons,
-    fetchActiveGoalAmount,
-    fetchInitialGoalAmount,
-    fetchTotalDebt,
-    fetchTotalOutstandingDebtAmount,
-    fetchTotalInvestedAmount,
-    fetchCurrentValue,
-    fetchTotalReturns,
-    fetchTotalInsuranceCoverage,
-    fetchTotalAnnualPremium,
-    fetchUpcomingPaymentDate,
-  ]);
 
   const goalData = useCallback(function() {
     if (!totalInitialGoalAmount || !totalActiveGoalAmount) {

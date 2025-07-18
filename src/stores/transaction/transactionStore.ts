@@ -2,6 +2,9 @@ import { ITransaction } from '@/types/ITransaction';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { fetchCommonflowTable, fetchInflowTable, fetchOutflowTable, getAllExpenseTransactions, getAllIncomeTransactions, getAllTransactions, getCategoryWiseExpenses, getMonthlyExpenseTrends, getMonthlyIncomeTrends, getTotalMonthlyExpense, getTotalMonthlyIncome } from '@/service/transactionService';
+import { Socket } from 'socket.io-client';
+import { getToken } from '@/service/userService';
+import { getUserSocket } from '@/lib/userSocket';
 
 interface TransactionState {
     currentMonthTotalIncome: number; // Current Month Total Income
@@ -48,7 +51,16 @@ interface TransactionState {
         searchText: string;
     };
     isLoadingCommonflowTable: boolean;
-    
+
+    isConnected: boolean;
+    connectionError: string | null;
+
+    setIsConnected: (connected: boolean) => void;
+    setConnectionError: (error: string | null) => void;
+    initializeSocket: () => void;
+    disconnectSocket: () => void;
+
+    fetchAllDataWithHttpFallback: () => Promise<void>;
     fetchMonthlyTotalIncome: () => Promise<void>; // Function to fetch Monthly Total Income
     fetchMonthlyTotalExpense: () => Promise<void>; // Function to fetch Monthly Total Expense 
     fetchCategoryWiseExpenses: () => Promise<void>; // Function to fetch Category Wise Monthly Expenses 
@@ -94,6 +106,8 @@ interface TransactionState {
     
     reset: () => void;
 }
+
+let transactionSocket: typeof Socket | null = null;
 
 const useTransactionStore = create<TransactionState>()(
     persist(
@@ -142,6 +156,8 @@ const useTransactionStore = create<TransactionState>()(
                 searchText: '',
             },
             isLoadingCommonflowTable: false,
+            isConnected: false,
+            connectionError: null,
 
             // Reset function
             reset: () => 
@@ -185,8 +201,226 @@ const useTransactionStore = create<TransactionState>()(
                         searchText: '',
                     },
                     isLoadingCommonflowTable: false,
+                    isConnected: false,
+                    connectionError: null,
                 }),
+
+            setIsConnected: (connected: boolean) => set({ isConnected: connected }),
+            setConnectionError: (error: string | null) => set({ connectionError: error }),
             
+            initializeSocket: async () => {
+                try {
+                    const res = await getToken();
+                    if (!res.success) throw new Error("Token fetch failed");
+                    const accessToken = res.data.accessToken;
+            
+                    const newSocket = getUserSocket(accessToken, 'transactions');
+            
+                    // Clean up previous socket completely
+                    if (transactionSocket) {
+                        transactionSocket.removeAllListeners();
+                        transactionSocket.disconnect();
+                    }
+            
+                    transactionSocket = newSocket;
+
+                    const globalDataRequest = function() {
+                        newSocket.emit('request_all_transactions');
+                        newSocket.emit('request_all_income_transactions');
+                        newSocket.emit('request_all_expense_transactions');
+                        newSocket.emit('request_monthly_income_trends');
+                        newSocket.emit('request_monthly_expense_trends');
+                        newSocket.emit('request_categorywise_monthly_expense');
+                        newSocket.emit('request_current_month_total_expense');
+                        newSocket.emit('request_current_month_total_income');
+                    };
+            
+                    // Setup all event listeners
+                    const setupSocketListeners = () => {
+                        // Connection handler
+                        newSocket.on('connect', () => {
+                            console.log(`Connected to Transactions Server`);
+                            set({ isConnected: true, connectionError: null });
+                                        
+                            // Request initial data after connection
+                            globalDataRequest();
+                        });
+
+                        // Notify new transaction created
+                        newSocket.on('transaction_created', () => {
+                            globalDataRequest();
+                        });
+
+                        // Get all Transactions
+                        newSocket.on('all_transactions', (allTransactions: ITransaction[]) => {
+                            set({ allTransactions });
+                        });
+
+                        // Get all Income Transactions
+                        newSocket.on('all_income_transactions', (allIncomeTransactions: { category: string, total: number }[]) => {
+                            set({ allIncomeTransactions });
+                        });
+
+                        // Get all Expense Transactions
+                        newSocket.on('all_expense_transactions', (allExpenseTransactions: { category: string, total: number }[]) => {
+                            set({ allExpenseTransactions });
+                        });
+
+                        // Get all Monthly Income trends
+                        newSocket.on('monthly_income_trends', (monthlyIncomeTrends: { month: string, amount: number }[]) => {
+                            set({ monthlyIncomeTrends });
+                        });
+
+                        // Get all Monthly Expense trends
+                        newSocket.on('monthly_expense_trends', (monthlyExpenseTrends: { month: string, amount: number }[]) => {
+                            set({ monthlyExpenseTrends });
+                        });
+
+                        // Get Categorywise Monthly Expense
+                        newSocket.on('categorywise_monthly_expense', (categoryWiseMonthlyExpense: { category: string, value: number }[]) => {
+                            set({ categoryWiseMonthlyExpense });
+                        });
+
+                        // Get Current Month Total Expense
+                        newSocket.on('current_month_total_expense', (currentMonthTotalExpense: {currentMonthExpenseTotal: number, previousMonthExpenseTotal: number}) => {
+                            set({ 
+                                currentMonthTotalExpense: currentMonthTotalExpense.currentMonthExpenseTotal, 
+                                previousMonthTotalExpense: currentMonthTotalExpense.previousMonthExpenseTotal,
+                            });
+                        });
+
+                        // Get Current Month Total Income
+                        newSocket.on('current_month_total_income', (currentMonthTotalIncome: {currentMonthTotal: number, previousMonthTotal: number} ) => {
+                            set({ 
+                                currentMonthTotalIncome: currentMonthTotalIncome.currentMonthTotal,
+                                previousMonthTotalIncome: currentMonthTotalIncome.previousMonthTotal,
+                            });
+                        });
+                        
+                        // Handle server errors gracefully - don't disconnect socket
+                        newSocket.on('error', (error: Error & { type?: string }) => {
+                            console.log('Server error received:', error);
+                            set({ connectionError: error.message || 'Server error occurred' });
+                                        
+                            // Don't disconnect socket, just fall back to HTTP for data
+                            // Socket connection remains intact for future updates
+                            if (error.type === 'transaction_error') {
+                                console.log('Falling back to HTTP for initial data...');
+                                get().fetchAllDataWithHttpFallback();
+                            }
+                        });            
+            
+                        // Disconnect
+                        newSocket.on('disconnect', (reason: string) => {
+                            console.log('Disconnected:', reason);
+                            set({ isConnected: false });
+                        });
+            
+                        // Connect Error - only for actual connection issues
+                        newSocket.on('connect_error', (error: Error) => {
+                            console.error('Transaction socket connect error:', error);
+                            set({ 
+                                connectionError: `Connection failed: ${error.message || 'Unknown error'}`,
+                                isConnected: false 
+                            });
+                            
+                            // Fall back to HTTP data but don't give up on socket
+                            get().fetchAllDataWithHttpFallback();
+                        });
+                    };
+            
+                    // Remove all existing listeners before setting up new ones
+                    newSocket.removeAllListeners();
+                    setupSocketListeners();
+
+                    // If already connected, request initial data
+                    if (newSocket.connected) {
+                        set({ isConnected: true });
+                        globalDataRequest();
+                    }
+            
+                } catch (error) {
+                    console.error("Failed to initialize transaction socket:", error);
+                    set({ connectionError: "Unable to fetch token. Please login again." });
+                    // Still try to get data via HTTP
+                    get().fetchAllDataWithHttpFallback();
+                }
+            },
+                        
+            disconnectSocket: () => {
+                if (transactionSocket) {
+                    transactionSocket.removeAllListeners();
+                    transactionSocket.disconnect();
+                    transactionSocket = null;
+                }
+
+                set({
+                    currentMonthTotalIncome: 0,
+                    previousMonthTotalIncome: 0,
+                    currentMonthTotalExpense: 0,
+                    previousMonthTotalExpense: 0,
+                    categoryWiseMonthlyExpense: [],
+                    allTransactions: [],
+                    monthlyIncomeTrends: [],
+                    monthlyExpenseTrends: [],
+                    allIncomeTransactions: [],
+                    allExpenseTransactions: [],
+                    inflowTable: { data: [], total: 0, currentPage: 1, totalPages: 1 },
+                    OutflowTable: {data: [], total: 0, currentPage: 1, totalPages: 1},
+                    inflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        searchText: '',
+                    },
+                    isLoadingInflowTable: false,
+                    
+                    OutflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        searchText: '',
+                    },
+                    isLoadingOutflowTable: false,
+
+                    commonflowFilters: {
+                        page: 1,
+                        limit: 10,
+                        timeRange: 'year',
+                        category: '',
+                        transactionType: '',
+                        searchText: '',
+                    },
+                    isLoadingCommonflowTable: false,
+                    isConnected: false,
+                    connectionError: null,
+                });
+
+                get().fetchAllDataWithHttpFallback();
+            },
+                        
+            fetchAllDataWithHttpFallback: async () => {
+                try {
+                    await Promise.all([
+                        get().fetchAllExpenseTransactions(),
+                        get().fetchAllIncomeTransactions(),
+                        get().fetchAllTransactions(),
+                        get().fetchCategoryWiseExpenses(),
+                        get().fetchMonthlyExpenseTrends(),
+                        get().fetchMonthlyIncomeTrends(),
+                        get().fetchMonthlyTotalExpense(),
+                        get().fetchMonthlyTotalIncome(),
+                    ]);
+                    
+                    // Clear connection error if HTTP fallback succeeds
+                    set({ connectionError: null });
+                } catch (error) {
+                    console.error("HTTP fallback failed:", error);
+                }
+            },
+
             // fetch Total Balance 
             fetchMonthlyTotalIncome: async () => {
                 try {

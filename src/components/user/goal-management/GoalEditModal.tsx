@@ -7,11 +7,9 @@ import {
 } from "lucide-react";
 import Button from "@/components/base/Button";
 import { IGoal } from '@/types/IGoal';
-// import { Badge } from '@/components/base/Badge';
 import Input from '@/components/base/Input';
 import { Select } from '@/components/base/newSelect';
 import Label from '@/components/base/Label';
-// import { Textarea } from '@/components/base/TextArea';
 
 interface GoalEditModalProps {
   isOpen: boolean;
@@ -21,11 +19,6 @@ interface GoalEditModalProps {
   onDeleteGoal?: (goalId: string) => void;
 }
 
-// Goal Categories
-// const GOAL_CATEGORIES = [
-//   "Education", "Emergency Fund", "Retirement", "Home", "Vehicle",
-//   "Vacation", "Wedding", "Healthcare", "Business", "Other"
-// ];
 const GOAL_CATEGORIES = ["Education", "Retirement", "Travel", "Investment", "Other"];
 
 // Goal Types
@@ -49,7 +42,6 @@ export const GoalEditModal = ({
   const [formData, setFormData] = useState<IGoal | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  // const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (goalData) {

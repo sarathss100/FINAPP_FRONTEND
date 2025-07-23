@@ -28,53 +28,59 @@ const AdminSystemOverviewBody = function () {
   });
 
   useEffect(() => {
-    async function getData() {
-      try {
-        const response = await getAllUsers();
-        const userCount = Object.keys(response.data).length;
+    async function fetchAllData() {
+      const userPromise = getAllUsers();
+      const healthPromise = getSystemHealthStatus();
+      const registrationPromise = getNewRegistrationCount();
+      const metricsPromise = getSystemMetrics();
+
+      // Fetch all concurrently
+      const results = await Promise.allSettled([
+        userPromise,
+        healthPromise,
+        registrationPromise,
+        metricsPromise
+      ]);
+
+      const [
+        userResult, 
+        healthResult,
+        registrationResult,
+        metricsResult
+      ] = results;
+
+      if (userResult.status === 'fulfilled') {
+        const userCount = Object.keys(userResult.value.data).length;
         setTotalActiveUser(userCount);
-      } catch (error) {
-        toast.error((error as Error).message || `Failed to fetch the data`);
+      } else {
+        console.error(`Failed to fetch users:`, userResult.reason);
+        toast.error(userResult.reason?.message || `Failed to fetch user data`);
         setError(true);
       }
-    }
-    getData();
-  }, []);
 
-  useEffect(() => {
-    async function getData() {
-      try {
-        const response = await getSystemHealthStatus();
-        setSystemHealthDetails(response.data.healthStatus);
-      } catch (error) {
-        toast.error((error as Error).message || `Failed to get the system health`);
+      if (healthResult.status === 'fulfilled') {
+        setSystemHealthDetails(healthResult.value.data.healthStatus);
+      } else {
+        console.error(`Failed to fetch system health:`, healthResult.reason);
+        toast.error(healthResult.reason?.message || `Failed to get system health`); 
+      }
+
+      if (registrationResult.status === 'fulfilled') {
+        setNewRegistration(registrationResult.value.data.newRegistrationCount);
+      } else {
+        console.error(`Failed to fetch registrations:`, registrationResult.reason);
+        toast.error(registrationResult.reason?.message || `Failed to get new registration`);
+      }
+
+      if (metricsResult.status === 'fulfilled') {
+        setSystemMetrics(metricsResult.value.data.usageStatics);
+      } else {
+        console.error(`Failed to fetch metrics:`, metricsResult.reason);
+        toast.error(metricsResult.reason?.message || `Failed to get system metrics`);
       }
     }
-    getData();
-  }, []);
 
-  useEffect(() => {
-    async function getData() {
-      try {
-        const response = await getNewRegistrationCount();
-        setNewRegistration(response.data.newRegistrationCount);
-      } catch (error) {
-        toast.error((error as Error).message || `Failed to get the new registration count`);
-      }
-    }
-    getData();
-  }, []);
-
-  useEffect(() => {
-    async function getData() {
-      try {
-        const response = await getSystemMetrics();
-        setSystemMetrics(response.data.usageStatics);
-      } catch (error) {
-        toast.error((error as Error).message || `Failed to get the new registration count`);
-      }
-    }
-    getData();
+    fetchAllData();
   }, []);
 
 

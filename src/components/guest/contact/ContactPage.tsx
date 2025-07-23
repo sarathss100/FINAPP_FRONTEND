@@ -27,12 +27,6 @@ const ContactPageBody = function () {
       actionColor: "text-[#00a9e0]",
       additionalInfo: "Available Monday - Friday, 9AM - 6PM EST",
     },
-    // {
-    //   icon: <MapPinIcon className="h-5 w-5 text-white" />,
-    //   iconBgColor: "bg-[#004a7c]",
-    //   title: "Office Location",
-    //   details: ["123 Finance Street", "New York, NY 10001", "United States"],
-    // },
   ];
 
   useEffect(() => {

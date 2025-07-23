@@ -21,7 +21,6 @@ const DashboardSection = function () {
   const router = useRouter();
 
   const isSubscribed = useUserStore((state) => state.isSubscribed);
-
   const totalBalance = useAccountsStore((state) => state.totalBalance);
   const totalGoalAmount = useGoalStore((state) => state.totalActiveGoalAmount);
   const totalInvestmentValue = useInvestmentStore((state) => state.totalInvestedAmount);

@@ -36,15 +36,6 @@ const AccountsBody = function () {
   const isConnected = useAccountsStore((state) => state.isConnected);
   const connectionError = useAccountsStore((state) => state.connectionError);
   const fetchAllDataWithHttpFallback = useAccountsStore((state) => state.fetchAllDataWithHttpFallback);
-  // const initializeAccountSocketConnection = useAccountsStore((state) => state.initializeSocket);
-
-  // const handleStore = useCallback(() => {
-  //   initializeAccountSocketConnection();
-  // }, [initializeAccountSocketConnection]);
-
-  // useEffect(() => {
-  //   handleStore();
-  // }, [handleStore]);
 
   // Fallback to HTTP if socket connection fails
   useEffect(() => {

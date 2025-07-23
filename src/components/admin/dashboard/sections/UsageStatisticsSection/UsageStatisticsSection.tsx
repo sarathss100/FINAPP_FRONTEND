@@ -29,38 +29,6 @@ const statisticsData = [
   },
 ];
 
-// Define data for performance metrics
-// const performanceData = [
-//   {
-//     title: "CPU Usage",
-//     value: "42%",
-//     progressValue: 42,
-//     icon: "/frame-14.svg",
-//     width: "184px",
-//   },
-//   {
-//     title: "Memory Usage",
-//     value: "68%",
-//     progressValue: 68,
-//     icon: "/frame-12.svg",
-//     width: "185px",
-//   },
-//   {
-//     title: "Disk Usage",
-//     value: "75%",
-//     progressValue: 75,
-//     icon: "/frame-6.svg",
-//     width: "318px",
-//   },
-//   {
-//     title: "Network",
-//     value: "92%",
-//     progressValue: 92,
-//     icon: "/frame-18.svg",
-//     width: "318px",
-//   },
-// ];
-
 const UsageStatisticsSection = function () {
   return (
     <Card className="w-full rounded-xl shadow-[0px_1px_2px_#0000000d]">

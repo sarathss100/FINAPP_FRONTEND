@@ -13,7 +13,6 @@ import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'fi
 import auth from '../../../lib/firebaseConfig';
 import RecaptchaComponent from '../../base/auth/RecaptchaComponent';
 import OtpVerificationModal from '../../base/auth/OtpVerificationModal';
-import { toast } from 'react-toastify';
 import { verifyPhoneNumber } from '@/service/authenticationService';
 
 const SignupFormBody = function () {
@@ -66,7 +65,6 @@ const SignupFormBody = function () {
       setIsModalOpen(true);
     } catch (error) {
       console.error(`Error sending OTP:`, (error as Error).message);
-      toast.error((error as Error).message);
     } finally {
       setLoading(false);
     }

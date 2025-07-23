@@ -53,7 +53,6 @@ export const ContributionModal = ({
       onClose();
     } catch (error) {
       console.error((error as Error).message);
-      toast.error("Failed to add contribution. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -165,9 +165,8 @@ export const MainContentSection = () => {
         setSelectedGoal(response.data.goalDetails);
       }
       setIsEditModalOpen(true);
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to load goal details`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   const handleDelete = async (goalId: string) => {
@@ -176,9 +175,8 @@ export const MainContentSection = () => {
       if (response.data) {
         toast.success(response.message || `Your goal has been successfully deleted. You can always create a new one whenever you're ready!`);
       } 
-    } catch (error) {
-      toast.error((error as Error).message || `Oops! Something went wrong. Please try again later or contact support if the issue persists.`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   // Handle block/unblock confirmation modal
@@ -198,9 +196,8 @@ export const MainContentSection = () => {
         setSelectedGoal(response.data.goalDetails);
         setIsViewGoalModal(true);
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Oops! Something went wrong. Please try again later or contact support if the issue persists.`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   // Handle contribution modal 

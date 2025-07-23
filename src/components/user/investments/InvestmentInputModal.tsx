@@ -272,9 +272,8 @@ export default function InvestmentInputModal({
         setShowAddAccount(false);
         toast.success(createAccount.message || `Account created successfully!`);
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to create account`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   } 
 
   // Function to load existing accounts 
@@ -301,9 +300,9 @@ export default function InvestmentInputModal({
               category: stock['3. type']
           }));
           return searchResults;
-      } catch (error) {
-          toast.error((error as Error).message || `Failed To Fetch Stock Details`);
-          return [];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
+        return [];
       }
   }, []);
 
@@ -318,8 +317,8 @@ export default function InvestmentInputModal({
         nav: mf.net_asset_value,
       }));
       return searchResults;
-    } catch (error) {
-      toast.error((error as Error).message || `Failed To Fetch Mutual Fund Details`);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       return [];
     }
   }, []);
@@ -807,7 +806,6 @@ export default function InvestmentInputModal({
       onSaveInvestment(investmentDetails);
     } catch (error) {
       console.error('Error saving investment:', error);
-      toast.error('Error saving investment. Please try again.');
     }
 };
 

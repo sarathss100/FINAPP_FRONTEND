@@ -10,7 +10,6 @@ import React, { useEffect, useState } from "react";
 import Button from '@/components/base/Button';
 import { Card, CardContent } from '@/components/base/Card';
 import Input from '@/components/base/Input';
-// import { Select, SelectTrigger, SelectValue } from '@/components/base/select';
 import {
   Table,
   TableBody,
@@ -88,7 +87,6 @@ export const UserManagementBody = () => {
   // Get stats for cards
   const activeUsers = users.filter(user => user.status).length;
   const blockedUsers = users.filter(user => !user.status).length;
-  // Assuming pending verification is not implemented yet, keeping it at 0
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -130,7 +128,6 @@ export const UserManagementBody = () => {
       toast.success(`User ${newStatus ? "unblocked" : "blocked"} successfully.`);
     } catch (error) {
       console.error(`Error toggling user status:`, (error as Error).message);
-      toast.error(`Failed to toggle user status. Please try again`);
     }
   }
 
@@ -336,44 +333,6 @@ export const UserManagementBody = () => {
               />
               <SearchIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
             </div>
-
-            {/* <div className="flex gap-3 flex-wrap md:flex-nowrap">
-              <Select 
-                value={filterGroup}
-                onValueChange={(value) => {
-                  setFilterGroup(value);
-                  setCurrentPage(1); // Reset page when filter changes
-                }}
-              >
-                <SelectTrigger className="w-40 h-11 border border-gray-300 rounded-lg">
-                  <SelectValue placeholder="All Groups" />
-                </SelectTrigger>
-              </Select>
-
-              <Select
-                value={filterStatus}
-                onValueChange={(value) => {
-                  setFilterStatus(value);
-                  setCurrentPage(1); // Reset page when filter changes
-                }}
-              >
-                <SelectTrigger className="w-40 h-11 border border-gray-300 rounded-lg">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-              </Select>
-
-              <Button 
-                className="h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-                onClick={() => {
-                  setSearchTerm("");
-                  setFilterGroup("all");
-                  setFilterStatus("all");
-                  setCurrentPage(1);
-                }}
-              >
-                Reset Filters
-              </Button>
-            </div> */}
           </div>
         </CardContent>
       </Card>

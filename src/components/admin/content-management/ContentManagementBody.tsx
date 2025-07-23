@@ -60,7 +60,7 @@ const FAQManagement = function () {
         currentPage: pageToFetch,
         itemsPerPage
       });
-    }, searchTerm ? 500 : 0); // No delay for initial load or pagination changes
+    }, searchTerm ? 500 : 0); 
 
     setSearchTimeout(timeout);
 
@@ -89,8 +89,8 @@ const FAQManagement = function () {
           setShowAddForm(false);
         }
       }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to add FAQ');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
     }
   };
 
@@ -122,8 +122,8 @@ const FAQManagement = function () {
           setEditingFaq(null);
         }
       }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to Update FAQ');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
     }
   };
 
@@ -136,8 +136,8 @@ const FAQManagement = function () {
           setDeleteConfirmationId(null);
           handleFetchFaqs(currentPage, itemsPerPage, searchTerm);
         }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to remove FAQ');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
     }
   };
 
@@ -149,8 +149,8 @@ const FAQManagement = function () {
         toast.success(response.message || 'FAQ Updated Successfully');
         handleFetchFaqs(currentPage, itemsPerPage, searchTerm);
       }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to Toggle FAQ');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
     }
   };
 

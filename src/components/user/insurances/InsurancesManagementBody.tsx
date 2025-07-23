@@ -88,9 +88,8 @@ const InsuranceManagementBody = function () {
         toast.success(response.message || `Successfully Removed the Insurance`);
         setDeleteConfirmationId(null);
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to Delete the Insurance`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -107,9 +106,8 @@ const InsuranceManagementBody = function () {
       if (response.success) {
         toast.success(response.message || `Payment status updated Successfully`);
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to update the payment status`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   }
 
   const handleAddPolicy = async (e: React.FormEvent) => {
@@ -150,8 +148,8 @@ const InsuranceManagementBody = function () {
 
         setShowAddPolicyModal(false);
       }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to add policy');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
     } finally {
       setIsSubmitting(false);
     }

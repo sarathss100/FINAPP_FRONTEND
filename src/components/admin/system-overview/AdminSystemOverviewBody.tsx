@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
-import { toast } from 'react-toastify';
 import { getAllUsers, getNewRegistrationCount, getSystemHealthStatus, getSystemMetrics } from '@/service/adminService';
 import { IHealthStatus, SystemMetrics } from '@/types/IAdminUserDetails';
 
@@ -54,7 +53,6 @@ const AdminSystemOverviewBody = function () {
         setTotalActiveUser(userCount);
       } else {
         console.error(`Failed to fetch users:`, userResult.reason);
-        toast.error(userResult.reason?.message || `Failed to fetch user data`);
         setError(true);
       }
 
@@ -62,21 +60,18 @@ const AdminSystemOverviewBody = function () {
         setSystemHealthDetails(healthResult.value.data.healthStatus);
       } else {
         console.error(`Failed to fetch system health:`, healthResult.reason);
-        toast.error(healthResult.reason?.message || `Failed to get system health`); 
       }
 
       if (registrationResult.status === 'fulfilled') {
         setNewRegistration(registrationResult.value.data.newRegistrationCount);
       } else {
         console.error(`Failed to fetch registrations:`, registrationResult.reason);
-        toast.error(registrationResult.reason?.message || `Failed to get new registration`);
       }
 
       if (metricsResult.status === 'fulfilled') {
         setSystemMetrics(metricsResult.value.data.usageStatics);
       } else {
         console.error(`Failed to fetch metrics:`, metricsResult.reason);
-        toast.error(metricsResult.reason?.message || `Failed to get system metrics`);
       }
     }
 

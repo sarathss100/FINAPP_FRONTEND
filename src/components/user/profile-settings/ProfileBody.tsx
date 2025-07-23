@@ -181,7 +181,7 @@ export const ProfileBody = function () {
     setIsPhoneNumberVerificationModalOpen(false);
     setIsOtpModalOpen(false);
     setIsResetPasswordModalOpen(false);
-    toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
+    console.log(message);
   }
 
   const handleToggle2FA = async function () {
@@ -189,9 +189,7 @@ export const ProfileBody = function () {
       const data = await toggleUserTwoFactorAuthentication();
       setIsTwoFactorEnabled(data.data.isToggled);
       toast.success(data.message);
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to toggle 2FA`);
-    }
+    } catch (_error) {}
   }
 
   // Function to handle sign out
@@ -917,9 +915,7 @@ export const ProfileBody = function () {
       if (data.data.isDeleted) {
         await handleSignOut();
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to Deleted Account`);
-    }
+    } catch (_error) {}
   }
 
   // Open the confirmation modal

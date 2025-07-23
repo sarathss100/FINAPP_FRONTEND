@@ -92,7 +92,6 @@ const InvestmentManagementBody = function () {
       }
     } catch (error) {
       console.error((error as Error).message || 'Failed to delete investment');
-      toast.error('Failed to delete investment');
     } finally {
       setDeleteModalOpen(false);
       setInvestmentToDelete(null);

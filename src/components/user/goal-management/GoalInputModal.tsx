@@ -92,7 +92,6 @@ const GoalModal = function ({ onClose, initialData }: IGoalModalProps & { initia
       }
     } catch (error) {
       console.error("Error saving goal:", error);
-      toast.error((error as Error).message || `Faile to create a goal`);
     }
   };
 

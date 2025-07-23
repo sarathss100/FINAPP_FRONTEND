@@ -226,7 +226,6 @@ export const AccountModal = ({
         }
         
       } catch (error) {
-        toast.error(`Failed to ${accountToEdit ? 'update' : 'create'} account`);
         console.error(`Error ${accountToEdit ? 'updating' : 'saving'} account:`, error);
       } finally {
         setIsSubmitting(false);

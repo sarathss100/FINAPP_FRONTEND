@@ -34,8 +34,7 @@ const SubscriptionPlanBody = function () {
       window.location.href = response.data.checkoutUrl;
       
     } catch (error) {
-        console.log((error as Error).message);
-      toast.error('Failed to process subscription. Please try again.');
+      console.log((error as Error).message);
     } finally {
       setIsProcessing(false);
     }

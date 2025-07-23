@@ -66,9 +66,8 @@ const SigninFormbody = function () {
         }
         router.replace('/dashboard');
       }
-    } catch (error) {
-      toast.error((error as Error).message || `An error occured during SignIn`)
-    } finally {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {} finally {
       setLoading(false);
     }
   }
@@ -145,7 +144,7 @@ const SigninFormbody = function () {
     setIsPhoneNumberVerificationModalOpen(false);
     setIsOtpModalOpen(false);
     setIsResetPasswordModalOpen(false);
-    toast.error(message || `Failed to Verify the Phone Number, Please try again Late`);
+    console.log(message);
   }
 
   return (

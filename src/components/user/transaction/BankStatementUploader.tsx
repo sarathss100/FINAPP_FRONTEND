@@ -4,7 +4,6 @@ import AccountForm from './AccountForm';
 import TransactionPreview from './TransactionPreview';
 import { addTransaction, extractStatementData } from '@/service/transactionService';
 import { IParsedTransaction, ITransaction} from '@/types/ITransaction';
-import { toast } from 'react-toastify';
 import { addAccount } from '@/service/accountService';
 import { IAccount } from '@/types/IAccounts';
 
@@ -89,9 +88,8 @@ const BankStatementUploader: React.FC<BankStatementUploaderProps> = ({ onClose }
         setAccount({ ...data, id: response.data.addedAccount._id || 'id' });
         setCurrentStep(3);
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to Create or Find Account`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   const handleSync = async () => {
@@ -124,9 +122,8 @@ const BankStatementUploader: React.FC<BankStatementUploaderProps> = ({ onClose }
         setCurrentStep(4);
         onClose();
       } 
-    } catch (error) {
-      toast.error((error as Error).message || `Failed to Create Transactions.`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   return (

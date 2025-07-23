@@ -21,9 +21,8 @@ const AdminSystemSettingsBody = function () {
           const userData = response.data;
           setIsTwoFactorEnabled(userData.is2FA);
         } 
-      } catch (error) {
-        toast.error((error as Error).message || "An error occurred while fetching user data");
-      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {}
     };
     fetchUserData();
   }, []);
@@ -34,8 +33,8 @@ const AdminSystemSettingsBody = function () {
       const data = await toggleUserTwoFactorAuthentication();
       setIsTwoFactorEnabled(data.data.isToggled);
       toast.success(data.message);
-    } catch (error) {
-      toast.error((error as Error).message || "Failed to toggle 2FA");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       // Revert the state if there was an error
       setIsTwoFactorEnabled(prev => !prev);
     } finally {

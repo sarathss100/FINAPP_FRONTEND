@@ -136,9 +136,8 @@ const DebtManagementSection = function () {
         toast.success(response.message || 'Updated Successfully');
         setDeleteConfirmationId(null);
       }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to Mark As Paid!');
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   const handleDeleteDebt = async (debtId: string) => {
@@ -148,9 +147,8 @@ const DebtManagementSection = function () {
         toast.success(response.message || 'Successfully Removed Debt');
         setDeleteConfirmationId(null);
       }
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to Delele the Debt!');
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   };
 
   const [showAddDebtModal, setShowAddDebtModal] = useState(false);
@@ -221,8 +219,8 @@ const DebtManagementSection = function () {
       });
 
       setShowAddDebtModal(false);
-    } catch (error) {
-      toast.error((error as Error).message || 'Failed to create the debt');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
     } finally {
       setIsSubmitting(false);
     }

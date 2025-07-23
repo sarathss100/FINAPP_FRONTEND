@@ -66,9 +66,8 @@ const AccountsBody = function () {
           await fetchAllDataWithHttpFallback();
         }
       }
-    } catch (error) {
-      toast.error((error as Error).message || `Failed Remove the Account`);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {}
   }
 
   const handleSaveAccount = async function () {

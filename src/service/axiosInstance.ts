@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Axios instance with credentials
 const axiosInstance = axios.create({
@@ -8,7 +9,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  timeout: 10000, // Timeout after 10 seconds
+  timeout: 30000, // Timeout after 30 seconds
 });
 
 // Request interceptor
@@ -30,15 +31,25 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
+    let errorMessage = `An unexpected error occured. Please try again later.`;
     //console.error('Response Error:', error); // Log response errors
     if (error.response) {
       //console.error('Response Body:', error.response.data.message);
+      errorMessage = error.response.data?.message || 
+                     error.response.data?.error ||
+                     error.response.data?.detail ||
+                     `Error ${error.response.status}: ${error.response.statusText}`;
     } else if (error.request) {
       //console.error('No response received:', error.request);
+      errorMessage = `Network error. Please check your internet connection.`;
     } else {
       //console.error('Error Message:', error.message);
+      errorMessage = error.message || errorMessage;
     }
-    return Promise.reject(error.response.data);
+
+    toast.error(errorMessage);
+
+    return Promise.reject(error.response?.data || error);
   }
 );
 

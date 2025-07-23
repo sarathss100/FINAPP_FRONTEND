@@ -161,14 +161,6 @@ export const GoalEditModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        {/* <DialogContent className="relative pb-0">
-          <div className="flex justify-between items-center gap-4 pt-2">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              EditGoal
-            </DialogTitle>
-          </div>
-        </DialogContent> */}
-        
         <div className="mt-6 space-y-6">
           {/* Basic Information Section */}
           <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-5">

@@ -2,10 +2,6 @@ import { useCallback } from 'react';
 
 type NavigateFunction = (to: string | number) => void;
 
-/**
- * A simple hook to handle navigation in the app
- * In a real app, this would use react-router or similar
- */
 export const useNavigate = (): NavigateFunction => {
   const navigate = useCallback((to: string | number) => {
     if (typeof to === 'number') {

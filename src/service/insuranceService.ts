@@ -1,17 +1,11 @@
 import axiosInstance from './axiosInstance';
 import { Insurance, InsuranceCoverage, InsuranceDetails, InsurancePremium, InsuranceRemoved, InsurancesDetails, paymentStatus } from '@/types/IInsurance';
 
-/**
- * Fetches the total insurance coverage information for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve aggregated coverage details.
- *
- * @returns {Promise<InsuranceCoverage>} A promise resolving to the total insurance coverage data.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches the total insurance coverage information for the authenticated user.
 export const totalInsuranceCoverageApi = async function (): Promise<InsuranceCoverage> {
     try {
         // Send a GET request to fetch total insurance coverage data
-        const response = await axiosInstance.get<InsuranceCoverage>(`/api/v1/insurance/coverage/total`);
+        const response = await axiosInstance.get<InsuranceCoverage>(`insurance/coverage/total`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -26,17 +20,11 @@ export const totalInsuranceCoverageApi = async function (): Promise<InsuranceCov
     }
 };
 
-/**
- * Fetches the total annual insurance premium for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve aggregated premium details.
- *
- * @returns {Promise<InsurancePremium>} A promise resolving to the total annual insurance premium data.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches the total annual insurance premium for the authenticated user.
 export const totalAnnualInsurancePremiumApi = async function (): Promise<InsurancePremium> {
     try {
         // Send a GET request to fetch total annual insurance premium
-        const response = await axiosInstance.get<InsurancePremium>(`/api/v1/insurance/premium/total`);
+        const response = await axiosInstance.get<InsurancePremium>(`insurance/premium/total`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -51,17 +39,11 @@ export const totalAnnualInsurancePremiumApi = async function (): Promise<Insuran
     }
 }
 
-/**
- * Fetches all insurance records for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve detailed insurance information.
- *
- * @returns {Promise<InsurancesDetails>} A promise resolving to an object containing detailed insurance records.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches all insurance records for the authenticated user.
 export const getAllInsurances = async function (): Promise<InsurancesDetails> {
     try {
         // Send a GET request to fetch all insurance records
-        const response = await axiosInstance.get<InsurancesDetails>(`/api/v1/insurance`);
+        const response = await axiosInstance.get<InsurancesDetails>(`insurance`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -76,18 +58,11 @@ export const getAllInsurances = async function (): Promise<InsurancesDetails> {
     }
 }
 
-/**
- * Removes an insurance record with the specified ID.
- * Sends a DELETE request to the backend API endpoint to delete the insurance record.
- *
- * @param {string} id - The ID of the insurance record to be removed.
- * @returns {Promise<InsuranceRemoved>} A promise resolving to the response indicating success or failure of the deletion.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Removes an insurance record with the specified ID.
 export const removeInsurance = async function (id: string): Promise<InsuranceRemoved> {
     try {
         // Send a DELETE request to remove the insurance record by ID
-        const response = await axiosInstance.delete<InsuranceRemoved>(`/api/v1/insurance/${id}`);
+        const response = await axiosInstance.delete<InsuranceRemoved>(`insurance/${id}`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -102,18 +77,11 @@ export const removeInsurance = async function (id: string): Promise<InsuranceRem
     }
 }
 
-/**
- * Creates a new insurance record using the provided form data.
- * Sends a POST request to the backend API endpoint to store the new insurance data.
- *
- * @param {Insurance} formData - The insurance data to be created.
- * @returns {Promise<InsuranceDetails>} A promise resolving to the response containing the created insurance details.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Creates a new insurance record using the provided form data.
 export const createInsurance = async function (formData: Partial<Insurance>): Promise<InsuranceDetails> {
     try {
         // Send a POST request to create a new insurance record
-        const response = await axiosInstance.post<InsuranceDetails>(`/api/v1/insurance`, { formData });
+        const response = await axiosInstance.post<InsuranceDetails>(`insurance`, { formData });
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -128,17 +96,11 @@ export const createInsurance = async function (formData: Partial<Insurance>): Pr
     }
 }
 
-/**
- * Retrieves the insurance policy with the closest upcoming next payment date.
- * Sends a GET request to the backend API endpoint to fetch the relevant insurance data.
- *
- * @returns {Promise<InsuranceDetails>} A promise resolving to the response containing the insurance record with the nearest next payment date.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Retrieves the insurance policy with the closest upcoming next payment date.
 export const getInsuranceWithClosestNextPaymentDate = async function (): Promise<InsuranceDetails> {
     try {
         // Send a GET request to fetch the insurance with the closest next payment date
-        const response = await axiosInstance.get<InsuranceDetails>(`/api/v1/insurance/next-payment-date`);
+        const response = await axiosInstance.get<InsuranceDetails>(`insurance/next-payment-date`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -153,18 +115,11 @@ export const getInsuranceWithClosestNextPaymentDate = async function (): Promise
     }
 }
 
-/**
- * Updates the payment status of the specified insurance policy to "paid".
- * Sends a PATCH request to the backend API endpoint to perform the update.
- *
- * @param {string} id - The ID of the insurance policy to update.
- * @returns {Promise<paymentStatus>} A promise resolving to the response indicating success or failure of the update operation.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Updates the payment status of the specified insurance policy to "paid".
 export const markPaymentAsPaid = async function (id: string): Promise<paymentStatus> {
     try {
         // Send a PATCH request to update the payment status of the insurance record
-        const response = await axiosInstance.patch<paymentStatus>(`/api/v1/insurance/${id}`);
+        const response = await axiosInstance.patch<paymentStatus>(`insurance/${id}`);
     
         // Validate the response
         if (response.data && response.data.success) {

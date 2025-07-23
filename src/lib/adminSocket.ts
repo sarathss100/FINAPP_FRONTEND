@@ -4,7 +4,7 @@ let adminSocket: typeof Socket | null = null;
 
 export const getAdminSocket = function(accessToken: string): typeof Socket {
     if (!adminSocket) {
-        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000/admin';
+        const socketUrl = process.env.NEXT_PUBLIC_ADMIN_SOCKET_URL || 'http://localhost:5000/admin';
 
         adminSocket = io(socketUrl, {
         auth: { accessToken, clientType: 'admin' },

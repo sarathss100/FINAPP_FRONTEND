@@ -186,14 +186,6 @@ export const TransactionInputModal = ({
     }
   };
 
-  // const formatDate = (dateString: string) => {
-  //   return new Date(dateString).toLocaleDateString('en-US', {
-  //     day: 'numeric',
-  //     month: 'long',
-  //     year: 'numeric'
-  //   });
-  //   };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">

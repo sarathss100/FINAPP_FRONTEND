@@ -111,36 +111,6 @@ const NotificationBody = function () {
     handleStore();
   }, [handleStore]);
 
-  // interface UpdateCategoryCountsAction {
-  //   notification: INotification;
-  //   action: 'add' | 'remove';
-  // }
-
-  // const updateCategoryCounts = (
-  //   notification: INotification,
-  //   action: UpdateCategoryCountsAction['action']
-  // ): void => {
-  //   setCategoryCounts((prev) => {
-  //     const newCounts = { ...prev };
-      
-  //     // Update read/unread counts
-  //     if (action === 'add') {
-  //       if (!notification.is_read) {
-  //         newCounts.unread = (newCounts.unread || 0) + 1;
-  //       } else {
-  //         newCounts.read = (newCounts.read || 0) + 1;
-  //       }
-  //     } else {
-  //       if (!notification.is_read) {
-  //         newCounts.unread = Math.max(0, (newCounts.unread || 0) - 1);
-  //         newCounts.read = (newCounts.read || 0) + 1;
-  //       }
-  //     }
-      
-  //     return newCounts;
-  //   });
-  // };
-
   const markAsRead = (notificationId: string) => {
     markNotificationReaded(notificationId);
   };

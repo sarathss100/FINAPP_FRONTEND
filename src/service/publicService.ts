@@ -5,7 +5,7 @@ import axiosInstance from './axiosInstance';
 export const getFAQs = async function (): Promise<IFaqs> {
     try {
         // Send a GET request to fetch user profile details
-        const response = await axiosInstance.get<IFaqs>('/api/v1/public/faq');
+        const response = await axiosInstance.get<IFaqs>('public/faq');
 
         // Validate the response 
         if (response.data && response.data.success) {

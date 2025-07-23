@@ -1,18 +1,11 @@
 import { IAllDebtDetails, IDebt, IDebtCategoryDetails, IDebtDetails, ILongestTenureDetails, IMarkAsPaidDebtDetails, IRemoveDebtDetails, IRepaymentSimulationDetails, ITotalDebtDetails, ITotalMonthlyPaymentDetails, ITotalOutstandingAmountDetails } from '@/types/IDebt';
 import axiosInstance from './axiosInstance';
 
-/**
- * Creates a new debt entry for the authenticated user.
- * Sends a POST request to the backend API endpoint with the provided debt data.
- *
- * @param {IDebt} formData - The debt data to be sent to the server.
- * @returns {Promise<IDebtDetails>} A promise resolving to the created debt details.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Creates a new debt entry for the authenticated user.
 export const createDebt = async function (formData: IDebt): Promise<IDebtDetails> {
     try {
         // Send a POST request to create debt 
-        const response = await axiosInstance.post<IDebtDetails>(`/api/v1/debt`, { ...formData });
+        const response = await axiosInstance.post<IDebtDetails>(`debt`, { ...formData });
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -27,17 +20,11 @@ export const createDebt = async function (formData: IDebt): Promise<IDebtDetails
     }
 };
 
-/**
- * Fetches the total outstanding debt amount for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve the total debt value.
- *
- * @returns {Promise<ITotalDebtDetails>} A promise resolving to an object containing the total outstanding debt amount.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches the total outstanding debt amount for the authenticated user.
 export const getTotalDebtExist = async function (): Promise<ITotalDebtDetails> {
     try {
         // Send a GET request to fetch total debt data
-        const response = await axiosInstance.get<ITotalDebtDetails>(`/api/v1/debt/total`);
+        const response = await axiosInstance.get<ITotalDebtDetails>(`debt/total`);
         
         // Validate the response
         if (response.data && response.data.success) {
@@ -55,7 +42,7 @@ export const getTotalDebtExist = async function (): Promise<ITotalDebtDetails> {
 export const getTotalOutstandingAmount = async function (): Promise<ITotalOutstandingAmountDetails> {
     try {
         // Send a GET request to fetch debt summary
-        const response = await axiosInstance.get<ITotalOutstandingAmountDetails>(`/api/v1/debt/summary`);
+        const response = await axiosInstance.get<ITotalOutstandingAmountDetails>(`debt/summary`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -73,7 +60,7 @@ export const getTotalOutstandingAmount = async function (): Promise<ITotalOutsta
 // Fetches the total monthly payment across all debts for the authenticated user.
 export const getTotalMonthlyPayment = async function (): Promise<ITotalMonthlyPaymentDetails> {
     try {
-        const response = await axiosInstance.get<ITotalMonthlyPaymentDetails>(`/api/v1/debt/monthly-payment`);
+        const response = await axiosInstance.get<ITotalMonthlyPaymentDetails>(`debt/monthly-payment`);
     
         if (response.data && response.data.success) {
             return response.data;
@@ -85,18 +72,11 @@ export const getTotalMonthlyPayment = async function (): Promise<ITotalMonthlyPa
     }
 };
 
-/**
- * Fetches the longest remaining tenure among all active debts for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve the maximum debt tenure in months.
- *
- * @returns {Promise<ILongestTenureDetails>} A promise resolving to an object containing
- *                                          the longest tenure (in months) among active debts.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches the longest remaining tenure among all active debts for the authenticated user.
 export const getLongestTenure = async function (): Promise<ILongestTenureDetails> {
     try {
         // Send a GET request to fetch the longest debt tenure
-        const response = await axiosInstance.get<ILongestTenureDetails>(`/api/v1/debt/tenure`);
+        const response = await axiosInstance.get<ILongestTenureDetails>(`debt/tenure`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -111,18 +91,11 @@ export const getLongestTenure = async function (): Promise<ILongestTenureDetails
     }
 };
 
-/**
- * Fetches all active "Good Debts" for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve debts categorized as 'Good Debt'.
- *
- * @returns {Promise<IDebtCategoryDetails>} A promise resolving to an object containing
- *                                          categorized debt details for "Good Debts".
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches all active "Good Debts" for the authenticated user.
 export const getGoodDebts = async function (): Promise<IDebtCategoryDetails> {
     try {
         // Send a GET request to fetch good debts
-        const response = await axiosInstance.get<IDebtCategoryDetails>(`/api/v1/debt?category=good`);
+        const response = await axiosInstance.get<IDebtCategoryDetails>(`debt?category=good`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -137,18 +110,11 @@ export const getGoodDebts = async function (): Promise<IDebtCategoryDetails> {
     }
 };
 
-/**
- * Fetches all active "Bad Debts" for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve debts categorized as 'Bad Debt'.
- *
- * @returns {Promise<IDebtCategoryDetails>} A promise resolving to an object containing
- *                                          categorized debt details for "Bad Debts".
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches all active "Bad Debts" for the authenticated user.
 export const getBadDebts = async function (): Promise<IDebtCategoryDetails> {
     try {
         // Send a GET request to fetch bad debts
-        const response = await axiosInstance.get<IDebtCategoryDetails>(`/api/v1/debt?category=bad`);
+        const response = await axiosInstance.get<IDebtCategoryDetails>(`debt?category=bad`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -163,19 +129,11 @@ export const getBadDebts = async function (): Promise<IDebtCategoryDetails> {
     }
 };
 
-/**
- * Fetches the debt repayment strategy comparison result for the authenticated user.
- * Sends a GET request to the backend API endpoint to retrieve a simulation of repayment strategies,
- * such as the Avalanche and Snowball methods, including total months, interest paid, and monthly payments.
- *
- * @returns {Promise<IRepaymentSimulationDetails>} A promise resolving to an object containing
- *                                             detailed repayment simulation results.
- * @throws {Error} Throws an error if the API request fails or returns a non-success response.
- */
+// Fetches the debt repayment strategy comparison result for the authenticated user.
 export const getRepaymentSimulationResult = async function (): Promise<IRepaymentSimulationDetails> {
     try {
         // Send a GET request to fetch repayment simulation result
-        const response = await axiosInstance.get<IRepaymentSimulationDetails>(`/api/v1/debt/simulation?extraAmount=1000`);
+        const response = await axiosInstance.get<IRepaymentSimulationDetails>(`debt/simulation?extraAmount=1000`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -193,7 +151,7 @@ export const getRepaymentSimulationResult = async function (): Promise<IRepaymen
 // Fetches all debt details for the authenticated user.
 export const getAllDebts = async function (): Promise<IAllDebtDetails> {
     try {
-        const response = await axiosInstance.get<IAllDebtDetails>(`/api/v1/debt/all`);
+        const response = await axiosInstance.get<IAllDebtDetails>(`debt/all`);
     
         if (response.data && response.data.success) {
             return response.data;
@@ -208,7 +166,7 @@ export const getAllDebts = async function (): Promise<IAllDebtDetails> {
 // Removes a specific debt record by its unique identifier.
 export const removeDebt = async function (debtId: string): Promise<IRemoveDebtDetails> {
     try {
-        const response = await axiosInstance.delete<IRemoveDebtDetails>(`/api/v1/debt/${debtId}`);
+        const response = await axiosInstance.delete<IRemoveDebtDetails>(`debt/${debtId}`);
     
         if (response.data && response.data.success) {
             return response.data;
@@ -224,7 +182,7 @@ export const removeDebt = async function (debtId: string): Promise<IRemoveDebtDe
 // Marks a specific debt as paid by updating its due date and status on the server.
 export const markAsPaid = async function (debtId: string): Promise<IMarkAsPaidDebtDetails> {
     try {
-        const response = await axiosInstance.patch<IMarkAsPaidDebtDetails>(`/api/v1/debt/${debtId}`);
+        const response = await axiosInstance.patch<IMarkAsPaidDebtDetails>(`debt/${debtId}`);
 
         if (response.data && response.data.success) {
             return response.data; 

@@ -8,7 +8,7 @@ import IDeleteAccount from '@/types/IDeleteAccount';
 export const getUserProfileDetails = async function (): Promise<IUserProfileDetails> {
     try {
         // Send a GET request to fetch user profile details
-        const response = await axiosInstance.get<IUserProfileDetails>('/api/v1/user/me');
+        const response = await axiosInstance.get<IUserProfileDetails>('user/me');
 
         // Validate the response 
         if (response.data && response.data.success) {
@@ -27,7 +27,7 @@ export const getUserProfileDetails = async function (): Promise<IUserProfileDeta
 export const updateUserProfilePicture = async function (formData: FormData): Promise<IUserProfilePictureUrl> {
     try {
         // Send a POST request to update user profile picture
-        const response = await axiosInstance.post<IUserProfilePictureUrl>('/api/v1/user/me/avatar', formData, {
+        const response = await axiosInstance.post<IUserProfilePictureUrl>('user/me/avatar', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
@@ -50,7 +50,7 @@ export const updateUserProfilePicture = async function (formData: FormData): Pro
 export const getUserProfilePictureId = async function (): Promise<IUserProfilePictureUrl> {
     try {
         // Send a POST request to user profile picture url
-        const response = await axiosInstance.get<IUserProfilePictureUrl>('/api/v1/user/me/avatar');
+        const response = await axiosInstance.get<IUserProfilePictureUrl>('user/me/avatar');
         
         // Validate the response 
         if (response.data && response.data.success) {
@@ -88,7 +88,7 @@ export const getUserProfilePicture = async function (imageId: string): Promise<I
 export const toggleUserTwoFactorAuthentication = async function (): Promise<IToggle2FA> {
     try {
         // Send a POST request to toggle the 2FA status
-        const response = await axiosInstance.patch<IToggle2FA>(`/api/v1/user/two-factor`);
+        const response = await axiosInstance.patch<IToggle2FA>(`user/two-factor`);
 
         // Validate the response
         if (response.data && response.data.success) {
@@ -108,7 +108,7 @@ export const toggleUserTwoFactorAuthentication = async function (): Promise<ITog
 export const deleteAccount = async function (): Promise<IDeleteAccount> {
     try {
         // The endpoint `/api/v1/user/profile/delete` is responsible for handling account deletion
-        const response = await axiosInstance.delete<IDeleteAccount>(`/api/v1/user/me`);
+        const response = await axiosInstance.delete<IDeleteAccount>(`user/me`);
 
         // Check if the response contains data and if the `success` flag is set to true
         if (response.data && response.data.success) {
@@ -128,7 +128,7 @@ export const deleteAccount = async function (): Promise<IDeleteAccount> {
 export const getToken = async function (): Promise<IToken> {
     try {
         // The endpoint `/api/v1/user/profile/delete` is responsible for handling account deletion
-        const response = await axiosInstance.get<IToken>(`/api/v1/chat/token`);
+        const response = await axiosInstance.get<IToken>(`chat/token`);
 
         // Check if the response contains data and if the `success` flag is set to true
         if (response.data && response.data.success) {

@@ -5,7 +5,7 @@ import { ICategorizedInvestments, IInvestmentDetails, IMutualFundSearchResult, I
 export const searchStocksFromApi = async function (keyword: string): Promise<IStockDetails> {
     try {
         // Send a GET request to fetch stock details matching the keyword
-        const response = await axiosInstance.get<IStockDetails>(`/api/v1/investment/stock?keyword=${keyword}`);
+        const response = await axiosInstance.get<IStockDetails>(`investment/stock?keyword=${keyword}`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -20,17 +20,11 @@ export const searchStocksFromApi = async function (keyword: string): Promise<ISt
     }
 };
 
-/**
- * Searches for mutual funds based on a keyword by sending a GET request to the backend API.
- *
- * @param {string} keyword - The search term used to find matching mutual funds.
- * @returns {Promise<IStockDetails>} - A promise resolving to an object containing the search results.
- * @throws {Error} - Throws an error if the request fails or the response indicates failure.
- */
+// Searches for mutual funds based on a keyword by sending a GET request to the backend API.
 export const searchMutualFundFromApi = async function (keyword: string): Promise<IMutualFundSearchResult> {
     try {
         // Send a GET request to fetch mutual fund details matching the keyword
-        const response = await axiosInstance.get<IMutualFundSearchResult>(`/api/v1/mutualfund/search?keyword=${keyword}`);
+        const response = await axiosInstance.get<IMutualFundSearchResult>(`mutualfund/search?keyword=${keyword}`);
     
         // Validate the response
         if (response.data && response.data.success) {
@@ -45,19 +39,13 @@ export const searchMutualFundFromApi = async function (keyword: string): Promise
     }
 };
 
-/**
- * Creates a new investment by sending the provided investment data to the backend API.
- *
- * @param {IInvestments} formData - The investment data to be sent to the server for creation.
- * @returns {Promise<IInvestmentDetails>} - A promise resolving to the response data containing created investment details.
- * @throws {Error} - Throws an error if the request fails or the response indicates failure.
- */
+// Creates a new investment by sending the provided investment data to the backend API.
 export const createInvestment = async function (formData: Investments): Promise<IInvestmentDetails> {
     try {
 
         console.log(formData);
         // Send a POST request to create a new investment
-        const response = await axiosInstance.post<IInvestmentDetails>(`/api/v1/investment`, formData);
+        const response = await axiosInstance.post<IInvestmentDetails>(`investment`, formData);
     
         // Check if the response contains a success flag
         if (response.data && response.data.success) {
@@ -73,16 +61,11 @@ export const createInvestment = async function (formData: Investments): Promise<
     }
 };
 
-/**
- * Fetches the total invested amount across all investments for the authenticated user.
- *
- * @returns {Promise<ITotalInvestedAmount>} - A promise resolving to the response data containing total investment summary.
- * @throws {Error} - Throws an error if the request fails or the response indicates failure.
- */
+// Fetches the total invested amount across all investments for the authenticated user.
 export const getTotalInvestedAmount = async function (): Promise<ITotalInvestedAmount> {
     try {
         // Send a GET request to fetch total invested amount
-        const response = await axiosInstance.get<ITotalInvestedAmount>(`/api/v1/investment/summary/total-invested`);
+        const response = await axiosInstance.get<ITotalInvestedAmount>(`investment/summary/total-invested`);
 
         // Check if the response contains a success flag
         if (response.data && response.data.success) {
@@ -98,16 +81,11 @@ export const getTotalInvestedAmount = async function (): Promise<ITotalInvestedA
     }
 };
 
-/**
- * Fetches the current total value of all investments for the authenticated user.
- *
- * @returns {Promise<ITotalCurrentValue>} - A promise resolving to the response data containing current investment summary.
- * @throws {Error} - Throws an error if the request fails or the response indicates failure.
- */
+// Fetches the current total value of all investments for the authenticated user.
 export const getTotalCurrentValue = async function (): Promise<ITotalCurrentValue> {
     try {
         // Send a GET request to fetch current total value of investments
-        const response = await axiosInstance.get<ITotalCurrentValue>(`/api/v1/investment/summary/current-value`);
+        const response = await axiosInstance.get<ITotalCurrentValue>(`investment/summary/current-value`);
 
         // Check if the response contains a success flag
         if (response.data && response.data.success) {
@@ -123,16 +101,11 @@ export const getTotalCurrentValue = async function (): Promise<ITotalCurrentValu
     }
 };
 
-/**
- * Fetches the total returns (profit or loss) from all investments for the authenticated user.
- *
- * @returns {Promise<ITotalReturns>} A promise resolving to the response data containing the investment returns summary.
- * @throws {Error} Throws an error if the request fails or the response indicates failure.
- */
+// Fetches the total returns (profit or loss) from all investments for the authenticated user.
 export const getTotalReturns = async function (): Promise<ITotalReturns> {
     try {
         // Send a GET request to fetch total investment returns
-        const response = await axiosInstance.get<ITotalReturns>(`/api/v1/investment/summary/total-returns`);
+        const response = await axiosInstance.get<ITotalReturns>(`investment/summary/total-returns`);
 
         // Check if the response contains a success flag
         if (response.data && response.data.success) {
@@ -148,16 +121,11 @@ export const getTotalReturns = async function (): Promise<ITotalReturns> {
     }
 };
 
-/**
- * Fetches all investments for the authenticated user, categorized by investment type.
- *
- * @returns {Promise<ICategorizedInvestments>} A promise resolving to the response data containing investments grouped by type (e.g., STOCK, MUTUAL_FUND).
- * @throws {Error} Throws an error if the request fails or the response indicates failure.
- */
+// Fetches all investments for the authenticated user, categorized by investment type.
 export const getCategorizedInvestments = async function (): Promise<ICategorizedInvestments> {
     try {
         // Send a GET request to fetch categorized investments
-        const response = await axiosInstance.get<ICategorizedInvestments>(`/api/v1/investment/categorized`);
+        const response = await axiosInstance.get<ICategorizedInvestments>(`investment/categorized`);
 
         // Check if the response contains a success flag
         if (response.data && response.data.success) {
@@ -173,18 +141,11 @@ export const getCategorizedInvestments = async function (): Promise<ICategorized
     }
 };
 
-/**
- * Removes an investment of the specified type and ID from the server.
- *
- * @param {string} investmentType - The type of investment (e.g., STOCK, MUTUAL_FUND).
- * @param {string} investmentId - The ID of the investment to remove.
- * @returns {Promise<IRemoveInvestment>} A promise resolving to the response data confirming deletion.
- * @throws {Error} Throws an error if the deletion request fails or the response indicates failure.
- */
+// Removes an investment of the specified type and ID from the server.
 export const removeInvestment = async function (investmentType: string, investmentId: string): Promise<IRemoveInvestment> {
     try {
         // Send DELETE request to remove the investment
-        const response = await axiosInstance.post<IRemoveInvestment>(`/api/v1/investment/${investmentType}/${investmentId}`);
+        const response = await axiosInstance.post<IRemoveInvestment>(`investment/${investmentType}/${investmentId}`);
 
         if (response.data && response.data.success) {
             return response.data; // Return success response

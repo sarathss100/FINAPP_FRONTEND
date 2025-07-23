@@ -5,7 +5,7 @@ import axiosInstance from './axiosInstance';
 export const addAccount = async function (formData: IAccount): Promise<IAccountDetails> {
     try {
         // Send a POST request to add a account
-        const response = await axiosInstance.post<IAccountDetails>('/api/v1/accounts', formData);
+        const response = await axiosInstance.post<IAccountDetails>('accounts', formData);
 
         // Validate the response 
         if (response.data && response.data.success) {
@@ -24,7 +24,7 @@ export const addAccount = async function (formData: IAccount): Promise<IAccountD
 export const getTotalBalance = async function (): Promise<ITotalBalance> {
     try {
         // Send a GET request to fetch the user's account total balance
-        const response = await axiosInstance.get<ITotalBalance>('/api/v1/accounts/balance');
+        const response = await axiosInstance.get<ITotalBalance>('accounts/balance');
 
         // Validate the response
         if (response.data && response.data.success) {
@@ -43,7 +43,7 @@ export const getTotalBalance = async function (): Promise<ITotalBalance> {
 export const getTotalBankBalance = async function (): Promise<ITotalBankBalance> {
     try {
         // Send a GET request to fetch the user's account total bank balance
-        const response = await axiosInstance.get<ITotalBankBalance>('/api/v1/accounts/bank-balance');
+        const response = await axiosInstance.get<ITotalBankBalance>('accounts/bank-balance');
 
         // Validate the response
         if (response.data && response.data.success) {
@@ -62,7 +62,7 @@ export const getTotalBankBalance = async function (): Promise<ITotalBankBalance>
 export const getTotalDebt = async function (): Promise<ITotalDebt> {
     try {
         // Send a GET request to fetch the user's account total debt
-        const response = await axiosInstance.get<ITotalDebt>('/api/v1/accounts/debt');
+        const response = await axiosInstance.get<ITotalDebt>('accounts/debt');
 
         // Validate the response
         if (response.data && response.data.success) {
@@ -81,7 +81,7 @@ export const getTotalDebt = async function (): Promise<ITotalDebt> {
 export const getTotalInvestment = async function (): Promise<ITotalInvestment> {
     try {
         // Send a GET request to fetch the user's account total investment
-        const response = await axiosInstance.get<ITotalInvestment>('/api/v1/accounts/investment');
+        const response = await axiosInstance.get<ITotalInvestment>('accounts/investment');
 
         // Validate the response
         if (response.data && response.data.success) {
@@ -96,16 +96,11 @@ export const getTotalInvestment = async function (): Promise<ITotalInvestment> {
     }
 };
 
-/**
- * Sends a request to retrieve all account details for the authenticated user via the backend API.
- *
- * @returns {Promise<IAllAccountDetails>} - A promise resolving to an object containing the user's account details.
- * @throws {Error} - Throws an error if the request fails or the response indicates an unsuccessful operation.
- */
+// Sends a request to retrieve all account details for the authenticated user via the backend API.
 export const getUserAccounts = async function (): Promise<IAllAccountDetails> {
     try {
         // Send a GET request to fetch the user's account details
-        const response = await axiosInstance.get<IAllAccountDetails>('/api/v1/accounts');
+        const response = await axiosInstance.get<IAllAccountDetails>('accounts');
 
         // Validate the response
         if (response.data && response.data.success) {
@@ -124,7 +119,7 @@ export const getUserAccounts = async function (): Promise<IAllAccountDetails> {
 export const removeAccount = async function (accountId: string): Promise<IRemoveAccount> {
     try {
         // Send a DELETE request to the backend API to delete the account with the specified `accountId`.
-        const response = await axiosInstance.delete<IRemoveAccount>(`/api/v1/accounts/${accountId}`);
+        const response = await axiosInstance.delete<IRemoveAccount>(`accounts/${accountId}`);
 
         // Validate the response and return the data if successful, otherwise throw an error.
         if (response.data && response.data.success) {
@@ -142,7 +137,7 @@ export const removeAccount = async function (accountId: string): Promise<IRemove
 export const updateAccount = async function (accountId: string, accountData: IAccount): Promise<IRemoveAccount> {
     try {
         // Send a DELETE request to the backend API to delete the account with the specified `accountId`.
-        const response = await axiosInstance.put<IRemoveAccount>(`/api/v1/accounts/${accountId}`, { accountData });
+        const response = await axiosInstance.put<IRemoveAccount>(`accounts/${accountId}`, { accountData });
 
         // Validate the response and return the data if successful, otherwise throw an error.
         if (response.data && response.data.success) {

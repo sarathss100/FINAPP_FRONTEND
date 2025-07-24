@@ -344,9 +344,9 @@ const FAQManagement = function () {
         {/* FAQ List */}
         {!isLoading && (
           <div className="space-y-4 px-4">
-            {faqs.map((faq) => (
+            {faqs.map((faq, index) => (
               <Card
-                key={faq._id}
+                key={index}
                 className="rounded-xl shadow-[0px_1px_2px_#0000000d] border-0"
               >
                 <CardContent className="p-6">
@@ -472,7 +472,7 @@ const FAQManagement = function () {
 
       {/* Delete confirmation overlay */}
       {deleteConfirmationId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-8 max-w-md w-full mx-4">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">

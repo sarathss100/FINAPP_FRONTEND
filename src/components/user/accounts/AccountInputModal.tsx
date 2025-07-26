@@ -20,7 +20,6 @@ import { toast } from 'react-toastify';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount, updateAccount } from '@/service/accountService';
 
-// Account type definitions
 const ACCOUNT_TYPES = [
   { value: 'Bank', icon: <Building className="w-5 h-5" />, label: 'Bank Account' },
   { value: 'Debt', icon: <CreditCard className="w-5 h-5" />, label: 'Debt Account' },

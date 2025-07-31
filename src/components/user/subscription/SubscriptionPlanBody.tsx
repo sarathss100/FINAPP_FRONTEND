@@ -6,22 +6,97 @@ import {
   TrendingUpIcon,
   UsersIcon,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from '@/components/base/Badge';
 import Button from '@/components/base/Button';
 import { Card, CardContent } from '@/components/base/Card';
 import UserHeader from '../base/Header';
 import PageTitle from '../base/PageTitle';
-// import Image from 'next/image';
 import { toast } from 'react-toastify';
-import { initiatePayment } from "@/service/subscriptionService";
+import { fetchSubscriptionStatus, initiatePayment } from "@/service/subscriptionService";
+
+const checkSubscriptionStatus = async () => {
+  try {
+    const response = await fetchSubscriptionStatus();
+  
+    return response.data.subscription_status;
+  } catch (error) {
+    console.error('Error checking subscription status:', error);
+    return false; 
+  }
+};
 
 const SubscriptionPlanBody = function () {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isLoadingSubscriptionStatus, setIsLoadingSubscriptionStatus] = useState(true);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
+
+  // Check subscription status and active session on component mount
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      setIsLoadingSubscriptionStatus(true);
+      try {
+        const isActive = await checkSubscriptionStatus();
+        setHasActiveSubscription(isActive);
+      } catch (error) {
+        console.error('Failed to check subscription status:', error);
+      } finally {
+        setIsLoadingSubscriptionStatus(false);
+      }
+    };
+
+    // Check for active session in localStorage
+    const checkActiveSession = () => {
+      if (typeof window !== 'undefined') {
+        const activeSession = localStorage.getItem("activeStripeSession");
+        setHasActiveSession(!!activeSession);
+      }
+    };
+
+    fetchSubscriptionStatus();
+    checkActiveSession();
+  }, []);
+
+  // Check if button should be disabled
+  const isButtonDisabled = () => {
+    return isProcessing || hasActiveSession || hasActiveSubscription || isLoadingSubscriptionStatus;
+  };
+
+  // Get button text based on state
+  const getButtonText = () => {
+    if (isLoadingSubscriptionStatus) {
+      return 'Loading...';
+    }
+    if (hasActiveSubscription) {
+      return 'Already Subscribed';
+    }
+    if (hasActiveSession) {
+      return 'Payment in Progress';
+    }
+    if (isProcessing) {
+      return 'Processing...';
+    }
+    return 'Subscribe & Continue';
+  };
 
   const handleSubscribe = async () => {
+    // Check if user already has active subscription
+    if (hasActiveSubscription) {
+      toast.info("You already have an active subscription.");
+      return;
+    }
+
+    const existingSessionUrl = typeof window !== 'undefined' ? localStorage.getItem("activeStripeSession") : null;
+
+    if (existingSessionUrl) {
+      toast.info("You already have an active payment session.");
+      window.location.href = existingSessionUrl;
+      return;
+    }
+
     setIsProcessing(true);
-    
+
     try {
       const response = await initiatePayment({
         amount: 199,
@@ -29,12 +104,24 @@ const SubscriptionPlanBody = function () {
         plan: 'monthly', 
       });
 
-      toast.success('Redirecting to payment gateway...');
-      
-      window.location.href = response.data.checkoutUrl;
-      
+      const checkoutUrl = response.data.checkoutUrl;
+
+      if (checkoutUrl) {
+        // Store session URL in localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("activeStripeSession", checkoutUrl);
+          setHasActiveSession(true);
+        }
+
+        toast.success('Redirecting to payment gateway...');
+        window.location.href = checkoutUrl;
+      } else {
+        toast.error('Failed to initiate payment session.');
+      }
+
     } catch (error) {
       console.log((error as Error).message);
+      toast.error('Something went wrong during payment.');
     } finally {
       setIsProcessing(false);
     }
@@ -105,7 +192,7 @@ const SubscriptionPlanBody = function () {
                 Complete personal financial management solution
               </p>
               <Badge className="bg-yellow-400 text-yellow-900 font-normal font-['Montserrat',Helvetica] text-sm px-4 py-2 rounded-full mt-4">
-                Most Popular
+                {hasActiveSubscription ? "Current Plan" : "Most Popular"}
               </Badge>
             </div>
 
@@ -125,11 +212,28 @@ const SubscriptionPlanBody = function () {
               
               <Button
                 onClick={handleSubscribe}
-                disabled={isProcessing}
-                className="bg-[#00a9e0] hover:bg-[#0088b3] text-white px-8 py-3 rounded-lg font-medium font-['Montserrat',Helvetica] text-lg transition-all duration-200 hover:scale-[1.02] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isButtonDisabled()}
+                className={`px-8 py-3 rounded-lg font-medium font-['Montserrat',Helvetica] text-lg transition-all duration-200 shadow-lg ${
+                  isButtonDisabled()
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50'
+                    : 'bg-[#00a9e0] hover:bg-[#0088b3] text-white hover:scale-[1.02] hover:shadow-xl'
+                }`}
               >
-                {isProcessing ? 'Processing...' : 'Subscribe & Continue'}
+                {getButtonText()}
               </Button>
+
+              {/* Show subscription status message */}
+              {hasActiveSubscription && (
+                <p className="text-green-600 font-medium font-['Montserrat',Helvetica] mt-3 text-sm">
+                  ✓ You have an active subscription
+                </p>
+              )}
+              
+              {hasActiveSession && !hasActiveSubscription && (
+                <p className="text-orange-600 font-medium font-['Montserrat',Helvetica] mt-3 text-sm">
+                  ⏳ Payment session in progress
+                </p>
+              )}
             </div>
 
             {/* Features section */}

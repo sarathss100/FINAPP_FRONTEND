@@ -6,6 +6,10 @@ const PaymentSuccessPage = () => {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    localStorage.removeItem("activeStripeSession");
+  }, []);
+
+  useEffect(() => {
     // Countdown timer
     const countdownTimer = setInterval(() => {
       setCountdown(prev => {

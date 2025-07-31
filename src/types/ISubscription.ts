@@ -29,6 +29,14 @@ export interface InitiatePayment {
     }
 }
 
+export interface SubscriptionStatus {
+    success: boolean,
+    message: string,
+    data: {
+        subscription_status: boolean;
+    }
+}
+
 export interface SubscriptionDetails {
     success: boolean,
     message: string,

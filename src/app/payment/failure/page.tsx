@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { XCircle, AlertCircle, RefreshCw, ArrowLeft, CreditCard, HelpCircle } from 'lucide-react';
 
 const PaymentFailurePage = () => {
@@ -41,6 +41,10 @@ const PaymentFailurePage = () => {
     'Contact your bank if the issue persists',
     'Reach out to our support team'
   ];
+
+  useEffect(() => {
+    localStorage.removeItem("activeStripeSession");
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#004a7c] to-[#00a9e0] flex items-center justify-center p-4">

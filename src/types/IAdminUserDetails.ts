@@ -11,6 +11,7 @@ interface IUser {
     twoFactorEnabled?: boolean;
     connectedAccounts?: string[];
 }
+
 interface IAdminUserDetails {
     success: boolean,
     message: string,
@@ -44,8 +45,8 @@ export interface ISystemHealthStatus {
 }
 
 export interface SystemMetrics {
-    ramUsage: number;
-    diskUsage: number;
+    ram_usage: number;
+    disk_usage: number;
 }
 
 export interface ISystemMetrics {

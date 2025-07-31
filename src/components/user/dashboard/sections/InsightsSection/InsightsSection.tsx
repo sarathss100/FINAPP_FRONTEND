@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/base/Card';
-import { CrownIcon, XIcon } from "lucide-react";
+import { CrownIcon, XIcon, ChevronRightIcon } from "lucide-react";
 import Link from 'next/link';
 import useTransactionStore from "@/stores/transaction/transactionStore";
 import { useRouter } from 'next/navigation';
@@ -285,7 +285,8 @@ const InsightsSection = function () {
   });
 
   const expenseSourcesData = outflowTransactionByCategory.map((transaction) => {
-    const percentage = Math.round((transaction.total / totalAmount) * 100);
+    const totalExpenseAmount = outflowTransactionByCategory.reduce((sum, t) => sum += t.total, 0);
+    const percentage = Math.round((transaction.total / totalExpenseAmount) * 100);
     
     type CategoryType =
       'INVESTMENTS' |
@@ -348,6 +349,22 @@ const InsightsSection = function () {
     };
   });
 
+  const ShowMoreButton = ({ count, onClick }: { count: number; onClick: () => void }) => (
+    <div 
+      className="flex items-center justify-between p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-4">
+        <div className="text-2xl">📊</div>
+        <div>
+          <h3 className="font-semibold text-blue-700">Show More</h3>
+          <p className="text-sm text-blue-600">{count} more categories</p>
+        </div>
+      </div>
+      <ChevronRightIcon className="h-5 w-5 text-blue-600" />
+    </div>
+  );
+
   return (
     <>
       <section className="w-full py-8">
@@ -362,7 +379,7 @@ const InsightsSection = function () {
             <CardContent>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  {incomeSourcesData.map((source, index) => (
+                  {incomeSourcesData.slice(0, 3).map((source, index) => (
                     <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="text-2xl">{source.icon}</div>
@@ -384,6 +401,13 @@ const InsightsSection = function () {
                       </div>
                     </div>
                   ))}
+                  {
+                    incomeSourcesData.length > 3 && (
+                      <ShowMoreButton
+                        count={incomeSourcesData.length - 3}
+                        onClick={handleInflowTabClick}
+                      />
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -393,13 +417,13 @@ const InsightsSection = function () {
           <Card className="shadow-md rounded-xl cursor-pointer" onClick={handleOutflowTabClick}>
             <CardHeader className="pb-2">
               <CardTitle className="text-xl font-normal [font-family:'Poppins',Helvetica]">
-                Outflow Overview 
+                Outflow Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  {expenseSourcesData.map((source, index) => (
+                  {expenseSourcesData.slice(0, 3).map((source, index) => (
                     <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="text-2xl">{source.icon}</div>
@@ -421,6 +445,13 @@ const InsightsSection = function () {
                       </div>
                     </div>
                   ))}
+                  {
+                    expenseSourcesData.length > 3 && (
+                      <ShowMoreButton
+                        count={expenseSourcesData.length - 3}
+                        onClick={handleOutflowTabClick}
+                      />
+                  )}
                 </div>
               </div>
             </CardContent>

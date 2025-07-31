@@ -9,6 +9,7 @@ import useFaqStore from '@/stores/faqs/faqStore';
 import { IFaq } from '@/types/IFaq';
 import { toast } from 'react-toastify';
 import { addFaq, removeFaq, togglePublish, updateFaq } from '@/service/adminService';
+import useDebouncedValue from "@/hooks/useDebouncedValue";
 
 const FAQManagement = function () {
   const faqs = useFaqStore((state) => state.allFaqs);
@@ -32,6 +33,7 @@ const FAQManagement = function () {
     isPublished: true
   });
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
 
   const handleFetchFaqs = useCallback((page = 1, limit = 10, search = '') => {
     fetchAllFaqs(page, limit, search);
@@ -51,12 +53,12 @@ const FAQManagement = function () {
 
     // Set up debounced search
     const timeout = setTimeout(() => {
-      const pageToFetch = searchTerm !== persistedState.searchTerm ? 1 : currentPage;
+      const pageToFetch = debouncedSearchTerm !== persistedState.searchTerm ? 1 : currentPage;
       handleFetchFaqs(pageToFetch, itemsPerPage, searchTerm);
       
       // Update persisted state
       updatePersistedState({
-        searchTerm,
+        searchTerm: debouncedSearchTerm,
         currentPage: pageToFetch,
         itemsPerPage
       });
@@ -68,7 +70,7 @@ const FAQManagement = function () {
       if (timeout) clearTimeout(timeout);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, currentPage, itemsPerPage, handleFetchFaqs, persistedState.searchTerm, updatePersistedState]);
+  }, [debouncedSearchTerm, currentPage, itemsPerPage, handleFetchFaqs, persistedState.searchTerm, updatePersistedState]);
 
   const handleAdd = async () => {
     try {

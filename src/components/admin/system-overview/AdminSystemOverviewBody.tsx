@@ -22,8 +22,8 @@ const AdminSystemOverviewBody = function () {
   const [totalActiveUser, setTotalActiveUser] = useState(0);
   const [newRegistration, setNewRegistration] = useState(0);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics>({
-    ramUsage: 0,
-    diskUsage: 0
+    ram_usage: 0,
+    disk_usage: 0
   });
 
   useEffect(() => {
@@ -178,7 +178,7 @@ const AdminSystemOverviewBody = function () {
               <div className="space-y-4 mb-6">                  
                 <div className="bg-red-50 border border-red-100 rounded-lg p-4">
                   <div className="flex items-center">
-                    {Number(systemMetrics.ramUsage) > 50 ? (
+                    {Number(systemMetrics.ram_usage) > 50 ? (
                       <div className="flex items-center">
                         <AlertTriangleIcon className="w-5 h-5 text-red-700 mr-3" />
                         <div>
@@ -186,7 +186,7 @@ const AdminSystemOverviewBody = function () {
                             High RAM Usage
                           </p>
                           <p className="text-red-500 text-sm mt-1">
-                            {systemMetrics.ramUsage.toFixed(2)} % capacity used
+                            {systemMetrics.ram_usage?.toFixed(2) || 0} % capacity used
                           </p>
                         </div>
                       </div>
@@ -196,7 +196,7 @@ const AdminSystemOverviewBody = function () {
                         <div>
                           <p className="text-green-700 font-medium text-base">Normal RAM Usage</p>
                           <p className="text-green-500 text-sm mt-1">
-                            {systemMetrics.ramUsage.toFixed(2)} % capacity used
+                            {systemMetrics.ram_usage?.toFixed(2) || 0} % capacity used
                           </p>
                         </div>
                       </div>
@@ -206,7 +206,7 @@ const AdminSystemOverviewBody = function () {
 
                 <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
                   <div className="flex items-center">
-                    {Number(systemMetrics.diskUsage) > 50 ? (
+                    {Number(systemMetrics.disk_usage) > 50 ? (
                       <div className="flex items-center">
                         <AlertTriangleIcon className="w-5 h-5 text-red-700 mr-3" />
                         <div>
@@ -214,7 +214,7 @@ const AdminSystemOverviewBody = function () {
                             High CPU Usage
                           </p>
                           <p className="text-red-500 text-sm mt-1">
-                            {systemMetrics.diskUsage.toFixed(2)} % capacity used
+                            {systemMetrics.disk_usage?.toFixed(2) || 0} % capacity used
                           </p>
                         </div>
                       </div>
@@ -224,7 +224,7 @@ const AdminSystemOverviewBody = function () {
                         <div>
                           <p className="text-green-700 font-medium text-base">Normal CPU Usage</p>
                           <p className="text-green-500 text-sm mt-1">
-                            {systemMetrics.diskUsage.toFixed(2)} % capacity used
+                            {systemMetrics.disk_usage?.toFixed(2) || 0} % capacity used
                           </p>
                         </div>
                       </div>

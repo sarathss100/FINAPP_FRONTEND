@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Search, IndianRupee } from 'lucide-react';
 import useTransactionStore from '@/stores/transaction/transactionStore';
+import useDebouncedValue from '@/hooks/useDebouncedValue';
 
 const OutflowTableComponent = () => {
   const {
@@ -17,6 +18,7 @@ const OutflowTableComponent = () => {
   } = useTransactionStore();
 
   const [searchInput, setSearchInput] = useState(OutflowFilters.searchText);
+  const debouncedSearchInput = useDebouncedValue(searchInput, 500);
 
   // Get unique categories from actual transaction data
   const availableCategories = useMemo(() => {
@@ -53,14 +55,10 @@ const OutflowTableComponent = () => {
 
   // Debounced search with cleanup
   useEffect(() => {
-    const delayedSearch = setTimeout(() => {
-      if (searchInput !== OutflowFilters.searchText) {
-        setOutflowSearchText(searchInput);
-      }
-    }, 500);
-
-    return () => clearTimeout(delayedSearch);
-  }, [searchInput, setOutflowSearchText, OutflowFilters.searchText]);
+   if (debouncedSearchInput !== OutflowFilters.searchText) {
+    setOutflowSearchText(debouncedSearchInput);
+   }
+  }, [debouncedSearchInput, setOutflowSearchText, OutflowFilters.searchText]);
 
   // Memoized event handlers to prevent re-renders
   const handlePageClick = useCallback((pageNumber: number) => {

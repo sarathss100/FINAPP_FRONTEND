@@ -11,10 +11,10 @@ const ExpenseAnalysisBody = () => {
   const [aveageDailyExpense, setAverageDailyExpense] = useState(0);
   const [aveageWeeklyExpense, setAverageWeeklyExpense] = useState(0);
   const [maxMonthlyIncome, setMaxMonthlyIncome] = useState(0);
-  const currentMonthTotalExpense = useTransactionStore((state) => state.previousMonthTotalExpense);
+  const currentMonthTotalExpense = useTransactionStore((state) => state.currentMonthTotalExpense);
   const previousMonthTotalExpense = useTransactionStore((state) => state.previousMonthTotalExpense);
   const monthlyExpenseTrends = useTransactionStore((state) => state.monthlyExpenseTrends);
-  const transactionsByCategory = useTransactionStore((state) => state.allExpenseTransactions);
+  const transactionsByCategory = useTransactionStore((state) => state.allExpenseTransactions); 
 
   const getDaysInMonth = function (date: Date): number {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();

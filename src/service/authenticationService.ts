@@ -1,4 +1,4 @@
-import ISigninResponse from '@/types/ISigninResponse';
+import ISigninResponse, { ICanSignupResponse } from '@/types/ISigninResponse';
 import axiosInstance from './axiosInstance';
 import ISignupRequest from '@/types/ISignupRequest';
 import IVerifyTokenResponse from '@/types/IVerifyTokenResponse';
@@ -38,6 +38,16 @@ export const verifyPhoneNumber = async function (phoneNumber: string): Promise<b
     try {
         const response = await axiosInstance.post(`auth/verifications/phonenumber`, { phoneNumber });
         return response.status === 200 ? true : false;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Verify the Account Exists for signup
+export const checkSignupVerification = async function (phoneNumber: string): Promise<ICanSignupResponse> {
+    try {
+        const response = await axiosInstance.post<ICanSignupResponse>(`auth/verifications/signup`, { phoneNumber });
+        return response.data;
     } catch (error) {
         throw error;
     }

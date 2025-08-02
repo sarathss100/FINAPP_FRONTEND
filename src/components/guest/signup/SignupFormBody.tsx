@@ -13,7 +13,8 @@ import { signInWithPhoneNumber, ConfirmationResult, RecaptchaVerifier } from 'fi
 import auth from '../../../lib/firebaseConfig';
 import RecaptchaComponent from '../../base/auth/RecaptchaComponent';
 import OtpVerificationModal from '../../base/auth/OtpVerificationModal';
-import { verifyPhoneNumber } from '@/service/authenticationService';
+import { checkSignupVerification } from '@/service/authenticationService';
+import { toast } from 'react-toastify';
 
 const SignupFormBody = function () {
   const [formData, setFormData] = useState<SignupFormValues | null>(null);
@@ -38,14 +39,15 @@ const SignupFormBody = function () {
 
   const isUserExist = async function (phoneNumber: string) {
     try {
-      const isUserExist = await verifyPhoneNumber(phoneNumber);
-      if (isUserExist) {
+      const isUserExist = await checkSignupVerification(phoneNumber);
+      if (!isUserExist.data.canSignup) {
+        toast.error('A user with this phone number already exists. Please use a different phone number.');
         throw new Error('A user with this phone number already exists. Please use a different phone number.');
       } 
     } catch (error) {
       if (!((error as Error).message === 'The user does not exist. Please check the provided phone number or sign up.')) {
         throw error;
-      }
+      } 
     }
   } 
 

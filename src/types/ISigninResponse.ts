@@ -10,3 +10,11 @@ interface ISigninResponse {
 }
 
 export default ISigninResponse;
+
+export interface ICanSignupResponse {
+  success: string,
+  message: string,
+  data: {
+    canSignup: boolean;
+  }
+}

@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from '@/components/base/Dialog';
 import { 
   Calendar, IndianRupee, Target, Clock, 
-  Save, AlertCircle
+  Save, AlertCircle,
+  X
 } from "lucide-react";
 import Button from "@/components/base/Button";
 import { IGoal } from '@/types/IGoal';
@@ -162,12 +163,22 @@ export const GoalEditModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="mt-6 space-y-6">
+          <div>
+            <button
+              onClick={onClose}
+              className="rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
+            </div>
           {/* Basic Information Section */}
           <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-5">
             <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
               <Target className="h-5 w-5 mr-2 text-blue-600" />
               Basic Information
             </h3>
+            
             
             <div className="space-y-4">
               <div>

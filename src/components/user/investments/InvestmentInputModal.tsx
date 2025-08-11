@@ -1598,7 +1598,9 @@ export default function InvestmentInputModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-0">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+          <div className="flex justify-between items-start sm:items-center gap-4 pt-2">
+
+            {/* Left section: Badge + Title */}
             <div>
               <Badge 
                 className="rounded-full mb-3 bg-green-100 text-green-800 flex items-center w-fit px-2 py-1"
@@ -1611,6 +1613,16 @@ export default function InvestmentInputModal({
                 {isEditing ? 'Edit Investment' : 'New Investment'}
               </DialogTitle>
             </div>
+
+            {/* Right section: Close button */}
+            <button
+              onClick={onClose}
+              className="rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
+
           </div>
         </DialogHeader>
         

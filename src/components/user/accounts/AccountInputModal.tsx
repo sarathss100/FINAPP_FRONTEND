@@ -238,9 +238,16 @@ export const AccountModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader className="relative pb-0">
-          <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
+          <DialogTitle className="text-xl font-bold text-gray-900 flex justify-between">
             <IndianRupee className="h-5 w-5 mr-2 text-blue-600" />
             {accountToEdit ? 'Edit Account' : 'Add New Account'}
+            <button
+            onClick={onClose}
+            className="rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           </DialogTitle>
         </DialogHeader>
         

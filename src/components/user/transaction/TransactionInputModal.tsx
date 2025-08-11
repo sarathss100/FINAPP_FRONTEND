@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/base/Dialog';
 import { 
   Calendar, IndianRupee, Tag, AlertCircle, CheckCircle,
-  Copy, CreditCard, Landmark, Plus, Search
+  Copy, CreditCard, Landmark, Plus, Search, X
 } from "lucide-react";
 import Button from "@/components/base/Button";
 import { Badge } from '@/components/base/Badge';
@@ -203,6 +203,20 @@ export const TransactionInputModal = ({
                 {isEditing ? 'Edit Transaction' : 'New Transaction'}
               </DialogTitle>
             </div>
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:pointer-events-none"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
           </div>
         </DialogHeader>
         

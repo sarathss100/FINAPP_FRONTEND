@@ -19,6 +19,7 @@ import Button from "@/components/base/Button";
 import { toast } from 'react-toastify';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount, updateAccount } from '@/service/accountService';
+import { accountValidationSchema } from "@/schemas/accounts/account.validation";
 
 const ACCOUNT_TYPES = [
   { value: 'Bank', icon: <Building className="w-5 h-5" />, label: 'Bank Account' },
@@ -84,7 +85,6 @@ export const AccountModal = ({
     is_active: true
   }), []);
 
-  // State hooks
   const [formData, setFormData] = useState(defaultFormValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,10 +149,13 @@ export const AccountModal = ({
   // Validate form data based on account type
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    const result = accountValidationSchema.safeParse(formData);
     
-    // Common validation
-    if (!formData.account_name || formData.account_name.length < 2) {
-      newErrors.account_name = 'Account name must be at least 2 characters';
+    if (!result.success) {
+      result.error.issues.forEach(issue => {
+        const fieldName = issue.path[0] as string;
+        newErrors[fieldName] = issue.message;
+      })
     }
 
     // Type-specific validation

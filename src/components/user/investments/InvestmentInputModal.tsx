@@ -10,14 +10,18 @@ import {
   Wallet
 } from "lucide-react";
 import { Badge } from '@/components/base/Badge';
-import { InvestmentDocument, InvestmentType, IStock, IMutualFund, IBond, IGold, IEPFO, IFixedDeposit, IBusiness, IProperty, IParkingFund, Investments } from '@/types/IInvestments';
+import { 
+  InvestmentDocument, InvestmentType, 
+  IStock, IMutualFund, IBond, IGold, 
+  IEPFO, IFixedDeposit, IBusiness, 
+  IProperty, IParkingFund, Investments 
+} from '@/types/IInvestments';
 import { toast } from 'react-toastify';
 import { searchMutualFundFromApi, searchStocksFromApi } from '@/service/investmentService';
 import { IAccount } from '@/types/IAccounts';
 import { addAccount } from '@/service/accountService';
 import { useAccountsStore } from "@/stores/accounts/accountsStore";
 
-// Investment Types
 const INVESTMENT_TYPES = [
   'STOCK', 'MUTUAL_FUND', 'BOND', 'PROPERTY', 'BUSINESS', 
   'FIXED_DEPOSIT', 'EPFO', 'GOLD', 'PARKING_FUND'
@@ -1093,6 +1097,7 @@ export default function InvestmentInputModal({
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Current NAV"
+                  readOnly={'currentNav' in formData && !!formData.currentNav}
                 />
               </div>
             </div>
@@ -1932,7 +1937,7 @@ export default function InvestmentInputModal({
       </div>
     )}
                   
-                  {/* Amount */}
+                {/* Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Investment Amount*

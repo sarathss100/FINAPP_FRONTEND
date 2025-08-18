@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Calculator, TrendingUp, Calendar, BarChart3, PieChart, Plus, Target, Award, IndianRupee } from "lucide-react";
+import { Calculator, TrendingUp, Calendar, BarChart3, PieChart, Plus, Target, Award, IndianRupee, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AdditionalInvestment {
   year: number;
@@ -19,6 +19,9 @@ const ButterflyEffectPageBody = function () {
   const [additionalInvestments, setAdditionalInvestments] = useState<AdditionalInvestment[]>([]);
   const [newAdditionalAmount, setNewAdditionalAmount] = useState(0);
   const [newAdditionalYear, setNewAdditionalYear] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(10);
+  
   interface YearlyBreakdown {
     year: number;
     startValue: number;
@@ -41,6 +44,17 @@ const ButterflyEffectPageBody = function () {
     totalValue: 0,
     yearlyBreakdown: []
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(results.yearlyBreakdown.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const currentRows = results.yearlyBreakdown.slice(startIndex, endIndex);
+
+  // Reset to first page when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [results.yearlyBreakdown.length]);
 
   // Add new additional investment
   const addAdditionalInvestment = () => {
@@ -502,7 +516,7 @@ const ButterflyEffectPageBody = function () {
                     </tr>
                   </thead>
                   <tbody>
-                    {results.yearlyBreakdown.map((row) => (
+                    {currentRows.map((row) => (
                       <tr key={row.year} className="border-b hover:bg-gray-25">
                         <td className="p-3 font-semibold text-emerald-600">{row.year}</td>
                         <td className="p-3 text-right">{formatCurrency(row.startValue)}</td>
@@ -525,6 +539,51 @@ const ButterflyEffectPageBody = function () {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                  <div className="text-sm text-gray-600">
+                    Showing {startIndex + 1}-{Math.min(endIndex, results.yearlyBreakdown.length)} of {results.yearlyBreakdown.length} years
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-emerald-600 text-white'
+                              : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Growth Visualization */}

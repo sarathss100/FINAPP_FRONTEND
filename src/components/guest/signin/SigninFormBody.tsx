@@ -43,7 +43,11 @@ const SigninFormbody = function () {
     handleSubmit,
     formState: { errors }
   } = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema)
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      phone_number: "1234567890",
+      password: "TestPass123"
+    }
   });
 
   // Wrap onRecaptchaInit in useCallback

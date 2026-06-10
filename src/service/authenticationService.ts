@@ -72,6 +72,8 @@ export const verifyToken = async function (token: string): Promise<IVerifyTokenR
 export const signout = async function (): Promise<number> {
     try {
         const response = await axiosInstance.post(`auth/signout`);
+        document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=lax';
+        document.cookie = 'userMetaData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=lax';
         return response.status;
     } catch (error) {
         throw error;

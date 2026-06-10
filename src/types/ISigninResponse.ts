@@ -6,6 +6,7 @@ interface ISigninResponse {
     role: string,
     is2FA?: boolean,
     phoneNumber?: string,
+    accessToken?: string,
   }
 }
 

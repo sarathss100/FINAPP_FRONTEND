@@ -73,7 +73,11 @@ const OtpVerificationModal = ({
       const confirmation = await confirmationResult.confirm(otp);
 
       if (confirmation) {
-        await signUp(formData);
+        const response = await signUp(formData);
+        if (response.data.accessToken) {
+          document.cookie = `accessToken=${response.data.accessToken}; path=/; max-age=604800; secure; samesite=lax`;
+          document.cookie = `userMetaData=${JSON.stringify({ userId: response.data.userId, role: response.data.role, isLoggedIn: true })}; path=/; max-age=604800; secure; samesite=lax`;
+        }
         useUserStore.getState().initializeSockets();
         window.location.replace('/dashboard');
       }

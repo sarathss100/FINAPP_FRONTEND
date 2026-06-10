@@ -62,6 +62,11 @@ const SigninFormbody = function () {
 
       setRole(data.data.role);
 
+      if (data.data.accessToken) {
+        document.cookie = `accessToken=${data.data.accessToken}; path=/; max-age=604800; secure; samesite=lax`;
+        document.cookie = `userMetaData=${JSON.stringify({ userId: data.data.userId, role: data.data.role, isLoggedIn: true })}; path=/; max-age=604800; secure; samesite=lax`;
+      }
+
       if (data.success && data.data.is2FA) {
         handlePhoneVerificationSuccess(formData.phone_number);
       } else {
